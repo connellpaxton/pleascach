@@ -9,8 +9,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 file(GLOB SOURCES
   pléascach.cpp
-  Window/Window.cpp
-  Renderer/*.cpp
+  */*.cpp
 )
 
 add_executable (Pleascach ${SOURCES} "vkb/VkBootstrap.cpp" "vma/vma.cpp")

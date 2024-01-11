@@ -1,7 +1,7 @@
 #include <Renderer/RenderPass.hpp>
 #include <Renderer/Renderer.hpp>
 
-RenderPass::RenderPass(Renderer* ren, Swapchain* swp) : ren(ren) {
+RenderPass::RenderPass(vk::Device dev, Swapchain* swp) : dev(dev) {
 	vk::AttachmentDescription color_attr {
 		.format = vk::Format(swp->swapchain.image_format),
 		.samples = vk::SampleCountFlagBits::e1,
@@ -71,9 +71,9 @@ RenderPass::RenderPass(Renderer* ren, Swapchain* swp) : ren(ren) {
 		.pDependencies = deps,
 	};
 
-	render_pass = vk::Device(ren->dev).createRenderPass(render_pass_info);
+	render_pass = dev.createRenderPass(render_pass_info);
 }
 
 RenderPass::~RenderPass() {
-	vk::Device(ren->dev).destroyRenderPass(render_pass);
+	dev.destroyRenderPass(render_pass);
 }

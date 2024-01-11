@@ -6,7 +6,7 @@
 #include <vkb/VkBootstrap.h>
 
 struct CommandBuffer {
-	vk::CommandBuffer command_buffer;
+	vk::CommandBuffer buffer;
 	vk::CommandPool pool;
 	vkb::Device& dev;
 

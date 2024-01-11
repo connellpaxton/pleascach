@@ -9,8 +9,8 @@
 
 Swapchain::Swapchain(Renderer* ren) : ren(ren) {
 	create();
-	ren->render_pass = std::make_unique<RenderPass>(ren, this);
-	framebuffer = std::make_unique<Framebuffer>(ren, this);
+	ren->render_pass = std::make_unique<RenderPass>(ren->dev.operator VkDevice(), this);
+	framebuffer = std::make_unique<Framebuffer>(ren->dev.operator VkDevice(), ren->render_pass.get(), *this);
 }
 
 void Swapchain::create() {
@@ -20,9 +20,7 @@ void Swapchain::create() {
 	3. Create Framebuffer */
 
 	/* Part 1 */
-	vkb::SwapchainBuilder swap_builder {
-		ren->dev
-	};
+	vkb::SwapchainBuilder swap_builder { ren->dev };
 
 	auto swap_ret = swap_builder
 		.set_old_swapchain(swapchain)
@@ -85,7 +83,8 @@ void Swapchain::recreate() {
 
 	cleanup();
 	create();
-	framebuffer = std::make_unique<Framebuffer>(ren, this);
+
+	framebuffer = std::make_unique<Framebuffer>(ren->dev.operator VkDevice(), ren->render_pass.get(), *this);
 }
 
 void Swapchain::cleanup() {

@@ -9,7 +9,7 @@ int main() {
 		Window win("Test", 256, 256);
 
 		win.run();
-	} catch (std::string& e) {
-		std::cerr << "Exception: " << e << std::endl;
+	} catch (std::exception& e) {
+		std::cerr << "Exception: " << e.what() << std::endl;
 	}
 }

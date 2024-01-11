@@ -7,9 +7,14 @@
 #include <Renderer/Renderer.hpp>
 
 struct RenderPass {
-	RenderPass(Renderer* ren, Swapchain* swp);
+	RenderPass(vk::Device dev, Swapchain* swp);
 	~RenderPass();
 
-	Renderer* ren;
+	vk::Device dev;
 	vk::RenderPass render_pass;
+
+	operator vk::RenderPass& () {
+		return render_pass;
+	}
+
 };

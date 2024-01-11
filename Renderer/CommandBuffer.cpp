@@ -15,10 +15,10 @@ CommandBuffer::CommandBuffer(vkb::Device& dev) : dev(dev) {
 		.commandBufferCount = 1,
 	};
 
-	command_buffer = vk::Device(dev).allocateCommandBuffers(buffer_alloc_info).front();
+	buffer = vk::Device(dev).allocateCommandBuffers(buffer_alloc_info).front();
 }
 
 CommandBuffer::~CommandBuffer() {
-	vk::Device(dev).freeCommandBuffers(pool, 1, &command_buffer);
+	vk::Device(dev).freeCommandBuffers(pool, 1, &buffer);
 	vk::Device(dev).destroyCommandPool(pool);
 }
