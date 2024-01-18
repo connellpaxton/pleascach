@@ -1,37 +1,36 @@
-#include <Renderer/Shader.hpp>
+#include <renderer/shader.hpp>
 
-#include <iostream>
+#include <util/log.hpp>
+
 #include <fstream>
+#include <sstream>
 
-Shader::Shader(const std::string& filename, vk::Device& dev, const std::string& entry) : dev(dev) {
-	auto f = std::ifstream(filename);
-	std::string	src((std::istreambuf_iterator<char>(f)),
-				(std::istreambuf_iterator<char>()));
+static std::string slurp(const std::string& fname) {
+	std::ifstream in(fname, std::ifstream::binary | std::ifstream::in);
+	std::stringstream sstr;
+	sstr << in.rdbuf();
+	in.close();
+	return sstr.str();
+}
 
-	vk::ShaderModuleCreateInfo shader_info {
-		.codeSize = src.length(),
+Shader::Shader(vk::Device dev, const std::string& fname) : fname(fname) {
+	std::string src;
+	try {
+		src = slurp(fname);
+	} catch (std::exception& e) {
+		Log::error("Failed to read file " + fname + ": "+ e.what() + "\n");
+	}
+
+	auto module_info = vk::ShaderModuleCreateInfo{
+		.codeSize = src.size(),
 		.pCode = reinterpret_cast<const uint32_t*>(src.c_str()),
 	};
 
-	shader = dev.createShaderModule(shader_info);
-	std::cerr << "Successfully loaded shader: " << filename << std::endl;
-
-	/* deduce type from filename */
-	vk::ShaderStageFlagBits stage = vk::ShaderStageFlagBits::eAllGraphics;
-
-	if (filename.find(".frag") != std::string::npos) {
-		stage = vk::ShaderStageFlagBits::eFragment;
-	} else if (filename.find(".vert") != std::string::npos) {
-		stage = vk::ShaderStageFlagBits::eVertex;
+	if (!(module = dev.createShaderModule(module_info))) {
+		Log::error(fname + ": failed to create shader\n");
 	}
-
-	stage_info = vk::PipelineShaderStageCreateInfo{
-		.stage = stage,
-		.module = shader,
-		.pName = entry.c_str()
-	};
 }
 
-Shader::~Shader() {
-	dev.destroyShaderModule();
+void Shader::cleanup(vk::Device dev) {
+	dev.destroyShaderModule(module);
 }

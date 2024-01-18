@@ -12,7 +12,7 @@ file(GLOB SOURCES
   */*.cpp
 )
 
-add_executable (Pleascach ${SOURCES} "vkb/VkBootstrap.cpp" "vma/vma.cpp")
+add_executable (Pleascach ${SOURCES})
 
 find_package(glfw3 3.3 REQUIRED)
 find_package(Vulkan REQUIRED)

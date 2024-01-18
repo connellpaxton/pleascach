@@ -1,21 +1,42 @@
 #pragma once
 
-#include <renderer/Renderer.hpp>
+#include <util/int.hpp>
 
-#include <GLFW/glfw3.h>
 #include <string>
+#include <vector>
 
-using namespace std::string_literals;
+#include <input/input.hpp>
+
+#ifndef WINDOW_PTR
+#define WINDOW_PTR void*
+#endif
+
+#define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
+#include <vulkan/vulkan.hpp>
+
+/*
+ * Window class - abstracts away implementation/platform-specific realities of window
+ *
+ *	Needs to be able to query and set window size, as well as report required instance extensions.
+ *  Completely seperate from input.
+ */
 
 struct Window {
-	std::string name;
-	unsigned width, height;
-	GLFWwindow* win;
-	bool inited = false;
-	std::unique_ptr<Renderer> ren;
-
-	Window(const std::string& name, unsigned width, unsigned height);
-	void run();
-	void wait_minimize();
+	/* Window title and dimensions. On failure, Window::win is nullptr, exception is thrown if DEBUG */
+	Window(const std::string& title, u32 width, u32 height);
 	~Window();
+
+	void close();
+
+	void setDimensions(const u32 x, const u32 y);
+	void getDimensions(u32& w, u32& h);
+	std::vector<const char*> requiredExtensions();
+	vk::Extent2D getDimensions();
+	vk::SurfaceKHR getSurface(vk::Instance& inst);
+	std::unique_ptr<Input> getInput();
+
+private:
+	WINDOW_PTR win = nullptr;
+	u32 width, height;
 };
+
