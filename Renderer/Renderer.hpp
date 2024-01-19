@@ -5,8 +5,8 @@
 #define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
 #include <vulkan/vulkan.hpp>
 
-#include <renderer/swapchain.hpp>
-#include <renderer/command_buffer.hpp>
+#include <Renderer/Swapchain.hpp>
+#include <Renderer/CommandBuffer.hpp>
 
 struct Window;
 

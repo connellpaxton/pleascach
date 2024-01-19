@@ -1,4 +1,4 @@
-#include <renderer/swapchain.hpp>
+#include <Renderer/Swapchain.hpp>
 
 Swapchain::Swapchain(vk::Device& dev, const vk::SurfaceKHR& surface, const vk::Extent2D& extent) : dev(dev), surface(surface) {
 	create(extent);
@@ -10,7 +10,7 @@ void Swapchain::create(const vk::Extent2D& extent, vk::SwapchainKHR old_swapchai
 		.surface = surface,
 		/* at least double-buffered */
 		.minImageCount = 3,
-		.imageFormat = vk::Format::eR8G8B8A8Unorm,
+		.imageFormat = vk::Format::eB8G8R8A8Unorm,
 		.imageColorSpace = vk::ColorSpaceKHR::eSrgbNonlinear,
 		.imageExtent = extent,
 		.imageArrayLayers = 1,

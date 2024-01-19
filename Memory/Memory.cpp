@@ -1,4 +1,4 @@
-#include <memory/memory.hpp>
+#include <Memory/Memory.hpp>
 
 namespace mem {
 	u32 choose_heap(vk::PhysicalDevice& phys_dev, const vk::MemoryRequirements& requirements, vk::MemoryPropertyFlags req_flags, vk::MemoryPropertyFlags pref_flags) {
@@ -22,5 +22,7 @@ namespace mem {
 				}
 			}
 		}
+
+		return -1;
 	}
 }

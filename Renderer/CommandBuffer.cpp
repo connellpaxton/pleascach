@@ -1,4 +1,6 @@
-#include <renderer/command_buffer.hpp>
+#include <Renderer/CommandBuffer.hpp>
+#include <Renderer/Pipeline.hpp>
+
 
 CommandBuffer::CommandBuffer(vk::Device dev, u32 queue_family) {
 	/* (For now) allow command buffers to be individually recycled */
@@ -17,7 +19,8 @@ CommandBuffer::CommandBuffer(vk::Device dev, u32 queue_family) {
 		.commandBufferCount = 1,
 	};
 
-	dev.allocateCommandBuffers(alloc_info);
+	
+	command_buffer = dev.allocateCommandBuffers(alloc_info)[0];
 }
 
 void CommandBuffer::begin() {
@@ -33,6 +36,14 @@ void CommandBuffer::copy(vk::Buffer in, vk::Buffer out, vk::ArrayProxy<const vk:
 	command_buffer.copyBuffer(in, out, regions);
 }
 
+void CommandBuffer::bind(const GraphicsPipeline& pipeline) {
+	command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline.pipeline);
+}
+
+void CommandBuffer::bind(const ComputePipeline& pipeline) {
+	command_buffer.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline.pipeline);
+}
+
 void CommandBuffer::end() {
 	command_buffer.end();
 }
@@ -42,6 +53,5 @@ void CommandBuffer::recycle() {
 }
 
 void CommandBuffer::cleanup(vk::Device dev) {
-	dev.freeCommandBuffers(command_pool, command_buffer);
 	dev.destroyCommandPool(command_pool);
 }

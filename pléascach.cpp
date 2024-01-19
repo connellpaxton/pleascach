@@ -1,6 +1,6 @@
-﻿#include <window/window.hpp>
-#include <input/input.hpp>
-#include <renderer/renderer.hpp>
+﻿#include <Window/Window.hpp>
+#include <Input/Input.hpp>
+#include <Renderer/Renderer.hpp>
 
 #include <util/log.hpp>
 
@@ -30,6 +30,8 @@ int main() {
 					break;
 					case InputEvent::Tag::KEY:
 						Log::info("Event Processed: Button 0x%x %d\n", event.key.key, event.key.state);
+					break;
+					case InputEvent::Tag::EXIT:
 						win.close();
 					break;
 				}
@@ -38,5 +40,5 @@ int main() {
 
 	} catch (const std::string& e) {
 		std::cerr << "Exception: " << e << std::endl;
-	}
+	}  
 }

@@ -3,9 +3,14 @@
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_CXX_FLAGS "-DDEBUG")
+set(CMAKE_CXX_FLAGS "-fsanitize=address -g -DDEBUG -D_DEBUG")
+
 project(Pleascach)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+if(WIN32)
+	list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+endif()
 
 file(GLOB SOURCES
   pléascach.cpp
@@ -20,6 +25,7 @@ find_package(Vulkan REQUIRED)
 if(UNIX)
 	set(GLFW3_LIBRARY glfw)
 endif()
+
 
 include_directories(${CMAKE_CURRENT_LIST_DIR} include ${GLFW3_INCLUDE_DIR})
 
