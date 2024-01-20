@@ -13,6 +13,7 @@ struct Swapchain {
 	vk::Device& dev;
 	vk::SurfaceKHR surface;
 	std::vector<vk::Image> images;
+	std::vector<vk::ImageView> views;
 
 	void create(const vk::Extent2D& extent, vk::SwapchainKHR old_swapchain = nullptr);
 	void recreate(const vk::Extent2D& extent);

@@ -9,7 +9,9 @@ struct Shader {
 	Shader(vk::Device dev, const std::string& fname);
 	void cleanup(vk::Device dev);
 
-
+	inline operator vk::ShaderModule() const {
+		return module;
+	}
 
 	inline operator vk::ShaderModule& () {
 		return module;

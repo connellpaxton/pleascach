@@ -4,8 +4,8 @@
 
 #define WINDOW_PTR GLFWwindow*
 #define INPUT_PTR GLFWwindow*
-#include <window/window.hpp>
-#include <input/input.hpp>
+#include <Window/Window.hpp>
+#include <Input/Input.hpp>
 
 #include <util/log.hpp>
 

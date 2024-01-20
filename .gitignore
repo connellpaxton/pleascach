@@ -9,9 +9,11 @@
 *.user
 *.userosscache
 *.sln.docstates
+.vscode/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
+
 
 # Mono auto generated files
 mono_crash.*
@@ -33,6 +35,9 @@ bld/
 [Ll]og/
 [Ll]ogs/
 [Ll]ib/
+
+# Cmake directory
+[Bb]uild/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

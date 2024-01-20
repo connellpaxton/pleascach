@@ -32,6 +32,7 @@ constexpr u32 operator ~ (InputModifierBit a) {
 
 struct InputEvent {
 	enum Tag {
+		EXIT,
 		RESIZE,
 		CURSOR,
 		KEY,

@@ -5,7 +5,9 @@
 #include <string>
 #include <vector>
 
-#include <input/input.hpp>
+#include <memory>
+
+#include <Input/Input.hpp>
 
 #ifndef WINDOW_PTR
 #define WINDOW_PTR void*

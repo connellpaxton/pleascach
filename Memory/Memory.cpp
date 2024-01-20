@@ -1,15 +1,19 @@
-#include <memory/memory.hpp>
+#include <Memory/Memory.hpp>
+#include "Memory.hpp"
 
 namespace mem {
 	u32 choose_heap(vk::PhysicalDevice& phys_dev, const vk::MemoryRequirements& requirements, vk::MemoryPropertyFlags req_flags, vk::MemoryPropertyFlags pref_flags) {
 		auto dev_props = phys_dev.getMemoryProperties();
 
-		/* try to find an exact match for preferred flags first */
-		for (u32 memory_type = 0; memory_type < 32; memory_type++) {
-			if (requirements.memoryTypeBits & (1 << memory_type)) {
-				const auto& type = dev_props.memoryTypes[memory_type];
-				if ((type.propertyFlags & pref_flags) == pref_flags) {
-					return type.heapIndex;
+		if(static_cast<int>(pref_flags.operator VkImageCreateFlags()) != -1) {
+
+			/* try to find an exact match for preferred flags first */
+			for (u32 memory_type = 0; memory_type < 32; memory_type++) {
+				if (requirements.memoryTypeBits & (1 << memory_type)) {
+					const auto& type = dev_props.memoryTypes[memory_type];
+					if ((type.propertyFlags & pref_flags) == pref_flags) {
+						return type.heapIndex;
+					}
 				}
 			}
 		}
@@ -22,5 +26,7 @@ namespace mem {
 				}
 			}
 		}
+
+		return -1;
 	}
 }

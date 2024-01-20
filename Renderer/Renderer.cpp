@@ -1,18 +1,20 @@
-#include <renderer/renderer.hpp>
-#include <window/window.hpp>
+#include <Renderer/Renderer.hpp>
+#include <Window/Window.hpp>
 
 #include <util/log.hpp>
+
+#include <Memory/Memory.hpp>
 
 using namespace std::string_literals;
 
 Renderer::Renderer(Window& win) : win(win) {
 	/* Create Instance object */
 	auto app_info = vk::ApplicationInfo {
-		.pApplicationName = "Pléascach Demo",
+		.pApplicationName = "Plï¿½ascach Demo",
 		.applicationVersion = VK_MAKE_API_VERSION(0, 0, 1, 0),
-		.pEngineName = "Pléascach",
+		.pEngineName = "Plï¿½ascach",
 		.engineVersion = VK_MAKE_API_VERSION(0, 0, 1, 0),
-		.apiVersion = VK_API_VERSION_1_0,
+		.apiVersion = VK_API_VERSION_1_1,
 	};
 
 	const auto req_extensions = win.requiredExtensions();
@@ -29,7 +31,7 @@ Renderer::Renderer(Window& win) : win(win) {
 	}
 
 	/* query and enable available layers if in DEBUG mode */
-#ifdef _DEBUG
+#ifdef DEBUG
 
 	auto layers = vk::enumerateInstanceLayerProperties();
 	Log::info("%zu available instance layers\n", layers.size());
@@ -46,8 +48,8 @@ Renderer::Renderer(Window& win) : win(win) {
 		.pApplicationInfo = &app_info,
 		.enabledLayerCount = std::size(my_layers),
 		.ppEnabledLayerNames = my_layers,
-		.enabledExtensionCount = static_cast<u32>(extensions.size()),
-		.ppEnabledExtensionNames = extension_names.data(),
+		.enabledExtensionCount = static_cast<u32>(req_extensions.size()),
+		.ppEnabledExtensionNames = req_extensions.data(),
 	};
 
 #else
@@ -55,8 +57,8 @@ Renderer::Renderer(Window& win) : win(win) {
 		.pApplicationInfo = &app_info,
 		.enabledLayerCount = 0,
 		.ppEnabledLayerNames = nullptr,
-		.enabledExtensionCount = static_cast<u32>(extensions.size()),
-		.ppEnabledExtensionNames = extensions.data(),
+		.enabledExtensionCount = static_cast<u32>(req_extensions.size()),
+		.ppEnabledExtensionNames = req_extensions.data(),
 	};
 #endif
 
@@ -108,11 +110,11 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	/* enumerate available device features */
 	std::vector<const char*> required_extensions;
+	required_extensions.push_back("VK_KHR_swapchain");
 	auto dev_extentions = phys_dev.enumerateDeviceExtensionProperties();
 	Log::info("%zu available device extensions\n", dev_extentions.size());
 	for (const auto& ext : dev_extentions) {
 		Log::info("\t\"%s\"\n", ext.extensionName.data());
-		required_extensions.push_back(ext.extensionName);
 	}
 	
 	auto dev_layers = phys_dev.enumerateDeviceLayerProperties();
@@ -124,7 +126,6 @@ Renderer::Renderer(Window& win) : win(win) {
 		"VK_LAYER_KHRONOS_validation"
 	};
 
-#pragma message("TODO: MAKE THIS NO LONGER EVERY SINGLE EXTENTION NAME")
 	auto dev_info = vk::DeviceCreateInfo{
 		.flags = vk::DeviceCreateFlagBits(0),
 		.queueCreateInfoCount = 1,
@@ -147,6 +148,66 @@ Renderer::Renderer(Window& win) : win(win) {
 	swapchain = std::make_unique<Swapchain>(dev, surface, win.getDimensions());
 
 	queue = dev.getQueue(queue_family, 0);
+
+
+	/* depth image */
+	/* 1. create an Image to be the buffer
+	 * 2. find memory req's
+	 * 3. allocate
+	 * 4. set layout
+	 * 5. create attachment view
+	 */
+	auto extent = win.getDimensions();
+	auto depth_image_info = vk::ImageCreateInfo {
+		.imageType = vk::ImageType::e2D,
+		.format = vk::Format::eD16Unorm,
+		.extent = {
+			.width = extent.width,
+			.height = extent.height,
+			.depth = 1,
+		},
+		.mipLevels = 1,
+		.arrayLayers = 1,
+		.samples = vk::SampleCountFlagBits::e1,
+		.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment,
+		.sharingMode = vk::SharingMode::eExclusive,
+		.queueFamilyIndexCount = 0,
+		.pQueueFamilyIndices = NULL,
+		.initialLayout = vk::ImageLayout::eUndefined,
+	};
+
+	depth_image = dev.createImage(depth_image_info);
+
+	auto depth_mem_reqs = dev.getImageMemoryRequirements(depth_image);
+
+	auto depth_alloc_info = vk::MemoryAllocateInfo {
+		.allocationSize = depth_mem_reqs.size,
+		.memoryTypeIndex = mem::choose_heap(phys_dev, depth_mem_reqs, vk::MemoryPropertyFlagBits::eDeviceLocal),
+	};
+
+	auto depth_alloc = dev.allocateMemory(depth_alloc_info);
+	dev.bindImageMemory(depth_image, depth_alloc, 0);
+
+	auto depth_view_info = vk::ImageViewCreateInfo {
+		.image = depth_image,
+		.viewType = vk::ImageViewType::e2D,
+		.format = vk::Format::eD16Unorm,
+		.components = {
+			.r = vk::ComponentSwizzle::eR,
+			.g = vk::ComponentSwizzle::eG,
+			.b = vk::ComponentSwizzle::eB,
+			.a = vk::ComponentSwizzle::eA,
+		},
+		.subresourceRange = {
+			.aspectMask = vk::ImageAspectFlagBits::eDepth,
+			.baseMipLevel = 0,
+			.levelCount = 1,
+			.baseArrayLayer = 0,
+			.layerCount = 1,
+		},
+	};
+
+	depth_image_view = dev.createImageView(depth_view_info);
 }
 
 void Renderer::draw() {
@@ -160,6 +221,8 @@ void Renderer::draw() {
 
 	command_buffer->recycle();
 	command_buffer->begin();
+
+
 
 	command_buffer->end();
 }
@@ -185,7 +248,9 @@ void Renderer::present() {
 }
 
 Renderer::~Renderer() {
-	command_buffer->cleanup(dev);
+	dev.destroyImage(depth_image);
+	dev.destroyImageView(depth_image_view);
+
 	swapchain.reset();
 	dev.waitIdle();
 	dev.destroy();
