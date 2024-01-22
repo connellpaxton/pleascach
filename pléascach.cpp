@@ -3,13 +3,11 @@
 #include <Renderer/Renderer.hpp>
 
 #include <util/log.hpp>
-
-
 #include <iostream>
 
-int main() {
+int main(int argc, char* argv[]) {
 	try {
-		Window win("Test", 256, 512);
+		Window win(argv[0], 256, 512);
 		auto in = win.getInput();
 		Renderer ren(win);
 
@@ -23,7 +21,6 @@ int main() {
 				switch (event.tag) {
 					case InputEvent::Tag::RESIZE:
 						Log::info("Event Processed: Resized to %dx%d\n", event.resize.width, event.resize.height);
-						win.setDimensions(event.resize.width, event.resize.width);
 						/* no need to have a resize() function in the renderer, b/c swapchain images will be
 						 * automatically marked out-of-date, and recreation will be triggered in our code 
 						 */
@@ -36,6 +33,9 @@ int main() {
 					break;
 				}
 			}
+
+			ren.draw();
+			ren.present();
 		}
 
 	} catch (const std::string& e) {

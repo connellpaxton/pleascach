@@ -7,6 +7,7 @@
 
 #include <Renderer/Swapchain.hpp>
 #include <Renderer/CommandBuffer.hpp>
+#include <Renderer/RenderPass.hpp>
 
 struct Window;
 
@@ -23,6 +24,8 @@ struct Renderer {
 	vk::Instance instance;
 	vk::Device dev;
 
+	vk::Fence render_fence;
+	vk::Semaphore image_wait_semaphore, render_wait_semaphore;
 	vk::SurfaceKHR surface;
 	std::unique_ptr<Swapchain> swapchain;
 
@@ -30,8 +33,11 @@ struct Renderer {
 	vk::Queue queue;
 
 	std::unique_ptr<CommandBuffer> command_buffer;
+	std::unique_ptr<RenderPass> render_pass;
+
 	uint32_t current_image_idx;
 
 	vk::Image depth_image;
 	vk::ImageView depth_image_view;
+	vk::DeviceMemory depth_alloc;
 };

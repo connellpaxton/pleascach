@@ -1,10 +1,12 @@
 #include <Renderer/Swapchain.hpp>
 
-Swapchain::Swapchain(vk::Device& dev, const vk::SurfaceKHR& surface, const vk::Extent2D& extent) : dev(dev), surface(surface) {
+Swapchain::Swapchain(vk::Device& dev, const vk::SurfaceKHR& surface, const vk::Extent2D& extent, RenderPass render_pass, vk::ImageView depth_image_view)
+		: dev(dev), surface(surface), render_pass(render_pass), depth_image_view(depth_image_view) {
 	create(extent);
 }
 
 void Swapchain::create(const vk::Extent2D& extent, vk::SwapchainKHR old_swapchain) {
+	this->extent = extent;
 
 	auto format = vk::Format::eB8G8R8A8Unorm;
 
@@ -33,8 +35,9 @@ void Swapchain::create(const vk::Extent2D& extent, vk::SwapchainKHR old_swapchai
 
 	images = dev.getSwapchainImagesKHR(swapchain);
 	views.resize(images.size());
-	for(size_t i = 0; i < views.size(); i++) {
-		auto color_image_info = vk::ImageViewCreateInfo {
+	framebuffers.resize(images.size());
+	for (size_t i = 0; i < views.size(); i++) {
+		auto color_image_info = vk::ImageViewCreateInfo{
 			.image = images[i],
 			.viewType = vk::ImageViewType::e2D,
 			.format = format,
@@ -52,8 +55,19 @@ void Swapchain::create(const vk::Extent2D& extent, vk::SwapchainKHR old_swapchai
 				.layerCount = 1,
 			}
 		};
-
 		views[i] = dev.createImageView(color_image_info);
+
+		vk::ImageView attachments[] = { views[i], depth_image_view };
+		auto framebuffer_info = vk::FramebufferCreateInfo {
+			.renderPass = render_pass,
+			.attachmentCount = static_cast<uint32_t>(std::size(attachments)),
+			.pAttachments = attachments,
+			.width = extent.width,
+			.height = extent.height,
+			.layers = 1,
+		};
+		
+		framebuffers[i] = dev.createFramebuffer(framebuffer_info);
 	}
 }
 
@@ -61,10 +75,12 @@ void Swapchain::create(const vk::Extent2D& extent, vk::SwapchainKHR old_swapchai
 void Swapchain::recreate(const vk::Extent2D& extent) {
 	dev.waitIdle();
 	cleanup();
-	create(extent);
+	create(extent, swapchain);
 }
 
 void Swapchain::cleanup() {
+	for(auto& fb : framebuffers)
+		dev.destroyFramebuffer(fb);
 	dev.destroySwapchainKHR(swapchain);
 }
 

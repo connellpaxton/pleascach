@@ -29,4 +29,8 @@ struct CommandBuffer {
 
 	vk::CommandBuffer command_buffer;
 	vk::CommandPool command_pool;
+
+	operator vk::CommandBuffer* () {
+		return &command_buffer;
+	}
 };

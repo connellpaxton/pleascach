@@ -145,8 +145,6 @@ Renderer::Renderer(Window& win) : win(win) {
 		Log::error("Failed to get surface from window\n");
 	}
 
-	swapchain = std::make_unique<Swapchain>(dev, surface, win.getDimensions());
-
 	queue = dev.getQueue(queue_family, 0);
 
 
@@ -185,7 +183,7 @@ Renderer::Renderer(Window& win) : win(win) {
 		.memoryTypeIndex = mem::choose_heap(phys_dev, depth_mem_reqs, vk::MemoryPropertyFlagBits::eDeviceLocal),
 	};
 
-	auto depth_alloc = dev.allocateMemory(depth_alloc_info);
+	depth_alloc = dev.allocateMemory(depth_alloc_info);
 	dev.bindImageMemory(depth_image, depth_alloc, 0);
 
 	auto depth_view_info = vk::ImageViewCreateInfo {
@@ -208,29 +206,101 @@ Renderer::Renderer(Window& win) : win(win) {
 	};
 
 	depth_image_view = dev.createImageView(depth_view_info);
+
+	render_fence = dev.createFence(vk::FenceCreateInfo { .flags = vk::FenceCreateFlagBits::eSignaled });
+
+	image_wait_semaphore = dev.createSemaphore(vk::SemaphoreCreateInfo{});
+	render_wait_semaphore = dev.createSemaphore(vk::SemaphoreCreateInfo{});
+
+	render_pass = std::make_unique<RenderPass>(dev);
+	swapchain = std::make_unique<Swapchain>(dev, surface, win.getDimensions(), *render_pass, depth_image_view);
+
+	command_buffer = std::make_unique<CommandBuffer>(dev, queue_family);
+
 }
 
 void Renderer::draw() {
+	Log::info("draw() called \n");
+
+	dev.waitForFences(render_fence, true, UINT64_MAX);
+	dev.resetFences(render_fence);
+
 	/* check if the swapchain is still good (no resize) */
-	auto image_ret = dev.acquireNextImageKHR(*swapchain, UINT64_MAX);
+	auto image_ret = dev.acquireNextImageKHR(*swapchain, UINT64_MAX, image_wait_semaphore);
 	if (image_ret.result == vk::Result::eErrorOutOfDateKHR) {
 		swapchain->recreate(win.getDimensions());
 	}
 
 	current_image_idx = image_ret.value;
 
+	/* prepare command buffer for recording commands */
 	command_buffer->recycle();
 	command_buffer->begin();
+	
+	vk::ClearValue clear_values[] = {
+		vk::ClearColorValue(1.0f, 0.0f, 1.0f, 1.0f),
+		vk::ClearDepthStencilValue {.depth = 1.0f}
+	};
 
+	/* use renderpass to transform images from unspecified layout to a presentable one while clearing */
+	auto render_pass_info = vk::RenderPassBeginInfo {
+		.renderPass = *render_pass,
+		.framebuffer = swapchain->framebuffers[current_image_idx],
+		.renderArea = {
+			.offset = { 0, 0 },
+			.extent = swapchain->extent,
+		},
+		.clearValueCount = std::size(clear_values),
+		.pClearValues = clear_values,
+	};
 
+	auto viewport = vk::Viewport{
+		.x = 0.0f,
+		.y = 0.0f,
+		.width = static_cast<float>(swapchain->extent.width),
+		.height = static_cast<float>(swapchain->extent.height),
+		.minDepth = 0.0f,
+		.maxDepth = 1.0f,
+	};
 
+	auto scissor = vk::Rect2D{
+		.offset = {0, 0},
+		.extent = swapchain->extent,
+	};
+
+	
+	/* no secondary command buffers (yet), so contents are passed inline */
+	command_buffer->command_buffer.beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
+	command_buffer->command_buffer.setViewport(0, viewport);
+	command_buffer->command_buffer.setScissor(0, scissor);
+	command_buffer->command_buffer.endRenderPass();
+	
 	command_buffer->end();
+
+
+	vk::PipelineStageFlags stage_flags = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+
+	/* submit our command buffer to the queue */
+	auto submit_info = vk::SubmitInfo{
+		.waitSemaphoreCount = 1,
+		.pWaitSemaphores = &image_wait_semaphore,
+		.pWaitDstStageMask = &stage_flags,
+		.commandBufferCount = 1,
+		.pCommandBuffers = &command_buffer->command_buffer,
+		.signalSemaphoreCount = 1,
+		.pSignalSemaphores = &render_wait_semaphore,
+	};
+
+	queue.submit(submit_info, render_fence);
 }
 
 void Renderer::present() {
+	Log::info("present() called \n");
 	auto present_info = vk::PresentInfoKHR{
+		.waitSemaphoreCount = 1,
+		.pWaitSemaphores = &render_wait_semaphore,
 		.swapchainCount = 1,
-		.pSwapchains = &swapchain->operator vk::SwapchainKHR &(),
+		.pSwapchains = &swapchain->operator vk::SwapchainKHR & (),
 		.pImageIndices = &current_image_idx,
 	};
 
@@ -239,6 +309,7 @@ void Renderer::present() {
 		break;
 		case vk::Result::eSuboptimalKHR:
 		case vk::Result::eErrorOutOfDateKHR:
+			Log::info("Recreating swapchain");
 			swapchain->recreate(win.getDimensions());
 		break;
 		default:
@@ -250,9 +321,13 @@ void Renderer::present() {
 Renderer::~Renderer() {
 	dev.destroyImage(depth_image);
 	dev.destroyImageView(depth_image_view);
+	dev.freeMemory(depth_alloc);
+
 
 	swapchain.reset();
 	dev.waitIdle();
+	command_buffer->cleanup(dev);
+	render_pass->cleanup(dev);
 	dev.destroy();
 	instance.destroySurfaceKHR(surface);
 	instance.destroy();
