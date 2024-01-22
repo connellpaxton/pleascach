@@ -5,6 +5,7 @@
 
 #include <Memory/Memory.hpp>
 
+
 using namespace std::string_literals;
 
 Renderer::Renderer(Window& win) : win(win) {

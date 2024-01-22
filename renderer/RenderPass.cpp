@@ -1,5 +1,6 @@
 #include <Renderer/RenderPass.hpp>
 
+
 RenderPass::RenderPass(vk::Device dev, vk::Format image_format, vk::Format depth_format) {
 	/* transform color image from UNDEFINED format to presentable one for rendering */
 	auto color_attach_desc = vk::AttachmentDescription {

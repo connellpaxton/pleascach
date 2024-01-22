@@ -11,6 +11,7 @@
 
 struct Window;
 
+
 /* Contains all of the Vulkan objects involved in rendering the scene */
 struct Renderer {
 	Renderer(Window& win);
