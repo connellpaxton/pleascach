@@ -37,8 +37,4 @@ struct Renderer {
 	std::unique_ptr<RenderPass> render_pass;
 
 	uint32_t current_image_idx;
-
-	vk::Image depth_image;
-	vk::ImageView depth_image_view;
-	vk::DeviceMemory depth_alloc;
 };

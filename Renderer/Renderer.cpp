@@ -148,73 +148,14 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	queue = dev.getQueue(queue_family, 0);
 
-
-	/* depth image */
-	/* 1. create an Image to be the buffer
-	 * 2. find memory req's
-	 * 3. allocate
-	 * 4. set layout
-	 * 5. create attachment view
-	 */
-	auto extent = win.getDimensions();
-	auto depth_image_info = vk::ImageCreateInfo {
-		.imageType = vk::ImageType::e2D,
-		.format = vk::Format::eD16Unorm,
-		.extent = {
-			.width = extent.width,
-			.height = extent.height,
-			.depth = 1,
-		},
-		.mipLevels = 1,
-		.arrayLayers = 1,
-		.samples = vk::SampleCountFlagBits::e1,
-		.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment,
-		.sharingMode = vk::SharingMode::eExclusive,
-		.queueFamilyIndexCount = 0,
-		.pQueueFamilyIndices = NULL,
-		.initialLayout = vk::ImageLayout::eUndefined,
-	};
-
-	depth_image = dev.createImage(depth_image_info);
-
-	auto depth_mem_reqs = dev.getImageMemoryRequirements(depth_image);
-
-	auto depth_alloc_info = vk::MemoryAllocateInfo {
-		.allocationSize = depth_mem_reqs.size,
-		.memoryTypeIndex = mem::choose_heap(phys_dev, depth_mem_reqs, vk::MemoryPropertyFlagBits::eDeviceLocal),
-	};
-
-	depth_alloc = dev.allocateMemory(depth_alloc_info);
-	dev.bindImageMemory(depth_image, depth_alloc, 0);
-
-	auto depth_view_info = vk::ImageViewCreateInfo {
-		.image = depth_image,
-		.viewType = vk::ImageViewType::e2D,
-		.format = vk::Format::eD16Unorm,
-		.components = {
-			.r = vk::ComponentSwizzle::eR,
-			.g = vk::ComponentSwizzle::eG,
-			.b = vk::ComponentSwizzle::eB,
-			.a = vk::ComponentSwizzle::eA,
-		},
-		.subresourceRange = {
-			.aspectMask = vk::ImageAspectFlagBits::eDepth,
-			.baseMipLevel = 0,
-			.levelCount = 1,
-			.baseArrayLayer = 0,
-			.layerCount = 1,
-		},
-	};
-
-	depth_image_view = dev.createImageView(depth_view_info);
-
 	render_fence = dev.createFence(vk::FenceCreateInfo { .flags = vk::FenceCreateFlagBits::eSignaled });
 
 	image_wait_semaphore = dev.createSemaphore(vk::SemaphoreCreateInfo{});
 	render_wait_semaphore = dev.createSemaphore(vk::SemaphoreCreateInfo{});
 
-	render_pass = std::make_unique<RenderPass>(dev);
-	swapchain = std::make_unique<Swapchain>(dev, surface, win.getDimensions(), *render_pass, depth_image_view);
+	auto color_format = Swapchain::Capabilities(phys_dev, surface).chooseFormat().format;
+	render_pass = std::make_unique<RenderPass>(dev, color_format);
+	swapchain = std::make_unique<Swapchain>(win, dev, phys_dev, surface, *render_pass);
 
 	command_buffer = std::make_unique<CommandBuffer>(dev, queue_family);
 
@@ -232,7 +173,7 @@ void Renderer::draw() {
 	/* check if the swapchain is still good (no resize) */
 	auto image_ret = dev.acquireNextImageKHR(*swapchain, UINT64_MAX, image_wait_semaphore);
 	if (image_ret.result == vk::Result::eErrorOutOfDateKHR) {
-		swapchain->recreate(win.getDimensions());
+		swapchain->recreate();
 	}
 
 	current_image_idx = image_ret.value;
@@ -313,23 +254,22 @@ void Renderer::present() {
 		break;
 		case vk::Result::eSuboptimalKHR:
 		case vk::Result::eErrorOutOfDateKHR:
-			Log::info("Recreating swapchain");
-			swapchain->recreate(win.getDimensions());
+			Log::info("Recreating swapchain\n");
+			swapchain->recreate();
 		break;
 		default:
-			Log::error("Failed to present surface.");
+			Log::error("Failed to present surface.\n");
 		break;
 	}
 }
 
 Renderer::~Renderer() {
-	dev.destroyImage(depth_image);
-	dev.destroyImageView(depth_image_view);
-	dev.freeMemory(depth_alloc);
-
-
 	swapchain.reset();
-	dev.waitIdle();
+
+	dev.destroySemaphore(image_wait_semaphore);
+	dev.destroySemaphore(render_wait_semaphore);
+	dev.destroyFence(render_fence);
+
 	command_buffer->cleanup(dev);
 	render_pass->cleanup(dev);
 	dev.destroy();
