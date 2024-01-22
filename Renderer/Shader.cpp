@@ -1,29 +1,20 @@
 #include <Renderer/Shader.hpp>
 
 #include <util/log.hpp>
+#include <util/file.hpp>
 
-#include <fstream>
-#include <sstream>
-
-static std::string slurp(const std::string& fname) {
-	std::ifstream in(fname, std::ifstream::binary | std::ifstream::in);
-	std::stringstream sstr;
-	sstr << in.rdbuf();
-	in.close();
-	return sstr.str();
-}
 
 Shader::Shader(vk::Device dev, const std::string& fname) : fname(fname) {
-	std::string src;
+	std::vector<uint8_t> src;
 	try {
-		src = slurp(fname);
+		src = file::slurpb(fname);
 	} catch (std::exception& e) {
 		Log::error("Failed to read file " + fname + ": "+ e.what() + "\n");
 	}
 
 	auto module_info = vk::ShaderModuleCreateInfo{
 		.codeSize = src.size(),
-		.pCode = reinterpret_cast<const uint32_t*>(src.c_str()),
+		.pCode = reinterpret_cast<const uint32_t*>(src.data()),
 	};
 
 	if (!(module = dev.createShaderModule(module_info))) {
