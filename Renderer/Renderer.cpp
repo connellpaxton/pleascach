@@ -32,7 +32,7 @@ Renderer::Renderer(Window& win) : win(win) {
 	}
 
 	/* query and enable available layers if in DEBUG mode */
-#ifdef DEBUG
+#ifdef _DEBUG
 
 	auto layers = vk::enumerateInstanceLayerProperties();
 	Log::info("%zu available instance layers\n", layers.size());
@@ -221,9 +221,12 @@ Renderer::Renderer(Window& win) : win(win) {
 }
 
 void Renderer::draw() {
-	Log::info("draw() called \n");
+	Log::debug("draw() called \n");
 
-	dev.waitForFences(render_fence, true, UINT64_MAX);
+	if(dev.waitForFences(render_fence, true, UINT64_MAX) != vk::Result::eSuccess) {
+		Log::error("Failed to wait for fences in draw()\n");
+	}
+
 	dev.resetFences(render_fence);
 
 	/* check if the swapchain is still good (no resize) */
@@ -296,7 +299,7 @@ void Renderer::draw() {
 }
 
 void Renderer::present() {
-	Log::info("present() called \n");
+	Log::debug("present() called \n");
 	auto present_info = vk::PresentInfoKHR{
 		.waitSemaphoreCount = 1,
 		.pWaitSemaphores = &render_wait_semaphore,

@@ -5,6 +5,7 @@ namespace Log {
 	enum MessageLevelBit {
 		ERROR = 0x01,
 		INFO = 0x02,
+		DEBUG = 0x04,
 	};
 
 	static const MessageLevelBit log_mask = static_cast<MessageLevelBit>(~0);
@@ -17,11 +18,14 @@ namespace Log {
 		/* appearently C++ doesn't have designated array indices :( */
 		const char* level_txt = "[UNKNOWN] ";
 		switch (level) {
-		case ERROR:
-			level_txt = "[ERROR] ";
+			case ERROR:
+				level_txt = "[ERROR] ";
 			break;
-		case INFO:
-			level_txt = "[INFO] ";
+			case INFO:
+				level_txt = "[INFO] ";
+			break;
+			case DEBUG:
+				level_txt = "[DEBUG] ";
 			break;
 		}
 		std::fprintf(stderr, level_txt);
@@ -39,5 +43,10 @@ namespace Log {
 	template<typename ...Args>
 	static void info(const std::string& fmt, Args... args) {
 		print(MessageLevelBit::INFO, fmt, args...);
+	}
+
+	template<typename ...Args>
+	static void debug(const std::string& fmt, Args... args) {
+		print(MessageLevelBit::DEBUG, fmt, args...);
 	}
 }

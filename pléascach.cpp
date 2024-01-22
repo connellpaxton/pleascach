@@ -31,6 +31,9 @@ int main(int argc, char* argv[]) {
 					case InputEvent::Tag::EXIT:
 						win.close();
 					break;
+					case InputEvent::Tag::CURSOR:
+					case InputEvent::Tag::BUTTON:
+					break;
 				}
 			}
 
