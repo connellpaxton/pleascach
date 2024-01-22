@@ -40,10 +40,9 @@ void Swapchain::create(vk::SwapchainKHR old_swapchain) {
 	auto sFormat = caps.chooseFormat();
 	format = sFormat.format;
 
-
 	auto swap_info = vk::SwapchainCreateInfoKHR {
 		.surface = surface,
-		.minImageCount = caps.surface_caps.maxImageCount,
+		.minImageCount = caps.surface_caps.minImageCount,
 		.imageFormat = format,
 		.imageColorSpace = sFormat.colorSpace,
 		.imageExtent = extent,
@@ -60,6 +59,8 @@ void Swapchain::create(vk::SwapchainKHR old_swapchain) {
 		.clipped = VK_TRUE,
 		.oldSwapchain = old_swapchain,
 	};
+
+	Log::info("Swapchain recreated with %d minImageCount\n", swap_info.minImageCount);
 
 	swapchain = dev.createSwapchainKHR(swap_info);
 
