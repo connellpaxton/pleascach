@@ -6,6 +6,10 @@
 
 #include <util/log.hpp>
 
+/* TODO: Make solution that doesn't involve using GLFW directly here for minimization */
+#include <GLFW/glfw3.h>
+
+
 Swapchain::Swapchain(Window& win, vk::Device dev, vk::PhysicalDevice phys_dev, const vk::SurfaceKHR& surface, RenderPass render_pass)
 		: win(win), dev(dev), phys_dev(phys_dev), surface(surface), render_pass(render_pass) {
 	create();
@@ -130,6 +134,12 @@ void Swapchain::create(vk::SwapchainKHR old_swapchain) {
 
 
 void Swapchain::recreate() {
+	vk::Extent2D ext;
+	do {
+		ext = win.getDimensions();
+		glfwWaitEvents();
+	} while (!ext.width || !ext.height);
+
 	dev.waitIdle();
 	cleanup();
 	auto save = swapchain;
