@@ -4,6 +4,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include <Memory/Image.hpp>
+#include <memory>
 
 struct CommandBuffer;
 
