@@ -1,6 +1,8 @@
 #include <Renderer/CommandBuffer.hpp>
 #include <Renderer/Pipeline.hpp>
 
+#include <Memory/Buffer.hpp>
+#include <Memory/Image.hpp>
 
 #include <util/log.hpp>
 
@@ -32,8 +34,27 @@ void CommandBuffer::begin() {
 	command_buffer.begin(begin_info);
 }
 
-void CommandBuffer::copy(vk::Buffer in, vk::Buffer out, vk::ArrayProxy<const vk::BufferCopy> regions) {
-	command_buffer.copyBuffer(in, out, regions);
+void CommandBuffer::copy(vk::Buffer src, vk::Buffer dst, vk::ArrayProxy<const vk::BufferCopy> regions) {
+	command_buffer.copyBuffer(src, dst, regions);
+}
+
+void CommandBuffer::copy(Buffer& src, Image& dst, vk::ImageLayout layout) {
+	auto region = vk::BufferImageCopy{
+		.bufferOffset = 0,
+		/* RowLength and ImageHeight are automatically set to imageExtent dimensions if set to 0 */
+		.bufferRowLength = 0,
+		.bufferImageHeight = 0,
+		.imageSubresource = {
+			.aspectMask = vk::ImageAspectFlagBits::eColor,
+			.mipLevel = 0,
+			.baseArrayLayer = 0,
+			.layerCount = 0,
+		},
+		.imageOffset = { 0, 0, 0 },
+		.imageExtent = dst.extent,
+	};
+
+	command_buffer.copyBufferToImage(src, dst.image, layout, region);
 }
 
 void CommandBuffer::bind(const GraphicsPipeline& pipeline) {

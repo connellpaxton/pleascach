@@ -2,6 +2,7 @@
 #include <Window/Window.hpp>
 
 #include <Memory/Memory.hpp>
+#include <Memory/Image.hpp>
 
 #include <util/log.hpp>
 
@@ -66,38 +67,11 @@ void Swapchain::create(vk::SwapchainKHR old_swapchain) {
 
 	images = dev.getSwapchainImagesKHR(swapchain);
 
-	auto depth_image_info = vk::ImageCreateInfo{
-	.imageType = vk::ImageType::e2D,
-	.format = vk::Format::eD16Unorm,
-	.extent = {
-		.width = extent.width,
-		.height = extent.height,
-		.depth = 1,
-	},
-	.mipLevels = 1,
-	.arrayLayers = 1,
-	.samples = vk::SampleCountFlagBits::e1,
-	.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment,
-	.sharingMode = vk::SharingMode::eExclusive,
-	.queueFamilyIndexCount = 0,
-	.pQueueFamilyIndices = NULL,
-	.initialLayout = vk::ImageLayout::eUndefined,
-	};
+	depth_image = std::make_unique<Image>(phys_dev, dev, vk::Extent3D { extent.width, extent.height, 1 }, vk::Format::eD16Unorm,
+		vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal);
 
-	depth_image = dev.createImage(depth_image_info);
-
-	auto depth_mem_reqs = dev.getImageMemoryRequirements(depth_image);
-
-	auto depth_alloc_info = vk::MemoryAllocateInfo{
-		.allocationSize = depth_mem_reqs.size,
-		.memoryTypeIndex = mem::choose_heap(phys_dev, depth_mem_reqs, vk::MemoryPropertyFlagBits::eDeviceLocal),
-	};
-
-	depth_alloc = dev.allocateMemory(depth_alloc_info);
-	dev.bindImageMemory(depth_image, depth_alloc, 0);
-
-	auto depth_view_info = vk::ImageViewCreateInfo{
-		.image = depth_image,
+	auto depth_view_info = vk::ImageViewCreateInfo {
+		.image = depth_image->image,
 		.viewType = vk::ImageViewType::e2D,
 		.format = vk::Format::eD16Unorm,
 		.components = {
@@ -152,7 +126,6 @@ void Swapchain::create(vk::SwapchainKHR old_swapchain) {
 		
 		framebuffers[i] = dev.createFramebuffer(framebuffer_info);
 	}
-
 }
 
 
@@ -172,8 +145,7 @@ void Swapchain::cleanup() {
 		dev.destroyImageView(view);
 
 	dev.destroyImageView(depth_image_view);
-	dev.destroyImage(depth_image);
-	dev.freeMemory(depth_alloc);
+	depth_image->cleanup();
 }
 
 Swapchain::~Swapchain() {

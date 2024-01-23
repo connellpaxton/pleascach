@@ -7,6 +7,7 @@
 #include <Renderer/RenderPass.hpp>
 
 struct Window;
+struct Image;
 
 struct Swapchain {
 	Swapchain(Window& win, vk::Device dev, vk::PhysicalDevice phys_dev, const vk::SurfaceKHR& surface, RenderPass render_pass);
@@ -34,9 +35,8 @@ struct Swapchain {
 	std::vector<vk::ImageView> views;
 	std::vector<vk::Framebuffer> framebuffers;
 
-	vk::Image depth_image;
+	std::unique_ptr<Image> depth_image;
 	vk::ImageView depth_image_view;
-	vk::DeviceMemory depth_alloc;
 
 	vk::Format format;
 

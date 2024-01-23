@@ -5,15 +5,16 @@
 
 #include <Memory/Memory.hpp>
 
+#include <util/Timer.hpp>
 
 using namespace std::string_literals;
 
 Renderer::Renderer(Window& win) : win(win) {
 	/* Create Instance object */
 	auto app_info = vk::ApplicationInfo {
-		.pApplicationName = "Pl�ascach Demo",
+		.pApplicationName = "Pléascach Demo",
 		.applicationVersion = VK_MAKE_API_VERSION(0, 0, 1, 0),
-		.pEngineName = "Pl�ascach",
+		.pEngineName = "Pléascach",
 		.engineVersion = VK_MAKE_API_VERSION(0, 0, 1, 0),
 		.apiVersion = VK_API_VERSION_1_1,
 	};
@@ -162,7 +163,6 @@ Renderer::Renderer(Window& win) : win(win) {
 }
 
 void Renderer::draw() {
-	Log::debug("draw() called \n");
 
 	if(dev.waitForFences(render_fence, true, UINT64_MAX) != vk::Result::eSuccess) {
 		Log::error("Failed to wait for fences in draw()\n");
@@ -240,7 +240,6 @@ void Renderer::draw() {
 }
 
 void Renderer::present() {
-	Log::debug("present() called \n");
 	auto present_info = vk::PresentInfoKHR{
 		.waitSemaphoreCount = 1,
 		.pWaitSemaphores = &render_wait_semaphore,

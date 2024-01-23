@@ -3,9 +3,11 @@
 #define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
 #include <vulkan/vulkan.hpp>
 
+#include <Memory/Image.hpp>
+
+struct CommandBuffer;
+
 struct Texture {
-	vk::Image image;
-	vk::DeviceMemory image_alloc;
-	Texture(vk::Device dev, vk::PhysicalDevice phys_dev, const std::string& fname);
-	void cleanup(vk::Device dev);
+	std::unique_ptr<Image> image;
+	Texture(vk::PhysicalDevice phys_dev, vk::Device dev, CommandBuffer command_buffer, const std::string& fname);
 };

@@ -1,5 +1,8 @@
 #include <Resources/Texture.hpp>
+#include <Memory/Buffer.hpp>
 #include <Memory/Memory.hpp>
+
+#include <Renderer/CommandBuffer.hpp>
 
 #include <util/file.hpp>
 
@@ -7,40 +10,25 @@
 #include <stb_image.h>
 
 
-Texture::Texture(vk::Device dev, vk::PhysicalDevice phys_dev, const std::string& fname) {
+Texture::Texture(vk::PhysicalDevice phys_dev, vk::Device dev, CommandBuffer command_buffer, const std::string& fname) {
+	int n_channels;
 	vk::Extent3D extent;
-	auto image_data = stbi_load(fname.c_str(), reinterpret_cast<int*>(&extent.width), reinterpret_cast<int*>(&extent.height), NULL, NULL);
+
+	auto image_data = stbi_load(fname.c_str(), reinterpret_cast<int*>(&extent.width), reinterpret_cast<int*>(&extent.height), &n_channels, STBI_rgb_alpha);
 	extent.depth = 1;
 
-	auto image_info = vk::ImageCreateInfo{
-		.imageType = vk::ImageType::e2D,
-		.format = vk::Format::eR8G8B8A8Unorm,
-		.extent = extent,
-		.mipLevels = 1,
-		.arrayLayers = 1,
-		.samples = vk::SampleCountFlagBits::e1,
-		.tiling = vk::ImageTiling::eOptimal,
-		.usage = vk::ImageUsageFlagBits::eSampled,
-		.sharingMode = vk::SharingMode::eExclusive,
-		.initialLayout = vk::ImageLayout::eUndefined,
-	};
+	image = std::make_unique<Image>(phys_dev, dev, extent, vk::Format::eR8G8B8A8Srgb,
+									vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled,
+									vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
-	image = dev.createImage(image_info);
+	vk::DeviceSize sz = extent.width * extent.height * sizeof(uint32_t);
 
-	auto reqs = dev.getImageMemoryRequirements(image);
+	/* staging buffer to hold image data from the CPU */
+	Buffer staging(phys_dev, dev, sz,  vk::BufferUsageFlagBits::eTransferSrc,
+		vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
+	staging.map(image_data);
+	stbi_image_free(image_data);
 
-	auto image_alloc_info = vk::MemoryAllocateInfo{
-		.allocationSize = reqs.size,
-		.memoryTypeIndex = mem::choose_heap(phys_dev, reqs, vk::MemoryPropertyFlagBits::eHostVisible),
-	};
-
-	image_alloc = dev.allocateMemory(image_alloc_info);
-	dev.bindImageMemory(image, image_alloc, 0);
-
-	/* TODO: Copy memory into image using buffers */
-}
-
-void Texture::cleanup(vk::Device dev) {
-	dev.freeMemory(image_alloc);
+	command_buffer.copy(staging, *image);
 }

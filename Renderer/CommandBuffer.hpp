@@ -5,6 +5,9 @@
 
 #include <util/int.hpp>
 
+
+struct Buffer;
+struct Image;
 struct GraphicsPipeline;
 struct ComputePipeline;
 
@@ -18,6 +21,8 @@ struct CommandBuffer {
 
 	/* copy between buffer */
 	void copy(vk::Buffer in, vk::Buffer out, vk::ArrayProxy<const vk::BufferCopy> regions);
+	/* copy buffer to image */
+	void copy(Buffer& in, Image& out, vk::ImageLayout layout = vk::ImageLayout::eTransferDstOptimal);
 
 	void bind(const GraphicsPipeline& pipeline);
 	void bind(const ComputePipeline& pipeline);

@@ -3,6 +3,8 @@
 #include <Renderer/Renderer.hpp>
 
 #include <util/log.hpp>
+#include <util/Timer.hpp>
+
 #include <iostream>
 
 int main(int argc, char* argv[]) {
@@ -12,6 +14,7 @@ int main(int argc, char* argv[]) {
 		Renderer ren(win);
 
 		while (!in->shouldClose()) {
+			Timer frame_timer;
 			in->poll();
 
 			while (in->queue.size()) {
@@ -39,6 +42,7 @@ int main(int argc, char* argv[]) {
 
 			ren.draw();
 			ren.present();
+			Log::debug("Frame: %lf milliseconds (60fps ~ 16.67)\n", frame_timer.stop());
 		}
 
 	} catch (const std::string& e) {
