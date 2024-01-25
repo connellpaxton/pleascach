@@ -17,7 +17,7 @@ Buffer::Buffer(vk::PhysicalDevice phys_dev, vk::Device dev, vk::DeviceSize sz, v
 	memory = dev.allocateMemory(alloc_info);
 }
 
-void Buffer::map(const uint8_t* data, vk::DeviceSize size) {
+void Buffer::upload(const uint8_t* data, vk::DeviceSize size) {
 	auto p = dev.mapMemory(memory, 0, size);
 	std::memcpy(p, data, size);
 	dev.unmapMemory(memory);

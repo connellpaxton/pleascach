@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
 
 			ren.draw();
 			ren.present();
-			Log::debug("Frame: %lf milliseconds (60fps ~ 16.67)\n", frame_timer.stop());
+			Log::debug("Frame: %.2lf milliseconds (60fps ~ 16.67)\n", frame_timer.stop());
 		}
 
 	} catch (const std::string& e) {

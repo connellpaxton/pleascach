@@ -11,12 +11,12 @@ struct Buffer {
 	vk::DeviceMemory memory;
 	vk::Buffer buffer;
 
-	void map(const uint8_t* data, vk::DeviceSize size);
-	inline void map(const uint8_t* data) {
-		map(data, size);
+	void upload(const uint8_t* data, vk::DeviceSize size);
+	inline void upload(const uint8_t* data) {
+		upload(data, size);
 	}
-	inline void map(const std::vector<uint8_t>& data) {
-		map(data.data(), size);
+	inline void upload(const std::vector<uint8_t>& data) {
+		upload(data.data(), size);
 	}
 
 	operator vk::Buffer& () {

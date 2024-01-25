@@ -22,6 +22,39 @@ file(GLOB SOURCES
 
 add_executable (pleascach ${SOURCES})
 
+# shader compilation
+file(GLOB SHADER_SOURCE_FILES
+	assets/shaders/*.frag
+	assets/shaders/*.vert
+)
+
+foreach(SHADER_SOURCE ${SHADER_SOURCE_FILES})
+	message("Processing shader file")
+	get_filename_component(FILE_NAME ${SHADER_SOURCE} NAME)
+	set(SPIRV "${CMAKE_SOURCE_DIR}/assets/shaders/${FILE_NAME}.spv")
+	add_custom_command(
+		OUTPUT ${SPIRV}
+		COMMAND ${Vulkan_GLSLC_EXECUTABLE} -o ${SPIRV} ${SHADER_SOURCE}
+		DEPENDS ${SHADER_SOURCE}
+	)
+	list(APPEND SPIRV_BIN_FILES ${SPIRV})
+endforeach(SHADER_SOURCE)
+
+add_custom_target (
+	shaders
+	DEPENDS ${SPIRV_BIN_FILES}
+)
+
+add_dependencies(pleascach shaders)
+
+# copy assets somewhere accessible by the accessable
+add_custom_command(
+	TARGET shaders POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+	"$<TARGET_PROPERTY:pleascach,SOURCE_DIR>/assets"
+	"$<TARGET_PROPERTY:pleascach,BINARY_DIR>/assets")
+
+
 find_package(glfw3 3.3 REQUIRED)
 find_package(Vulkan REQUIRED)
 

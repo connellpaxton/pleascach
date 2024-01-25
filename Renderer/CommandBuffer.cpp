@@ -61,10 +61,6 @@ void CommandBuffer::bind(const GraphicsPipeline& pipeline) {
 	command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline.pipeline);
 }
 
-void CommandBuffer::bind(const ComputePipeline& pipeline) {
-	command_buffer.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline.pipeline);
-}
-
 void CommandBuffer::end() {
 	command_buffer.end();
 }

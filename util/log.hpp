@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+
 namespace Log {
 	enum MessageLevelBit {
 		ERROR = 0x01,

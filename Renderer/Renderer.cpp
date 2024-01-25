@@ -7,6 +7,11 @@
 
 #include <util/Timer.hpp>
 
+#include <Renderer/Pipeline.hpp>
+#include <Renderer/Shader.hpp>
+#include <Renderer/UniformBuffer.hpp>
+#include <Renderer/VertexBuffer.hpp>
+
 using namespace std::string_literals;
 
 Renderer::Renderer(Window& win) : win(win) {
@@ -160,6 +165,29 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	command_buffer = std::make_unique<CommandBuffer>(dev, queue_family);
 
+
+	/* basic triangle */
+	std::vector<Vertex> triangle = {
+		{{ 0.0, 0.5, 0.0 }},
+		{{ 0.5, 0.0, 0.0 }},
+		{{ 0.5, 0.5, 0.0 }},
+	};
+
+	vertex_buffer = std::make_unique<VertexBuffer>(phys_dev, dev, triangle.size());
+	uniform_buffer = std::make_unique<UniformBuffer>(phys_dev, dev);
+
+	vertex_buffer->upload(triangle);
+
+	std::vector<Shader> shaders = {
+		{ dev, "assets/shaders/basic.vert.spv", vk::ShaderStageFlagBits::eVertex },
+		{ dev, "assets/shaders/basic.frag.spv", vk::ShaderStageFlagBits::eFragment },
+	};
+
+	std::vector<vk::DescriptorSetLayoutBinding> bindings = {
+		uniform_buffer->binding(0),
+	};
+
+	pipeline = std::make_unique<GraphicsPipeline>(dev, shaders, swapchain->extent, *render_pass, bindings, *vertex_buffer);
 }
 
 void Renderer::draw() {
@@ -263,6 +291,10 @@ void Renderer::present() {
 }
 
 Renderer::~Renderer() {
+	uniform_buffer.reset();
+	vertex_buffer.reset();
+	pipeline.reset();
+
 	swapchain.reset();
 
 	dev.destroySemaphore(image_wait_semaphore);

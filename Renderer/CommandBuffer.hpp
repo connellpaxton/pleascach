@@ -25,7 +25,6 @@ struct CommandBuffer {
 	void copy(Buffer& in, Image& out, vk::ImageLayout layout = vk::ImageLayout::eTransferDstOptimal);
 
 	void bind(const GraphicsPipeline& pipeline);
-	void bind(const ComputePipeline& pipeline);
 
 	/* stop recording commands */
 	void end();

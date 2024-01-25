@@ -3,8 +3,9 @@
 #include <util/log.hpp>
 #include <util/file.hpp>
 
+using namespace std::string_literals;
 
-Shader::Shader(vk::Device dev, const std::string& fname) : fname(fname) {
+Shader::Shader(vk::Device dev, const std::string& fname, vk::ShaderStageFlagBits stage) : fname(fname), stage(stage) {
 	std::vector<uint8_t> src;
 	try {
 		src = file::slurpb(fname);
@@ -20,6 +21,8 @@ Shader::Shader(vk::Device dev, const std::string& fname) : fname(fname) {
 	if (!(module = dev.createShaderModule(module_info))) {
 		Log::error(fname + ": failed to create shader\n");
 	}
+
+	Log::info("Successfully created shader "s + fname + "\n");
 }
 
 void Shader::cleanup(vk::Device dev) {

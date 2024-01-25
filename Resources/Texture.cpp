@@ -21,14 +21,16 @@ Texture::Texture(vk::PhysicalDevice phys_dev, vk::Device dev, CommandBuffer comm
 									vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eSampled,
 									vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
-	vk::DeviceSize sz = extent.width * extent.height * sizeof(uint32_t);
+	vk::DeviceSize sz = static_cast<vk::DeviceSize>(extent.width * extent.height) * sizeof(uint32_t);
 
 	/* staging buffer to hold image data from the CPU */
 	Buffer staging(phys_dev, dev, sz,  vk::BufferUsageFlagBits::eTransferSrc,
 		vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
-	staging.map(image_data);
+	staging.upload(image_data);
 	stbi_image_free(image_data);
 
 	command_buffer.copy(staging, *image);
+
+	/* TODO: Finish, also rethink if we want submission to happen internally or externally to the function for creation */
 }

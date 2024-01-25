@@ -10,7 +10,10 @@ struct RenderPass {
 
 	void cleanup(vk::Device dev);
 
-	operator vk::RenderPass&() {
+	operator vk::RenderPass& () {
+		return render_pass;
+	}
+	operator const vk::RenderPass& () const {
 		return render_pass;
 	}
 };

@@ -10,7 +10,8 @@
 #include <Renderer/RenderPass.hpp>
 
 struct Window;
-
+struct UniformBuffer;
+struct VertexBuffer;
 
 /* Contains all of the Vulkan objects involved in rendering the scene */
 struct Renderer {
@@ -35,6 +36,11 @@ struct Renderer {
 
 	std::unique_ptr<CommandBuffer> command_buffer;
 	std::unique_ptr<RenderPass> render_pass;
+
+	/* For now, couple it all together as one pipeline with one uniform buffer, vertex buffer, etc */
+	std::unique_ptr<GraphicsPipeline> pipeline;
+	std::unique_ptr<VertexBuffer> vertex_buffer;
+	std::unique_ptr<UniformBuffer> uniform_buffer;
 
 	uint32_t current_image_idx;
 };
