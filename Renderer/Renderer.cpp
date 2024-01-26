@@ -233,7 +233,7 @@ void Renderer::draw() {
 	};
 
 	/* flip viewport */
-	auto viewport = vk::Viewport{
+	auto viewport = vk::Viewport{ 
 		.x = 0.0f,
 //		.y = 0.0f,
 		.y = static_cast<float>(swapchain->extent.height),
@@ -243,7 +243,7 @@ void Renderer::draw() {
 		.maxDepth = 1.0f,
 	};
 
-	auto scissor = vk::Rect2D{
+	auto scissor = vk::Rect2D {
 		.offset = {0, 0},
 		.extent = swapchain->extent,
 	};
@@ -253,6 +253,10 @@ void Renderer::draw() {
 
 	command_buffer->bind(*pipeline);
 
+	command_buffer->command_buffer.setViewport(0, viewport);
+	command_buffer->command_buffer.setScissor(0, scissor);
+
+
 	command_buffer->bind(*vertex_buffer);
 	command_buffer->bind(pipeline->layout, pipeline->desc_set);
 
@@ -261,9 +265,6 @@ void Renderer::draw() {
 	});
 
 	pipeline->update(0, *uniform_buffer);
-
-	command_buffer->command_buffer.setViewport(0, viewport);
-	command_buffer->command_buffer.setScissor(0, scissor);
 
 	command_buffer->draw(9, 1, 0, 0);
 

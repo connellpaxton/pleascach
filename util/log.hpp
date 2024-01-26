@@ -13,7 +13,7 @@ namespace Log {
 		return static_cast<MessageLevelBit>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
 	}
 
-	static const MessageLevelBit log_mask = ERROR | INFO | DEBUG;
+	static const MessageLevelBit log_mask = ERROR | INFO;
 
 	template<typename ...Args>
 	static void print(MessageLevelBit level, const std::string& fmt, Args... args) {

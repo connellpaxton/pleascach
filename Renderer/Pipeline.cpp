@@ -83,7 +83,7 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 		.depthClampEnable = vk::False,
 		.polygonMode = vk::PolygonMode::eFill,
 		.cullMode = vk::CullModeFlagBits::eBack,
-		.frontFace = vk::FrontFace::eClockwise,
+		.frontFace = vk::FrontFace::eCounterClockwise,
 		.depthBiasEnable = vk::False,
 		.lineWidth = 1.0,
 	};
@@ -121,9 +121,9 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 	/* temporary viewport and scissor, since it is a dynamic state due to the existence of window resizing */
 	const auto viewport = vk::Viewport{
 		.x = 0.0,
-		.y = 0.0,
+		.y = static_cast<float>(extent.height),
 		.width = static_cast<float>(extent.width),
-		.height = static_cast<float>(extent.height),
+		.height = -static_cast<float>(extent.height),
 	};
 
 	const auto scissor = vk::Rect2D {
