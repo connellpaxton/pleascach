@@ -24,7 +24,7 @@ Renderer::Renderer(Window& win) : win(win) {
 		.apiVersion = VK_API_VERSION_1_1,
 	};
 
-	const auto req_extensions = win.requiredExtensions();
+	auto req_instance_extensions = win.requiredExtensions();
 
 	auto extensions = vk::enumerateInstanceExtensionProperties();
 	std::vector<const char*> extension_names(extensions.size());
@@ -32,10 +32,11 @@ Renderer::Renderer(Window& win) : win(win) {
 		extension_names[i] = extensions[i].extensionName;
 	}
 
-	Log::info("%u Required extensions:\n", (u32)req_extensions.size());
-	for (const auto& ext : req_extensions) {
+	Log::info("%u Required extensions:\n", (u32)req_instance_extensions.size());
+	for (const auto& ext : req_instance_extensions) {
 		Log::info("\t- \"%s\"\n", ext);
 	}
+
 
 	/* query and enable available layers if in DEBUG mode */
 #ifdef _DEBUG
@@ -55,8 +56,8 @@ Renderer::Renderer(Window& win) : win(win) {
 		.pApplicationInfo = &app_info,
 		.enabledLayerCount = std::size(my_layers),
 		.ppEnabledLayerNames = my_layers,
-		.enabledExtensionCount = static_cast<u32>(req_extensions.size()),
-		.ppEnabledExtensionNames = req_extensions.data(),
+		.enabledExtensionCount = static_cast<u32>(req_instance_extensions.size()),
+		.ppEnabledExtensionNames = req_instance_extensions.data(),
 	};
 
 #else
@@ -116,8 +117,9 @@ Renderer::Renderer(Window& win) : win(win) {
 	};
 
 	/* enumerate available device features */
-	std::vector<const char*> required_extensions;
-	required_extensions.push_back("VK_KHR_swapchain");
+	std::vector<const char*> req_dev_extensions;
+	req_dev_extensions.push_back("VK_KHR_swapchain");
+	req_dev_extensions.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
 	auto dev_extentions = phys_dev.enumerateDeviceExtensionProperties();
 	Log::info("%zu available device extensions\n", dev_extentions.size());
 	for (const auto& ext : dev_extentions) {
@@ -139,8 +141,8 @@ Renderer::Renderer(Window& win) : win(win) {
 		.pQueueCreateInfos = &queue_info,
 		.enabledLayerCount = static_cast<u32>(dev_layer_names.size()),
 		.ppEnabledLayerNames = dev_layer_names.data(),
-		.enabledExtensionCount = static_cast<u32>(required_extensions.size()),
-		.ppEnabledExtensionNames = required_extensions.data(),
+		.enabledExtensionCount = static_cast<u32>(req_dev_extensions.size()),
+		.ppEnabledExtensionNames = req_dev_extensions.data(),
 	};
 
 	dev = phys_dev.createDevice(dev_info);
@@ -168,9 +170,9 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	/* basic triangle */
 	std::vector<Vertex> triangle = {
-		{{ 0.0, 0.5, 0.0 }},
-		{{ 0.5, 0.0, 0.0 }},
-		{{ 0.5, 0.5, 0.0 }},
+		{{ 1.0, 1.0, 0.0 }},
+		{{-1.0, 1.0, 0.0 }},
+		{{ 0.0,-1.0, 0.0 }},
 	};
 
 	vertex_buffer = std::make_unique<VertexBuffer>(phys_dev, dev, triangle.size());
@@ -230,11 +232,13 @@ void Renderer::draw() {
 		.pClearValues = clear_values,
 	};
 
+	/* flip viewport */
 	auto viewport = vk::Viewport{
 		.x = 0.0f,
-		.y = 0.0f,
+//		.y = 0.0f,
+		.y = static_cast<float>(swapchain->extent.height),
 		.width = static_cast<float>(swapchain->extent.width),
-		.height = static_cast<float>(swapchain->extent.height),
+		.height = -static_cast<float>(swapchain->extent.height),
 		.minDepth = 0.0f,
 		.maxDepth = 1.0f,
 	};
