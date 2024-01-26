@@ -4,11 +4,11 @@
 #include <vulkan/vulkan.hpp>
 
 struct Shader {
+	vk::Device dev;
 	vk::ShaderModule module;
 	vk::ShaderStageFlagBits stage;
 
 	Shader(vk::Device dev, const std::string& fname, vk::ShaderStageFlagBits stage);
-	void cleanup(vk::Device dev);
 
 	inline operator vk::ShaderModule() const {
 		return module;
@@ -28,4 +28,5 @@ struct Shader {
 
 	std::string fname;
 
+	void cleanup();
 };
