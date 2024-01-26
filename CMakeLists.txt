@@ -50,7 +50,7 @@ add_dependencies(pleascach shaders)
 # copy assets somewhere accessible by the accessable
 add_custom_command(
 	TARGET shaders POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory
+	COMMAND cmake -E copy_directory
 	"$<TARGET_PROPERTY:pleascach,SOURCE_DIR>/assets"
 	"$<TARGET_PROPERTY:pleascach,BINARY_DIR>/assets")
 

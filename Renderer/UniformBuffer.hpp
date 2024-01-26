@@ -7,6 +7,8 @@
 
 #include <glm/glm.hpp>
 
+#include <memory>
+
 struct UniformData {
 	glm::mat4 mvp;
 	float time;

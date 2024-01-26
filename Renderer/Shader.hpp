@@ -5,10 +5,12 @@
 
 struct Shader {
 	vk::Device dev;
-	vk::ShaderModule module;
+	std::string fname;
 	vk::ShaderStageFlagBits stage;
+	vk::ShaderModule module;
 
 	Shader(vk::Device dev, const std::string& fname, vk::ShaderStageFlagBits stage);
+	void cleanup();
 
 	inline operator vk::ShaderModule() const {
 		return module;
@@ -26,7 +28,4 @@ struct Shader {
 		};
 	}
 
-	std::string fname;
-
-	void cleanup();
 };
