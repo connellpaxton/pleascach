@@ -1,5 +1,6 @@
 #include <Renderer/CommandBuffer.hpp>
 #include <Renderer/Pipeline.hpp>
+#include <Renderer/VertexBuffer.hpp>
 
 #include <Memory/Buffer.hpp>
 #include <Memory/Image.hpp>
@@ -59,6 +60,20 @@ void CommandBuffer::copy(Buffer& src, Image& dst, vk::ImageLayout layout) {
 
 void CommandBuffer::bind(const GraphicsPipeline& pipeline) {
 	command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline.pipeline);
+}
+
+void CommandBuffer::bind(vk::PipelineLayout layout, vk::ArrayProxy<vk::DescriptorSet> desc_sets) {
+	command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, 0, desc_sets, nullptr);
+}
+
+void CommandBuffer::bind(const VertexBuffer& vertex_buffer, uint32_t binding) {
+	const std::array<vk::DeviceSize, 1> offsets = {0};
+	
+	command_buffer.bindVertexBuffers(binding, vertex_buffer.buffer->buffer, offsets);
+}
+
+void CommandBuffer::draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance) {
+	command_buffer.draw(vertex_count, instance_count, first_vertex, first_instance);
 }
 
 void CommandBuffer::end() {

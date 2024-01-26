@@ -43,4 +43,5 @@ struct Renderer {
 	std::unique_ptr<UniformBuffer> uniform_buffer;
 
 	uint32_t current_image_idx;
+	uint64_t frame = 0;
 };

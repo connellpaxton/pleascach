@@ -14,7 +14,7 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 	 * kinda like how Image::Image has all those versions
 	 */
 	 /* descriptor set layouts simply define a group of resources that can be relied upon */
-	auto desc_layout = dev.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo {
+	desc_layout = dev.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo {
 		.bindingCount = bindings.size(),
 		.pBindings = bindings.data(),
 	});
@@ -52,8 +52,6 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 		.descriptorSetCount = 1,
 		.pSetLayouts = &desc_layout,
 	})[0];
-
-	dev.destroyDescriptorSetLayout(desc_layout);
 
 	/* shader setup */
 	std::vector<vk::PipelineShaderStageCreateInfo> shader_info;
@@ -173,8 +171,6 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 	}
 
 	pipeline = res.value;
-
-	dev.destroyPipelineLayout(layout);
 }
 
 void GraphicsPipeline::update(uint32_t binding, const UniformBuffer& uni) {
@@ -193,6 +189,8 @@ void GraphicsPipeline::update(uint32_t binding, const UniformBuffer& uni) {
 }
 
 GraphicsPipeline::~GraphicsPipeline() {
+	dev.destroyDescriptorSetLayout(desc_layout);
+	dev.destroyPipelineLayout(layout);
 	dev.destroyDescriptorPool(desc_pool);
 	dev.destroyPipeline(pipeline);
 }

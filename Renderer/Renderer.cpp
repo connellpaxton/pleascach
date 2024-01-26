@@ -243,12 +243,26 @@ void Renderer::draw() {
 		.offset = {0, 0},
 		.extent = swapchain->extent,
 	};
-
 	
 	/* no secondary command buffers (yet), so contents are passed inline */
 	command_buffer->command_buffer.beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
+
+	command_buffer->bind(*pipeline);
+
+	command_buffer->bind(*vertex_buffer);
+	command_buffer->bind(pipeline->layout, pipeline->desc_set);
+
+	uniform_buffer->upload(UniformData{
+		.time = static_cast<float>(frame) * 0.0167f,
+	});
+
+	pipeline->update(0, *uniform_buffer);
+
 	command_buffer->command_buffer.setViewport(0, viewport);
 	command_buffer->command_buffer.setScissor(0, scissor);
+
+	command_buffer->draw(9, 1, 0, 0);
+
 	command_buffer->command_buffer.endRenderPass();
 	
 	command_buffer->end();
@@ -291,9 +305,13 @@ void Renderer::present() {
 			Log::error("Failed to present surface.\n");
 		break;
 	}
+
+	frame++;
 }
 
 Renderer::~Renderer() {
+	dev.waitIdle();
+
 	uniform_buffer.reset();
 	vertex_buffer.reset();
 	pipeline.reset();

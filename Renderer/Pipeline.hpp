@@ -16,6 +16,7 @@ struct GraphicsPipeline {
 	vk::Device dev;
 	vk::Pipeline pipeline;
 	vk::PipelineLayout layout;
+	vk::DescriptorSetLayout desc_layout;
 	vk::DescriptorPool desc_pool;
 	vk::DescriptorSet desc_set;
 

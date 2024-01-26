@@ -19,6 +19,8 @@ Buffer::Buffer(vk::PhysicalDevice phys_dev, vk::Device dev, vk::DeviceSize sz, v
 		.memoryTypeIndex = mem::choose_heap(phys_dev, reqs, mem_flags),
 	};
 	memory = dev.allocateMemory(alloc_info);
+
+	dev.bindBufferMemory(buffer, memory, 0);
 }
 
 void Buffer::upload(const uint8_t* data, vk::DeviceSize size) {
