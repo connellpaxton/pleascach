@@ -173,6 +173,8 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 	}
 
 	pipeline = res.value;
+
+	dev.destroyPipelineLayout(layout);
 }
 
 void GraphicsPipeline::update(uint32_t binding, const UniformBuffer& uni) {

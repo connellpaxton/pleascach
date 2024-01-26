@@ -5,7 +5,7 @@
 
 using namespace std::string_literals;
 
-Shader::Shader(vk::Device dev, const std::string& fname, vk::ShaderStageFlagBits stage) : fname(fname), stage(stage) {
+Shader::Shader(vk::Device dev, const std::string& fname, vk::ShaderStageFlagBits stage) : dev(dev), fname(fname), stage(stage) {
 	std::vector<uint8_t> src;
 	try {
 		src = file::slurpb(fname);
@@ -25,6 +25,6 @@ Shader::Shader(vk::Device dev, const std::string& fname, vk::ShaderStageFlagBits
 	Log::info("Successfully created shader "s + fname + "\n");
 }
 
-void Shader::cleanup(vk::Device dev) {
+void Shader::cleanup() {
 	dev.destroyShaderModule(module);
 }

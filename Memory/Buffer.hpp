@@ -6,8 +6,8 @@
 struct Buffer {
 	Buffer(vk::PhysicalDevice phys_dev, vk::Device dev, vk::DeviceSize sz, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags mem_flags, vk::SharingMode sharing = vk::SharingMode::eExclusive);
 
-	vk::DeviceSize size;
 	vk::Device dev;
+	vk::DeviceSize size;
 	vk::DeviceMemory memory;
 	vk::Buffer buffer;
 

@@ -1,6 +1,8 @@
 #include <Memory/Buffer.hpp>
 #include <Memory/Memory.hpp>
 
+#include <util/log.hpp>
+
 Buffer::Buffer(vk::PhysicalDevice phys_dev, vk::Device dev, vk::DeviceSize sz, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags mem_flags, vk::SharingMode sharing) : dev(dev), size(sz) {
 	auto info = vk::BufferCreateInfo {
 		.size = sz,
@@ -8,6 +10,8 @@ Buffer::Buffer(vk::PhysicalDevice phys_dev, vk::Device dev, vk::DeviceSize sz, v
 		.sharingMode = sharing,
 	};
 	buffer = dev.createBuffer(info);
+
+	Log::debug("Is memory flagged for host: %d\n", mem_flags & vk::MemoryPropertyFlagBits::eHostVisible);
 
 	auto reqs = dev.getBufferMemoryRequirements(buffer);
 	auto alloc_info = vk::MemoryAllocateInfo{

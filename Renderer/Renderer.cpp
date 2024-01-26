@@ -188,6 +188,9 @@ Renderer::Renderer(Window& win) : win(win) {
 	};
 
 	pipeline = std::make_unique<GraphicsPipeline>(dev, shaders, swapchain->extent, *render_pass, bindings, *vertex_buffer);
+
+	shaders[0].cleanup();
+	shaders[1].cleanup();
 }
 
 void Renderer::draw() {
