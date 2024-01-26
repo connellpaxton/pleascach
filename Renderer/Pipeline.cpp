@@ -105,7 +105,7 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 	
 	const auto color_blend_attachment = vk::PipelineColorBlendAttachmentState{
 		.blendEnable = vk::False,
-		.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG
+		.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eB
 						| vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eA,
 	};
 

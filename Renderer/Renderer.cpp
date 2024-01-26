@@ -14,6 +14,16 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+
+const static std::vector<Vertex> triangle = {
+	{{ 1.0, -1.0, 1.0 }, { 1.0, 0.0 }},
+	{{ 1.0,  1.0, 1.0 }, { 1.0, 1.0 }},
+	{{-1.0,  1.0, 1.0 }, { 0.0, 1.0 }},
+	{{-1.0,  1.0, 1.0 }, { 0.0, 1.0 }},
+	{{-1.0, -1.0, 1.0 }, { 0.0, 0.0 }},
+	{{ 1.0, -1.0, 1.0 }, { 1.0, 0.0 }},
+};
+
 using namespace std::string_literals;
 
 Renderer::Renderer(Window& win) : win(win) {
@@ -169,14 +179,6 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	command_buffer = std::make_unique<CommandBuffer>(dev, queue_family);
 
-
-	/* basic triangle */
-	const std::vector<Vertex> triangle = {
-		{{ 1.0, 1.0, -50.0 }, {1.0, 0.0}},
-		{{-1.0, 1.0, -50.0 }, {0.0, 0.0}},
-		{{ 0.0,-1.0, -50.0 }, {0.0, 1.0}},
-	};
-
 	vertex_buffer = std::make_unique<VertexBuffer>(phys_dev, dev, triangle.size());
 	uniform_buffer = std::make_unique<UniformBuffer>(phys_dev, dev);
 
@@ -266,12 +268,12 @@ void Renderer::draw() {
 	const auto p = glm::perspective(glm::radians(90.0f), static_cast<float>(swapchain->extent.width) / static_cast<float>(swapchain->extent.height), 0.01f, 50.0f);
 
 	uniform_buffer->upload(UniformData{
-		.mvp = p * glm::rotate(glm::mat4(1.0), glm::radians(static_cast<float>(frame)), glm::vec3(1.0, 1.0, 1.0)),
+		//.mvp = p * glm::rotate(glm::mat4(1.0), glm::radians(static_cast<float>(frame)), glm::vec3(1.0, 1.0, 1.0)),
 		.time = static_cast<float>(frame),
 	});
 
 
-	command_buffer->draw(9, 1, 0, 0);
+	command_buffer->draw(std::size(triangle), 1, 0, 0);
 
 	command_buffer->command_buffer.endRenderPass();
 	
