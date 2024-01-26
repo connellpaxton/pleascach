@@ -12,6 +12,8 @@
 #include <Renderer/UniformBuffer.hpp>
 #include <Renderer/VertexBuffer.hpp>
 
+#include <glm/gtc/matrix_transform.hpp>
+
 using namespace std::string_literals;
 
 Renderer::Renderer(Window& win) : win(win) {
@@ -169,10 +171,10 @@ Renderer::Renderer(Window& win) : win(win) {
 
 
 	/* basic triangle */
-	std::vector<Vertex> triangle = {
-		{{ 1.0, 1.0, 0.0 }},
-		{{-1.0, 1.0, 0.0 }},
-		{{ 0.0,-1.0, 0.0 }},
+	const std::vector<Vertex> triangle = {
+		{{ 1.0, 1.0, -50.0 }, {1.0, 0.0}},
+		{{-1.0, 1.0, -50.0 }, {0.0, 0.0}},
+		{{ 0.0,-1.0, -50.0 }, {0.0, 1.0}},
 	};
 
 	vertex_buffer = std::make_unique<VertexBuffer>(phys_dev, dev, triangle.size());
@@ -190,6 +192,8 @@ Renderer::Renderer(Window& win) : win(win) {
 	};
 
 	pipeline = std::make_unique<GraphicsPipeline>(dev, shaders, swapchain->extent, *render_pass, bindings, *vertex_buffer);
+
+	pipeline->update(0, *uniform_buffer);
 
 	shaders[0].cleanup();
 	shaders[1].cleanup();
@@ -216,7 +220,7 @@ void Renderer::draw() {
 	command_buffer->begin();
 	
 	vk::ClearValue clear_values[] = {
-		vk::ClearColorValue(1.0f, 0.0f, 1.0f, 1.0f),
+		vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f),
 		vk::ClearDepthStencilValue {.depth = 1.0f}
 	};
 
@@ -235,7 +239,6 @@ void Renderer::draw() {
 	/* flip viewport */
 	auto viewport = vk::Viewport{ 
 		.x = 0.0f,
-//		.y = 0.0f,
 		.y = static_cast<float>(swapchain->extent.height),
 		.width = static_cast<float>(swapchain->extent.width),
 		.height = -static_cast<float>(swapchain->extent.height),
@@ -260,11 +263,13 @@ void Renderer::draw() {
 	command_buffer->bind(*vertex_buffer);
 	command_buffer->bind(pipeline->layout, pipeline->desc_set);
 
+	const auto p = glm::perspective(glm::radians(90.0f), static_cast<float>(swapchain->extent.width) / static_cast<float>(swapchain->extent.height), 0.01f, 50.0f);
+
 	uniform_buffer->upload(UniformData{
-		.time = static_cast<float>(frame) * 0.0167f,
+		.mvp = p * glm::rotate(glm::mat4(1.0), glm::radians(static_cast<float>(frame)), glm::vec3(1.0, 1.0, 1.0)),
+		.time = static_cast<float>(frame),
 	});
 
-	pipeline->update(0, *uniform_buffer);
 
 	command_buffer->draw(9, 1, 0, 0);
 

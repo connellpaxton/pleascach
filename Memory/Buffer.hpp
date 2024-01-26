@@ -10,6 +10,8 @@ struct Buffer {
 	vk::DeviceSize size;
 	vk::DeviceMemory memory;
 	vk::Buffer buffer;
+	/* mapped memory */
+	void* p;
 
 	void upload(const uint8_t* data, vk::DeviceSize size);
 	inline void upload(const uint8_t* data) {

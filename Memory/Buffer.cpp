@@ -21,15 +21,16 @@ Buffer::Buffer(vk::PhysicalDevice phys_dev, vk::Device dev, vk::DeviceSize sz, v
 	memory = dev.allocateMemory(alloc_info);
 
 	dev.bindBufferMemory(buffer, memory, 0);
+
+	p = dev.mapMemory(memory, 0, size);
 }
 
 void Buffer::upload(const uint8_t* data, vk::DeviceSize size) {
-	auto p = dev.mapMemory(memory, 0, size);
 	std::memcpy(p, data, size);
-	dev.unmapMemory(memory);
 }
 
 Buffer::~Buffer() {
+	dev.unmapMemory(memory);
 	dev.freeMemory(memory);
 	dev.destroyBuffer(buffer);
 }

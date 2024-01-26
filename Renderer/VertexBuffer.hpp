@@ -6,6 +6,7 @@
 
 struct Vertex {
 	glm::vec3 coord;
+	glm::vec2 tex_coord;
 };
 
 struct VertexBuffer {
@@ -25,11 +26,16 @@ struct VertexBuffer {
 
 	inline std::vector<vk::VertexInputAttributeDescription> attrs(uint32_t binding) const {
 		return std::vector<vk::VertexInputAttributeDescription> {
-			vk::VertexInputAttributeDescription {
+			{
 				.location = 0,
 				.binding = binding,
 				.format = vk::Format::eR32G32B32Sfloat,
 				.offset = offsetof(Vertex, coord),
+			}, {
+				.location = 1,
+				.binding = binding,
+				.format = vk::Format::eR32G32Sfloat,
+				.offset = offsetof(Vertex, tex_coord),
 			}
 		};
 	}
