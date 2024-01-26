@@ -77,8 +77,8 @@ Renderer::Renderer(Window& win) : win(win) {
 		.pApplicationInfo = &app_info,
 		.enabledLayerCount = 0,
 		.ppEnabledLayerNames = nullptr,
-		.enabledExtensionCount = static_cast<u32>(req_extensions.size()),
-		.ppEnabledExtensionNames = req_extensions.data(),
+		.enabledExtensionCount = static_cast<u32>(req_instance_extensions.size()),
+		.ppEnabledExtensionNames = req_instance_extensions.data(),
 	};
 #endif
 

@@ -48,11 +48,19 @@ add_custom_target (
 add_dependencies(pleascach shaders)
 
 # copy assets somewhere accessible by the accessable
-add_custom_command(
-	TARGET shaders POST_BUILD
-	COMMAND cmake -E copy_directory
-	"$<TARGET_PROPERTY:pleascach,SOURCE_DIR>/assets"
-	"$<TARGET_PROPERTY:pleascach,BINARY_DIR>/assets")
+if(UNIX)
+	add_custom_command(
+		TARGET shaders POST_BUILD
+		COMMAND cp -r
+		"$<TARGET_PROPERTY:pleascach,SOURCE_DIR>/assets"
+		"$<TARGET_PROPERTY:pleascach,BINARY_DIR>/assets")
+else()
+	add_custom_command(
+		TARGET shaders POST_BUILD
+		COMMAND cmake -E copy_directory
+		"$<TARGET_PROPERTY:pleascach,SOURCE_DIR>/assets"
+		"$<TARGET_PROPERTY:pleascach,BINARY_DIR>/assets")
+endif()
 
 
 find_package(glfw3 3.3 REQUIRED)
