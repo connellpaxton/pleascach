@@ -12,6 +12,7 @@
 struct UniformData {
 	glm::mat4 mvp;
 	float time;
+	float aspect_ratio;
 };
 
 struct UniformBuffer {

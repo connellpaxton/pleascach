@@ -51,7 +51,7 @@ add_dependencies(pleascach shaders)
 if(UNIX)
 	add_custom_command(
 		TARGET shaders POST_BUILD
-		COMMAND cp -r
+		COMMAND cmake -E copy_directory
 		"$<TARGET_PROPERTY:pleascach,SOURCE_DIR>/assets"
 		"$<TARGET_PROPERTY:pleascach,BINARY_DIR>/assets")
 else()

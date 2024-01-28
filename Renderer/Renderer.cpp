@@ -186,7 +186,7 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	std::vector<Shader> shaders = {
 		{ dev, "assets/shaders/basic.vert.spv", vk::ShaderStageFlagBits::eVertex },
-		{ dev, "assets/shaders/basic.frag.spv", vk::ShaderStageFlagBits::eFragment },
+		{ dev, "assets/shaders/trace.frag.spv", vk::ShaderStageFlagBits::eFragment },
 	};
 
 	std::vector<vk::DescriptorSetLayoutBinding> bindings = {
@@ -265,11 +265,14 @@ void Renderer::draw() {
 	command_buffer->bind(*vertex_buffer);
 	command_buffer->bind(pipeline->layout, pipeline->desc_set);
 
-	const auto p = glm::perspective(glm::radians(90.0f), static_cast<float>(swapchain->extent.width) / static_cast<float>(swapchain->extent.height), 0.01f, 50.0f);
+	auto sz = win.getDimensions();
+
+	const auto p = glm::perspective(glm::radians(90.0f), static_cast<float>(sz.width) / static_cast<float>(sz.height), 0.01f, 50.0f);
 
 	uniform_buffer->upload(UniformData{
 		//.mvp = p * glm::rotate(glm::mat4(1.0), glm::radians(static_cast<float>(frame)), glm::vec3(1.0, 1.0, 1.0)),
-		.time = static_cast<float>(frame),
+		.time = static_cast<float>(frame) * 0.0167f,
+		.aspect_ratio = static_cast<float>(sz.width)/static_cast<float>(sz.height),
 	});
 
 
