@@ -8,6 +8,8 @@ layout (set = 0, binding = 0) uniform Matrices {
 	float time;
 };
 
+layout (set = 0, binding = 1) uniform sampler2D tex;     
+
 void main() {
-	FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+	FragColor = texture(tex, texCoord);
 }

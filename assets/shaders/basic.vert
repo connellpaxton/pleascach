@@ -10,6 +10,6 @@ layout (set = 0, binding = 0) uniform Matrices {
 };
 
 void main() {
-  gl_Position = vec4(aPos, 1.0);
+  gl_Position = mpv*vec4(aPos, 1.0);
   texCoord = aTexCoord;
 }

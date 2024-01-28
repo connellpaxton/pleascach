@@ -8,6 +8,7 @@
 #include <util/log.hpp>
 
 CommandBuffer::CommandBuffer(vk::Device dev, u32 queue_family) {
+	Log::debug("Command Buffer created\n");
 	/* (For now) allow command buffers to be individually recycled */
 	auto pool_info = vk::CommandPoolCreateInfo {
 		.flags	= vk::CommandPoolCreateFlagBits::eResetCommandBuffer
@@ -49,7 +50,7 @@ void CommandBuffer::copy(Buffer& src, Image& dst, vk::ImageLayout layout) {
 			.aspectMask = vk::ImageAspectFlagBits::eColor,
 			.mipLevel = 0,
 			.baseArrayLayer = 0,
-			.layerCount = 0,
+			.layerCount = 1,
 		},
 		.imageOffset = { 0, 0, 0 },
 		.imageExtent = dst.extent,

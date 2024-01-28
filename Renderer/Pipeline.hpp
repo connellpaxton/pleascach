@@ -7,6 +7,7 @@ struct Shader;
 struct UniformBuffer;
 struct VertexBuffer;
 struct RenderPass;
+struct Texture;
 
 struct GraphicsPipeline {
 	GraphicsPipeline(vk::Device dev, const std::vector<Shader>& shaders,
@@ -26,6 +27,7 @@ struct GraphicsPipeline {
 
 	/* create overload for every type of object we need to update */
 	void update(uint32_t binding, const UniformBuffer& uni);
+	void update(uint32_t binding, const Texture& tex);
 
 	~GraphicsPipeline();
 };

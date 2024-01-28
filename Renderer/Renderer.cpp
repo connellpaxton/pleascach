@@ -1,4 +1,6 @@
 #include <Renderer/Renderer.hpp>
+#include <Resources/Texture.hpp>
+
 #include <Window/Window.hpp>
 
 #include <util/log.hpp>
@@ -16,12 +18,12 @@
 
 
 const static std::vector<Vertex> triangle = {
-	{{ 1.0, -1.0, 1.0 }, { 1.0, 0.0 }},
-	{{ 1.0,  1.0, 1.0 }, { 1.0, 1.0 }},
-	{{-1.0,  1.0, 1.0 }, { 0.0, 1.0 }},
-	{{-1.0,  1.0, 1.0 }, { 0.0, 1.0 }},
-	{{-1.0, -1.0, 1.0 }, { 0.0, 0.0 }},
-	{{ 1.0, -1.0, 1.0 }, { 1.0, 0.0 }},
+	{{ 1.0, -1.0, -1.0 }, { 1.0, 0.0 }},
+	{{ 1.0,  1.0, -1.0 }, { 1.0, 1.0 }},
+	{{-1.0,  1.0, -1.0 }, { 0.0, 1.0 }},
+	{{-1.0,  1.0, -1.0 }, { 0.0, 1.0 }},
+	{{-1.0, -1.0, -1.0 }, { 0.0, 0.0 }},
+	{{ 1.0, -1.0, -1.0 }, { 1.0, 0.0 }},
 };
 
 using namespace std::string_literals;
@@ -101,7 +103,7 @@ Renderer::Renderer(Window& win) : win(win) {
 	if (discrete_idx == -1)
 		discrete_idx = 0;
 
-	auto& phys_dev = phys_devs[discrete_idx];
+	phys_dev = phys_devs[discrete_idx];
 	Log::info("Selected device: \"%s\" (#%zu)\n", phys_dev.getProperties().deviceName.data(), discrete_idx);
 	
 	/* find queue family */
@@ -184,21 +186,63 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	vertex_buffer->upload(triangle);
 
+	textures = createTextures({
+		"assets/textures/oil.jpg",
+	});
+
 	std::vector<Shader> shaders = {
 		{ dev, "assets/shaders/basic.vert.spv", vk::ShaderStageFlagBits::eVertex },
-		{ dev, "assets/shaders/trace.frag.spv", vk::ShaderStageFlagBits::eFragment },
+		{ dev, "assets/shaders/basic.frag.spv", vk::ShaderStageFlagBits::eFragment },
 	};
 
 	std::vector<vk::DescriptorSetLayoutBinding> bindings = {
 		uniform_buffer->binding(0),
+		textures[0].binding(1),
 	};
 
 	pipeline = std::make_unique<GraphicsPipeline>(dev, shaders, swapchain->extent, *render_pass, bindings, *vertex_buffer);
 
 	pipeline->update(0, *uniform_buffer);
+	pipeline->update(1, textures[0]);
 
 	shaders[0].cleanup();
 	shaders[1].cleanup();
+}
+
+std::vector<Texture> Renderer::createTextures(const std::vector<std::string>& names) {
+	std::vector<Texture> ret;
+
+	CommandBuffer texture_cmd(dev, queue_family);
+
+	texture_cmd.begin();
+
+	for (const auto& name : names) {
+		ret.push_back({phys_dev, dev, texture_cmd, "assets/textures/oil.jpg"});
+	}
+
+	texture_cmd.end();
+
+	auto texture_creation_fence = dev.createFence(vk::FenceCreateInfo {});
+	dev.resetFences(texture_creation_fence);
+
+	queue.submit(vk::SubmitInfo {
+		.commandBufferCount = 1,
+		.pCommandBuffers = texture_cmd,
+	}, texture_creation_fence);
+
+	if (dev.waitForFences(texture_creation_fence, vk::True, UINT64_MAX) != vk::Result::eSuccess) {
+		Log::error("Failed to create textures\n");
+	}
+
+	dev.destroyFence(texture_creation_fence);
+
+	for (auto& tex : ret) {
+		tex.finishCreation();
+	}
+
+	texture_cmd.cleanup(dev);
+
+	return ret;
 }
 
 void Renderer::draw() {
@@ -270,7 +314,7 @@ void Renderer::draw() {
 	const auto p = glm::perspective(glm::radians(90.0f), static_cast<float>(sz.width) / static_cast<float>(sz.height), 0.01f, 50.0f);
 
 	uniform_buffer->upload(UniformData{
-		//.mvp = p * glm::rotate(glm::mat4(1.0), glm::radians(static_cast<float>(frame)), glm::vec3(1.0, 1.0, 1.0)),
+		.mvp = p * glm::rotate(glm::mat4(1.0), glm::radians(static_cast<float>(frame)), glm::vec3(1.0, 1.0, 1.0)),
 		.time = static_cast<float>(frame) * 0.0167f,
 		.aspect_ratio = static_cast<float>(sz.width)/static_cast<float>(sz.height),
 	});
@@ -330,6 +374,10 @@ Renderer::~Renderer() {
 	uniform_buffer.reset();
 	vertex_buffer.reset();
 	pipeline.reset();
+
+	for (auto& tex : textures) {
+		tex.cleanup();
+	}
 
 	swapchain.reset();
 

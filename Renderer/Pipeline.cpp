@@ -3,6 +3,7 @@
 #include <Renderer/RenderPass.hpp>
 #include <Renderer/UniformBuffer.hpp>
 #include <Renderer/VertexBuffer.hpp>
+#include <Resources/Texture.hpp>
 
 #include <map>
 
@@ -185,6 +186,22 @@ void GraphicsPipeline::update(uint32_t binding, const UniformBuffer& uni) {
 		.descriptorCount = 1,
 		.descriptorType = vk::DescriptorType::eUniformBuffer,
 		.pBufferInfo = &buff_info,
+	}, nullptr);
+}
+
+void GraphicsPipeline::update(uint32_t binding, const Texture& tex) {
+	auto tex_info = vk::DescriptorImageInfo {
+		.sampler = tex.sampler,
+		.imageView = tex.view,
+		.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal,
+	};
+
+	dev.updateDescriptorSets(vk::WriteDescriptorSet {
+		.dstSet = desc_set,
+		.dstBinding = binding,
+		.descriptorCount = 1,
+		.descriptorType = vk::DescriptorType::eCombinedImageSampler,
+		.pImageInfo = &tex_info,
 	}, nullptr);
 }
 

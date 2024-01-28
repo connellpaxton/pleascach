@@ -12,11 +12,14 @@
 struct Window;
 struct UniformBuffer;
 struct VertexBuffer;
+struct Texture;
 
 /* Contains all of the Vulkan objects involved in rendering the scene */
 struct Renderer {
 	Renderer(Window& win);
 	~Renderer();
+
+	std::vector<Texture> createTextures(const std::vector<std::string>& names);
 
 	void draw();
 	void present();
@@ -24,6 +27,7 @@ struct Renderer {
 	Window& win;
 
 	vk::Instance instance;
+	vk::PhysicalDevice phys_dev;
 	vk::Device dev;
 
 	vk::Fence render_fence;
@@ -41,6 +45,8 @@ struct Renderer {
 	std::unique_ptr<GraphicsPipeline> pipeline;
 	std::unique_ptr<VertexBuffer> vertex_buffer;
 	std::unique_ptr<UniformBuffer> uniform_buffer;
+
+	std::vector<Texture> textures;
 
 	uint32_t current_image_idx;
 	uint64_t frame = 0;

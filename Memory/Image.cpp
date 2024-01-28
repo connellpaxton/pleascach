@@ -2,7 +2,7 @@
 #include <Memory/Memory.hpp>
 
 
-Image::Image(vk::PhysicalDevice phys_dev, vk::Device dev, vk::Image _image, vk::MemoryPropertyFlags memory_flags) : dev(dev), image(_image) {
+Image::Image(vk::PhysicalDevice phys_dev, vk::Device dev, vk::Image _image, vk::MemoryPropertyFlags memory_flags, vk::Extent3D& extent) : dev(dev), image(_image) {
 
 	auto reqs = dev.getImageMemoryRequirements(image);
 
@@ -12,13 +12,14 @@ Image::Image(vk::PhysicalDevice phys_dev, vk::Device dev, vk::Image _image, vk::
 	};
 	memory = dev.allocateMemory(alloc);
 	dev.bindImageMemory(image, memory, 0);
+	this->extent = extent;
+	Log::debug("Image memory: %p\n", memory);
 
 }
 
 Image::Image(vk::PhysicalDevice phys_dev, vk::Device dev, vk::ImageCreateInfo info, vk::MemoryPropertyFlags memory_flags) : dev(dev) {
 	image = dev.createImage(info);
-
-	*this = Image(phys_dev, dev, image, memory_flags);
+	*this = Image(phys_dev, dev, image, memory_flags, info.extent);
 }
 
 Image::Image(vk::PhysicalDevice phys_dev, vk::Device dev, vk::Extent3D extent, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags memory_flags) : dev(dev) {
