@@ -18,6 +18,7 @@ endif()
 file(GLOB SOURCES
   pléascach.cpp
   */*.cpp
+  include/imgui/*.cpp
 )
 
 add_executable (pleascach ${SOURCES})
