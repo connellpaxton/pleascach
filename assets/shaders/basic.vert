@@ -12,7 +12,7 @@ layout (set = 0, binding = 0) uniform Matrices {
 };
 
 void main() {
-  gl_Position = mvp * vec4(aPos - vec3(0.0, 0.0, 3.0) * time/3.0, 1.0);
+  gl_Position = mvp * vec4(aPos, 1.0);
   texCoord = aTexCoord;
   norm = aNorm;
 }

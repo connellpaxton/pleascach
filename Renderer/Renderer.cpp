@@ -16,6 +16,8 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <UI/UI.hpp>
+
 
 // const static std::vector<Vertex> triangle = {
 // 	{{ 1.0, -1.0, -1.0 }, {}, { 1.0, 0.0 }},
@@ -198,7 +200,7 @@ Renderer::Renderer(Window& win) : win(win) {
 	};
 
 	/* initialize models */
-	models.push_back(std::make_shared<Model>(phys_dev, dev, "assets/models/dragon.gltf"));
+//	models.push_back(std::make_shared<Model>(phys_dev, dev, "assets/models/dragon.gltf"));
 	models.push_back(std::make_shared<Model>(phys_dev, dev, "assets/models/monk.gltf"));
 
 	Log::debug("#%zu vertex indices\n", models[0]->indices.size());
@@ -210,6 +212,8 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	shaders[0].cleanup();
 	shaders[1].cleanup();
+
+	ui = std::make_unique<UI>(this);
 }
 
 std::vector<Texture> Renderer::createTextures(const std::vector<std::string>& names) {
@@ -317,9 +321,11 @@ void Renderer::draw() {
 
 	const auto p = glm::perspective(glm::radians(90.0f), static_cast<float>(sz.width) / static_cast<float>(sz.height), 0.01f, 2000.0f);
 
+	const auto t = static_cast<float>(frame) * 0.0167f;
+
 	uniform_buffer->upload(UniformData{
-		.mvp = p,
-		.time = static_cast<float>(frame) * 0.0167f,
+		.mvp = p * glm::rotate(glm::translate(glm::mat4(1.0), -glm::vec3(0.0, 0.0, 3.0) * t / 3.0f), t, glm::vec3(1.0, 0.0, 0.0)),
+		.time = t,
 		.aspect_ratio = static_cast<float>(sz.width)/static_cast<float>(sz.height),
 	});
 
@@ -327,9 +333,14 @@ void Renderer::draw() {
 	//command_buffer->draw(std::size(triangle), 1, 0, 0);
 	command_buffer->command_buffer.drawIndexed(models[0]->indices.size(), 1, 0, 0, 0);
 
-	command_buffer->bind(*models[1]->vertex_buffer);
+	/*command_buffer->bind(*models[1]->vertex_buffer);
 	command_buffer->command_buffer.bindIndexBuffer(*models[1]->index_buffer, 0, vk::IndexType::eUint16);	
-	command_buffer->command_buffer.drawIndexed(models[1]->indices.size(), 1, 0, 0, 0);
+	command_buffer->command_buffer.drawIndexed(models[1]->indices.size(), 1, 0, 0, 0);*/
+
+	/* draw User Interface stuff */
+	ui->newFrame();
+
+	ui->render(command_buffer->command_buffer);
 
 	command_buffer->command_buffer.endRenderPass();
 	
@@ -379,6 +390,8 @@ void Renderer::present() {
 
 Renderer::~Renderer() {
 	dev.waitIdle();
+
+	ui.reset();
 
 	for(auto& model : models)
 		model.reset();

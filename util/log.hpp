@@ -4,16 +4,16 @@
 
 namespace Log {
 	enum MessageLevelBit {
-		ERROR = 0x01,
-		INFO = 0x02,
-		DEBUG = 0x04,
+		eERROR = 0x01,
+		eINFO = 0x02,
+		eDEBUG = 0x04,
 	};
 
 	inline MessageLevelBit operator | (MessageLevelBit a, MessageLevelBit b) {
 		return static_cast<MessageLevelBit>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
 	}
 
-	static const MessageLevelBit log_mask = ERROR | INFO | DEBUG;
+	static const MessageLevelBit log_mask = eERROR | eINFO | eDEBUG;
 
 	template<typename ...Args>
 	static void print(MessageLevelBit level, const std::string& fmt, Args... args) {
@@ -23,13 +23,13 @@ namespace Log {
 		/* appearently C++ doesn't have designated array indices :( */
 		const char* level_txt = "[UNKNOWN] ";
 		switch (level) {
-			case ERROR:
+			case eERROR:
 				level_txt = "[ERROR] ";
 			break;
-			case INFO:
+			case eINFO:
 				level_txt = "[INFO] ";
 			break;
-			case DEBUG:
+			case eDEBUG:
 				level_txt = "[DEBUG] ";
 			break;
 		}
@@ -39,7 +39,7 @@ namespace Log {
 
 	template<typename ...Args>
 	static void error(const std::string& fmt, Args... args) {
-		print(MessageLevelBit::ERROR, fmt, args...);
+		print(MessageLevelBit::eERROR, fmt, args...);
 #ifdef _DEBUG
 		throw fmt;
 #endif
@@ -47,11 +47,11 @@ namespace Log {
 
 	template<typename ...Args>
 	static void info(const std::string& fmt, Args... args) {
-		print(MessageLevelBit::INFO, fmt, args...);
+		print(MessageLevelBit::eINFO, fmt, args...);
 	}
 
 	template<typename ...Args>
 	static void debug(const std::string& fmt, Args... args) {
-		print(MessageLevelBit::DEBUG, fmt, args...);
+		print(MessageLevelBit::eDEBUG, fmt, args...);
 	}
 }

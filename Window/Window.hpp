@@ -37,8 +37,9 @@ struct Window {
 	vk::SurfaceKHR getSurface(vk::Instance& inst);
 	std::unique_ptr<Input> getInput();
 
-private:
 	WINDOW_PTR win = nullptr;
+
+private:
 	u32 width, height;
 };
 

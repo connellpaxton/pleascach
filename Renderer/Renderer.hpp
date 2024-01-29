@@ -11,6 +11,8 @@
 
 #include <Model/Model.hpp>
 
+#include <UI/UI.hpp>
+
 struct Window;
 struct UniformBuffer;
 struct VertexBuffer;
@@ -54,4 +56,5 @@ struct Renderer {
 	uint64_t frame = 0;
 
 	std::vector<std::shared_ptr<Model>> models;
+	std::unique_ptr<UI> ui;
 };
