@@ -199,6 +199,7 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	/* initialize models */
 	models.push_back(std::make_shared<Model>(phys_dev, dev, "assets/models/dragon.gltf"));
+	models.push_back(std::make_shared<Model>(phys_dev, dev, "assets/models/monk.gltf"));
 
 	Log::debug("#%zu vertex indices\n", models[0]->indices.size());
 
@@ -325,6 +326,10 @@ void Renderer::draw() {
 
 	//command_buffer->draw(std::size(triangle), 1, 0, 0);
 	command_buffer->command_buffer.drawIndexed(models[0]->indices.size(), 1, 0, 0, 0);
+
+	command_buffer->bind(*models[1]->vertex_buffer);
+	command_buffer->command_buffer.bindIndexBuffer(*models[1]->index_buffer, 0, vk::IndexType::eUint16);	
+	command_buffer->command_buffer.drawIndexed(models[1]->indices.size(), 1, 0, 0, 0);
 
 	command_buffer->command_buffer.endRenderPass();
 	

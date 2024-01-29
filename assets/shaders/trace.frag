@@ -1,10 +1,11 @@
 #version 460 core
 
-layout (location = 0) in vec2 texCoord;
+layout (location = 0) in vec3 norm;
+layout (location = 1) in vec2 texCoord;
 layout (location = 0) out vec4 FragColor;
 
 layout (set = 0, binding = 0) uniform Matrices {
-	mat4 mpv;
+	mat4 mvp;
 	float time;
 	float aspect_ratio;
 };
@@ -49,6 +50,9 @@ void main() {
 	vec3 sphere_center = vec3(0.0, 0.0, 1.0);
 
 	float d = sphere(sphere_center, 0.5, ray);
+
+	FragColor = vec4(texCoord, 1.0, 1.0);
+	return;
 
 	if(d < 0.0) {
 		FragColor = vec4(0.0);

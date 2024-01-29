@@ -7,12 +7,12 @@ layout (location = 0) out vec3 norm;
 layout (location = 1) out vec2 texCoord;
 
 layout (set = 0, binding = 0) uniform Matrices {
-	mat4 mpv;
+	mat4 mvp;
 	float time;
 };
 
 void main() {
-  gl_Position = mpv * vec4(aPos - vec3(0.0, 0.0, 3.0) * time/3.0, 1.0);
+  gl_Position = mvp * vec4(aPos - vec3(0.0, 0.0, 3.0) * time/3.0, 1.0);
   texCoord = aTexCoord;
   norm = aNorm;
 }

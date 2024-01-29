@@ -5,7 +5,7 @@ layout (location = 1) in vec2 texCoord;
 layout (location = 0) out vec4 FragColor;
 
 layout (set = 0, binding = 0) uniform Matrices {
-	mat4 mpv;
+	mat4 mvp;
 	float time;
 };
 
@@ -13,5 +13,6 @@ layout (set = 0, binding = 1) uniform sampler2D tex;
 
 void main() {
 	//FragColor = vec4(1.0);
+//	FragColor = texture(tex, texCoord);
 	FragColor = vec4(norm, 1.0);
 }

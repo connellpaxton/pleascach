@@ -43,7 +43,7 @@ Model::Model(vk::PhysicalDevice phys_dev, vk::Device dev, const std::string& fna
 	index_buffer = std::make_unique<Buffer>(phys_dev, dev, indices.size()*sizeof(uint16_t),
 		vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eHostCoherent | vk::MemoryPropertyFlagBits::eHostVisible);
 	index_buffer->upload(reinterpret_cast<uint8_t*>(indices.data()), static_cast<vk::DeviceSize>(indices.size()*sizeof(uint16_t)));
-	
+
 }
 
 void Model::initVertices(Node* node, const tinygltf::Primitive& prim) {
@@ -74,7 +74,7 @@ void Model::initVertices(Node* node, const tinygltf::Primitive& prim) {
 	if(loc != prim.attributes.end()) {
 		auto accessor = model->accessors[loc->second];
 		const auto& view = model->bufferViews[accessor.bufferView];
-		norm_buff = reinterpret_cast<const float*>(&model->buffers[view.buffer].data[accessor.byteOffset+view.byteOffset]);
+		uv_buff = reinterpret_cast<const float*>(&model->buffers[view.buffer].data[accessor.byteOffset+view.byteOffset]);
 	}
 
 	for(size_t i = 0; i < vertex_count; i++) {
