@@ -17,14 +17,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 
-const static std::vector<Vertex> triangle = {
-	{{ 1.0, -1.0, -1.0 }, { 1.0, 0.0 }},
-	{{ 1.0,  1.0, -1.0 }, { 1.0, 1.0 }},
-	{{-1.0,  1.0, -1.0 }, { 0.0, 1.0 }},
-	{{-1.0,  1.0, -1.0 }, { 0.0, 1.0 }},
-	{{-1.0, -1.0, -1.0 }, { 0.0, 0.0 }},
-	{{ 1.0, -1.0, -1.0 }, { 1.0, 0.0 }},
-};
+// const static std::vector<Vertex> triangle = {
+// 	{{ 1.0, -1.0, -1.0 }, {}, { 1.0, 0.0 }},
+// 	{{ 1.0,  1.0, -1.0 }, {}, { 1.0, 1.0 }},
+// 	{{-1.0,  1.0, -1.0 }, {}, { 0.0, 1.0 }},
+// 	{{-1.0,  1.0, -1.0 }, {}, { 0.0, 1.0 }},
+// 	{{-1.0, -1.0, -1.0 }, {}, { 0.0, 0.0 }},
+// 	{{ 1.0, -1.0, -1.0 }, {}, { 1.0, 0.0 }},
+// };
 
 using namespace std::string_literals;
 
@@ -181,10 +181,7 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	command_buffer = std::make_unique<CommandBuffer>(dev, queue_family);
 
-	vertex_buffer = std::make_unique<VertexBuffer>(phys_dev, dev, triangle.size());
 	uniform_buffer = std::make_unique<UniformBuffer>(phys_dev, dev);
-
-	vertex_buffer->upload(triangle);
 
 	textures = createTextures({
 		"assets/textures/oil.jpg",
@@ -200,7 +197,12 @@ Renderer::Renderer(Window& win) : win(win) {
 		textures[0].binding(1),
 	};
 
-	pipeline = std::make_unique<GraphicsPipeline>(dev, shaders, swapchain->extent, *render_pass, bindings, *vertex_buffer);
+	/* initialize models */
+	models.push_back(std::make_shared<Model>(phys_dev, dev, "assets/models/dragon.gltf"));
+
+	Log::debug("#%zu vertex indices\n", models[0]->indices.size());
+
+	pipeline = std::make_unique<GraphicsPipeline>(dev, shaders, swapchain->extent, *render_pass, bindings, *models[0]->vertex_buffer);
 
 	pipeline->update(0, *uniform_buffer);
 	pipeline->update(1, textures[0]);
@@ -217,7 +219,7 @@ std::vector<Texture> Renderer::createTextures(const std::vector<std::string>& na
 	texture_cmd.begin();
 
 	for (const auto& name : names) {
-		ret.push_back({phys_dev, dev, texture_cmd, "assets/textures/oil.jpg"});
+		ret.push_back({phys_dev, dev, texture_cmd, name});
 	}
 
 	texture_cmd.end();
@@ -306,21 +308,23 @@ void Renderer::draw() {
 	command_buffer->command_buffer.setScissor(0, scissor);
 
 
-	command_buffer->bind(*vertex_buffer);
+	command_buffer->bind(*models[0]->vertex_buffer);
+	command_buffer->command_buffer.bindIndexBuffer(*models[0]->index_buffer, 0, vk::IndexType::eUint16);
 	command_buffer->bind(pipeline->layout, pipeline->desc_set);
 
 	auto sz = win.getDimensions();
 
-	const auto p = glm::perspective(glm::radians(90.0f), static_cast<float>(sz.width) / static_cast<float>(sz.height), 0.01f, 50.0f);
+	const auto p = glm::perspective(glm::radians(90.0f), static_cast<float>(sz.width) / static_cast<float>(sz.height), 0.01f, 2000.0f);
 
 	uniform_buffer->upload(UniformData{
-		.mvp = p * glm::rotate(glm::mat4(1.0), glm::radians(static_cast<float>(frame)), glm::vec3(1.0, 1.0, 1.0)),
+		.mvp = p,
 		.time = static_cast<float>(frame) * 0.0167f,
 		.aspect_ratio = static_cast<float>(sz.width)/static_cast<float>(sz.height),
 	});
 
 
-	command_buffer->draw(std::size(triangle), 1, 0, 0);
+	//command_buffer->draw(std::size(triangle), 1, 0, 0);
+	command_buffer->command_buffer.drawIndexed(models[0]->indices.size(), 1, 0, 0, 0);
 
 	command_buffer->command_buffer.endRenderPass();
 	
@@ -370,6 +374,9 @@ void Renderer::present() {
 
 Renderer::~Renderer() {
 	dev.waitIdle();
+
+	for(auto& model : models)
+		model.reset();
 
 	uniform_buffer.reset();
 	vertex_buffer.reset();

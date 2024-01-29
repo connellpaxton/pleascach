@@ -23,7 +23,6 @@ vec3 ray_color(vec3 ray) {
 	return vec3(1.0-a) + a*vec3(0.5, 0.7, 1.0);
 }
 
-
 /* returns float of where you hit, or -1.0 */
 float sphere(vec3 center, float r, Ray ray) {
 	vec3 p = ray.orig-center;

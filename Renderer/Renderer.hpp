@@ -9,6 +9,8 @@
 #include <Renderer/CommandBuffer.hpp>
 #include <Renderer/RenderPass.hpp>
 
+#include <Model/Model.hpp>
+
 struct Window;
 struct UniformBuffer;
 struct VertexBuffer;
@@ -50,4 +52,6 @@ struct Renderer {
 
 	uint32_t current_image_idx;
 	uint64_t frame = 0;
+
+	std::vector<std::shared_ptr<Model>> models;
 };
