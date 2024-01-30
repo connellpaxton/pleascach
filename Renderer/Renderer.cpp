@@ -191,7 +191,7 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	/* initialize models */
 //	models.push_back(std::make_shared<Model>(phys_dev, dev, "assets/models/dragon.gltf"));
-	models.push_back(std::make_shared<Model>(phys_dev, dev, "assets/models/monk.gltf"));
+	models.push_back(std::make_shared<Model>(phys_dev, dev, "assets/models/dragon.gltf"));
 
 	Log::debug("#%zu vertex indices\n", models[0]->indices.size());
 

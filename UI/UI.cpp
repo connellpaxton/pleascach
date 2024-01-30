@@ -11,7 +11,7 @@
 
 #include <Scene/Camera.hpp>
 
-UI::UI(Renderer* ren) : dev(ren->dev), info{ .cam = ren->cam } {
+UI::UI(Renderer* ren) : info{ .cam = ren->cam }, dev(ren->dev) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
@@ -71,7 +71,7 @@ UI::UI(Renderer* ren) : dev(ren->dev), info{ .cam = ren->cam } {
 		.pCommandBuffers = &imgui_cmd_buffer.command_buffer,
 	}, imgui_fence);
 
-	ren->dev.waitForFences(imgui_fence, vk::True, UINT64_MAX);
+	(void)ren->dev.waitForFences(imgui_fence, vk::True, UINT64_MAX);
 
 	ren->dev.destroyFence(imgui_fence);
 

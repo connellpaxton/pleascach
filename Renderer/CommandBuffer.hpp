@@ -5,6 +5,7 @@
 
 #include <util/int.hpp>
 
+#include <memory>
 
 struct Buffer;
 struct Image;

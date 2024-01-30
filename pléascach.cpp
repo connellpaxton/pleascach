@@ -36,6 +36,7 @@ int main(int argc, char* argv[]) {
 						win.close();
 					break;
 					case InputEvent::Tag::eCURSOR:
+						in->handleCursorMovement(ren, event.pos.x, event.pos.y);
 					break;
 					case InputEvent::Tag::eBUTTON:
 					break;

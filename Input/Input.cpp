@@ -9,6 +9,8 @@
 
 #include <glm/glm.hpp>
 
+#include <imgui/imgui_impl_glfw.h>
+
 bool Input::shouldClose() {
 	return glfwWindowShouldClose(in);
 }
@@ -65,6 +67,8 @@ Input::Input(INPUT_PTR in) : in(in) {
 			}
 		});
 	});
+
+	glfwSetInputMode(in, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 void Input::handleMovementKeys(Renderer& ren) {
@@ -107,6 +111,28 @@ void Input::handleMovementKeys(Renderer& ren) {
 	if (glfwGetKey(in, GLFW_KEY_D)) {
 		ren.cam.pos += right * 0.1f * speed;
 	}
+
+	if(glfwGetKey(in, GLFW_KEY_SPACE)) {
+		ren.cam.pos.y += 0.1;
+	}
+
+	if(glfwGetKey(in, GLFW_KEY_LEFT_CONTROL)) {
+		ren.cam.pos.y -= 0.1;
+	}
+
+	ren.cam.theta = glm::clamp(ren.cam.theta, 0.01f, glm::pi<float>() - 0.01f);
+	ren.cam.phi = glm::mod(ren.cam.phi, glm::two_pi<float>());
+}
+
+
+void Input::handleCursorMovement(Renderer& ren, double x, double y) {
+	int rel_mouse_x = static_cast<int>(x) - last_mouse.x;
+	int rel_mouse_y = static_cast<int>(y) - last_mouse.y;
+
+	ren.cam.phi += rel_mouse_x / 100.0;
+	ren.cam.theta += rel_mouse_y / 100.0;
+
+	last_mouse = glm::vec2(x,y);
 
 	ren.cam.theta = glm::clamp(ren.cam.theta, 0.01f, glm::pi<float>() - 0.01f);
 	ren.cam.phi = glm::mod(ren.cam.phi, glm::two_pi<float>());

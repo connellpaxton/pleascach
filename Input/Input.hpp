@@ -7,6 +7,8 @@
 #include <queue>
 #include <util/int.hpp>
 
+#include <glm/glm.hpp>
+
 enum InputModifierBit {
 	eNONE  = 0x00,
 	eSHIFT = 0x01,
@@ -61,11 +63,14 @@ struct Input {
 
 	INPUT_PTR in;
 
+	glm::vec2 last_mouse = glm::vec2(0.0f, 0.0f);
+
 	void poll();
 
 	std::queue<InputEvent> queue;
 
 	void handleMovementKeys(Renderer& ren);
+	void handleCursorMovement(Renderer& ren, double x, double y);
 
 	bool shouldClose();
 };
