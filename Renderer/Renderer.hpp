@@ -9,6 +9,8 @@
 #include <Renderer/CommandBuffer.hpp>
 #include <Renderer/RenderPass.hpp>
 
+#include <Scene/Camera.hpp>
+
 #include <Model/Model.hpp>
 
 #include <UI/UI.hpp>
@@ -57,4 +59,6 @@ struct Renderer {
 
 	std::vector<std::shared_ptr<Model>> models;
 	std::unique_ptr<UI> ui;
+
+	Camera cam {};
 };

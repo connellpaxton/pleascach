@@ -6,10 +6,13 @@
 #include <Renderer/CommandBuffer.hpp>
 
 struct Renderer;
+struct Camera;
 
 struct UI {
 	struct UI_Info {
 		float fps = 0.0;
+		/* camera stuff */
+		Camera& cam;
 	} info;
 
 	vk::Device dev;

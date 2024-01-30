@@ -18,16 +18,6 @@
 
 #include <UI/UI.hpp>
 
-
-// const static std::vector<Vertex> triangle = {
-// 	{{ 1.0, -1.0, -1.0 }, {}, { 1.0, 0.0 }},
-// 	{{ 1.0,  1.0, -1.0 }, {}, { 1.0, 1.0 }},
-// 	{{-1.0,  1.0, -1.0 }, {}, { 0.0, 1.0 }},
-// 	{{-1.0,  1.0, -1.0 }, {}, { 0.0, 1.0 }},
-// 	{{-1.0, -1.0, -1.0 }, {}, { 0.0, 0.0 }},
-// 	{{ 1.0, -1.0, -1.0 }, {}, { 1.0, 0.0 }},
-// };
-
 using namespace std::string_literals;
 
 Renderer::Renderer(Window& win) : win(win) {
@@ -325,7 +315,7 @@ void Renderer::draw() {
 	const auto t = static_cast<float>(frame) * 0.0167f;
 
 	uniform_buffer->upload(UniformData{
-		.mvp = p * glm::rotate(glm::translate(glm::mat4(1.0), -glm::vec3(0.0, 0.0, 3.0) * t / 3.0f), t, glm::vec3(1.0, 0.0, 0.0)),
+		.mvp = p * cam.view(),
 		.time = t,
 		.aspect_ratio = static_cast<float>(sz.width)/static_cast<float>(sz.height),
 	});

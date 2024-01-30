@@ -9,7 +9,9 @@
 
 #include <Renderer/Renderer.hpp>
 
-UI::UI(Renderer* ren) : dev(ren->dev) {
+#include <Scene/Camera.hpp>
+
+UI::UI(Renderer* ren) : dev(ren->dev), info{ .cam = ren->cam } {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
@@ -88,6 +90,11 @@ void UI::newFrame() {
 	ImGui::Begin("Rendering Info", nullptr);
 
 	ImGui::Text("FPS: %f", info.fps);
+	ImGui::SliderAngle("Theta", &info.cam.theta, 0.01, 179.9);
+	ImGui::SliderAngle("Phi", &info.cam.phi);
+	ImGui::SliderFloat("cam.x", &info.cam.pos.x, -1e2, 1e2);
+	ImGui::SliderFloat("cam.y", &info.cam.pos.y, -1e2, 1e2);
+	ImGui::SliderFloat("cam.z", &info.cam.pos.z, -1e2, 1e2);
 
 	ImGui::End();
 }
