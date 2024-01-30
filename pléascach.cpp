@@ -42,7 +42,8 @@ int main(int argc, char* argv[]) {
 
 			ren.draw();
 			ren.present();
-			Log::debug("Frame: %.2lf milliseconds (60fps ~ 16.67)\r", frame_timer.read());
+			const auto t = frame_timer.read();
+			ren.ui->info.fps = 1000.0f / t;
 
 			while (frame_timer.read() < 16.60)
 				;

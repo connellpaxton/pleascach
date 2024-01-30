@@ -11,6 +11,7 @@ struct Image;
 struct GraphicsPipeline;
 struct ComputePipeline;
 struct VertexBuffer;
+struct Model;
 
 struct CommandBuffer {
 	CommandBuffer(vk::Device dev, u32 queue_family);
@@ -28,6 +29,7 @@ struct CommandBuffer {
 	void bind(const GraphicsPipeline& pipeline);
 	void bind(vk::PipelineLayout layout, vk::ArrayProxy<vk::DescriptorSet> desc_sets);
 	void bind(const VertexBuffer& vertex_buffer, uint32_t binding = 0);
+	void bind(std::shared_ptr<Model> model);
 
 	void draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex = 0, uint32_t first_instance = 0);
 

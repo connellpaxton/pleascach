@@ -313,8 +313,9 @@ void Renderer::draw() {
 	command_buffer->command_buffer.setScissor(0, scissor);
 
 
-	command_buffer->bind(*models[0]->vertex_buffer);
-	command_buffer->command_buffer.bindIndexBuffer(*models[0]->index_buffer, 0, vk::IndexType::eUint16);
+	command_buffer->bind(models[0]);
+
+
 	command_buffer->bind(pipeline->layout, pipeline->desc_set);
 
 	auto sz = win.getDimensions();

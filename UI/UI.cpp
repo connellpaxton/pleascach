@@ -87,7 +87,7 @@ void UI::newFrame() {
 	ImGui::SetNextWindowBgAlpha(0.8f);
 	ImGui::Begin("Rendering Info", nullptr);
 
-	ImGui::Text("ImGui Test");
+	ImGui::Text("FPS: %f", info.fps);
 
 	ImGui::End();
 }

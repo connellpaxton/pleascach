@@ -8,6 +8,10 @@
 struct Renderer;
 
 struct UI {
+	struct UI_Info {
+		float fps = 0.0;
+	} info;
+
 	vk::Device dev;
 	vk::DescriptorPool desc_pool;
 
