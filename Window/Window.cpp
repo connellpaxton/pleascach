@@ -16,7 +16,6 @@ static void win_err_callback(int code, const char* msg) {
 Window::Window(const std::string& title, u32 width, u32 height) : width(width), height(height) {
 	glfwSetErrorCallback(win_err_callback);
 
-
 	if (!glfwInit()) {
 		Log::error("Failed to initialize GLFW\n");
 		return;

@@ -8,9 +8,9 @@
 #include <util/int.hpp>
 
 enum InputModifierBit {
-	NONE  = 0x00,
-	SHIFT = 0x01,
-	CNTRL = 0x02,
+	eNONE  = 0x00,
+	eSHIFT = 0x01,
+	eCNTRL = 0x02,
 };
 
 constexpr InputModifierBit operator & (const InputModifierBit a, const InputModifierBit b) {
@@ -32,11 +32,11 @@ constexpr u32 operator ~ (InputModifierBit a) {
 
 struct InputEvent {
 	enum Tag {
-		EXIT,
-		RESIZE,
-		CURSOR,
-		KEY,
-		BUTTON,
+		eEXIT,
+		eRESIZE,
+		eCURSOR,
+		eKEY,
+		eBUTTON,
 	} tag;
 
 	union {
@@ -54,6 +54,8 @@ struct InputEvent {
 	};
 };
 
+struct Renderer;
+
 struct Input {
 	Input(INPUT_PTR in);
 
@@ -62,6 +64,8 @@ struct Input {
 	void poll();
 
 	std::queue<InputEvent> queue;
+
+	void handleMovementKeys(Renderer& ren);
 
 	bool shouldClose();
 };

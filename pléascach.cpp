@@ -7,6 +7,9 @@
 
 #include <iostream>
 
+#include <GLFW/glfw3.h>
+
+
 int main(int argc, char* argv[]) {
 	try {
 		Window win(argv[0], 256, 512);
@@ -16,26 +19,25 @@ int main(int argc, char* argv[]) {
 		while (!in->shouldClose()) {
 			Timer frame_timer;
 			in->poll();
+			in->handleMovementKeys(ren);
 
 			while (in->queue.size()) {
 				/* take event from front of queue, then process it */
 				const auto& event = in->queue.front();
 				in->queue.pop();
 				switch (event.tag) {
-					case InputEvent::Tag::RESIZE:
+					case InputEvent::Tag::eRESIZE:
 						Log::info("Event Processed: Resized to %dx%d\n", event.resize.width, event.resize.height);
 						/* no need to have a resize() function in the renderer, b/c swapchain images will be
 						 * automatically marked out-of-date, and recreation will be triggered in our code 
 						 */
 					break;
-					case InputEvent::Tag::KEY:
-						Log::info("Event Processed: Button 0x%x %d\n", event.key.key, event.key.state);
-					break;
-					case InputEvent::Tag::EXIT:
+					case InputEvent::Tag::eEXIT:
 						win.close();
 					break;
-					case InputEvent::Tag::CURSOR:
-					case InputEvent::Tag::BUTTON:
+					case InputEvent::Tag::eCURSOR:
+					break;
+					case InputEvent::Tag::eBUTTON:
 					break;
 				}
 			}
