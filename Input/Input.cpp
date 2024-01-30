@@ -67,11 +67,16 @@ Input::Input(INPUT_PTR in) : in(in) {
 			}
 		});
 	});
+}
 
-	glfwSetInputMode(in, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+void Input::setCursor(bool enabled) {
+	glfwSetInputMode(in, GLFW_CURSOR, enabled? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 }
 
 void Input::handleMovementKeys(Renderer& ren) {
+	if (ImGui::GetIO().WantCaptureKeyboard)
+		return;
+
 	const auto forward = glm::vec3(glm::cos(ren.cam.phi), 0.0, glm::sin(ren.cam.phi));
 	const auto right = glm::cross(forward, glm::vec3(0.0, 1.0, 0.0));
 	const auto speed = glfwGetKey(in, GLFW_KEY_LEFT_SHIFT)? 2.0f : 1.0f;
@@ -128,6 +133,15 @@ void Input::handleMovementKeys(Renderer& ren) {
 void Input::handleCursorMovement(Renderer& ren, double x, double y) {
 	int rel_mouse_x = static_cast<int>(x) - last_mouse.x;
 	int rel_mouse_y = static_cast<int>(y) - last_mouse.y;
+
+	auto& io = ImGui::GetIO();
+	if (io.WantCaptureMouse)
+		return;
+
+	if (!ren.capture_mouse) {
+		io.AddMousePosEvent(x, y);
+		return;
+	}
 
 	ren.cam.phi += rel_mouse_x / 100.0;
 	ren.cam.theta += rel_mouse_y / 100.0;

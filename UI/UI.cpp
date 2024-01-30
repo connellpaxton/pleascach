@@ -91,7 +91,7 @@ void UI::newFrame() {
 
 	ImGui::Text("FPS: %f", info.fps);
 	ImGui::SliderAngle("Theta", &info.cam.theta, 0.01, 179.9);
-	ImGui::SliderAngle("Phi", &info.cam.phi);
+	ImGui::SliderAngle("Phi", &info.cam.phi, 0.0, 360.0, "%.0f def");
 	ImGui::SliderFloat("cam.x", &info.cam.pos.x, -1e2, 1e2);
 	ImGui::SliderFloat("cam.y", &info.cam.pos.y, -1e2, 1e2);
 	ImGui::SliderFloat("cam.z", &info.cam.pos.z, -1e2, 1e2);

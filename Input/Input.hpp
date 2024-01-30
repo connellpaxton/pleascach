@@ -72,5 +72,7 @@ struct Input {
 	void handleMovementKeys(Renderer& ren);
 	void handleCursorMovement(Renderer& ren, double x, double y);
 
+	void setCursor(bool enabled);
+
 	bool shouldClose();
 };

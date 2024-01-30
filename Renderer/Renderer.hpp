@@ -61,4 +61,6 @@ struct Renderer {
 	std::unique_ptr<UI> ui;
 
 	Camera cam {};
+
+	bool capture_mouse = false;
 };

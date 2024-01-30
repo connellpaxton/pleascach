@@ -40,6 +40,12 @@ int main(int argc, char* argv[]) {
 					break;
 					case InputEvent::Tag::eBUTTON:
 					break;
+					case InputEvent::Tag::eKEY:
+						if (event.key.key == GLFW_KEY_ESCAPE && event.key.state == GLFW_PRESS) {
+							ren.capture_mouse = !ren.capture_mouse;
+							in->setCursor(!ren.capture_mouse);
+						}
+					break;
 				}
 			}
 
