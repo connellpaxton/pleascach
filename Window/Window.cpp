@@ -2,7 +2,6 @@
 #include <GLFW/glfw3.h>
 
 
-#define WINDOW_PTR GLFWwindow*
 #define INPUT_PTR GLFWwindow*
 #include <Window/Window.hpp>
 #include <Input/Input.hpp>

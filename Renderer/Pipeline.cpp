@@ -83,7 +83,7 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 	const auto raster_info = vk::PipelineRasterizationStateCreateInfo {
 		.depthClampEnable = vk::False,
 		.polygonMode = vk::PolygonMode::eFill,
-		.cullMode = vk::CullModeFlagBits::eBack,
+		.cullMode = vk::CullModeFlagBits::eNone,
 		.frontFace = vk::FrontFace::eCounterClockwise,
 		.depthBiasEnable = vk::False,
 		.lineWidth = 1.0,

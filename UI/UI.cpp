@@ -11,7 +11,7 @@
 
 #include <Scene/Camera.hpp>
 
-UI::UI(Renderer* ren) : info{ .cam = ren->cam }, dev(ren->dev) {
+UI::UI(Renderer* ren) : info{ .flycam = ren->flycam, .cam = ren->cam }, dev(ren->dev) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
@@ -90,6 +90,8 @@ void UI::newFrame() {
 	ImGui::Begin("Rendering Info", nullptr);
 
 	ImGui::Text("FPS: %f", info.fps);
+	ImGui::Checkbox("Fly Camera", &info.flycam);
+	ImGui::Text("Fly Camera mode: %b");
 	ImGui::SliderAngle("Theta", &info.cam.theta, 0.01, 179.9);
 	ImGui::SliderAngle("Phi", &info.cam.phi, 0.0, 360.0, "%.0f def");
 	ImGui::SliderFloat("cam.x", &info.cam.pos.x, -1e2, 1e2);

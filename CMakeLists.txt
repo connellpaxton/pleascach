@@ -27,6 +27,7 @@ add_executable (pleascach ${SOURCES})
 file(GLOB SHADER_SOURCE_FILES
 	assets/shaders/*.frag
 	assets/shaders/*.vert
+	assets/shaders/*.geom
 )
 
 foreach(SHADER_SOURCE ${SHADER_SOURCE_FILES})

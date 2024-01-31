@@ -21,6 +21,7 @@ struct Timer {
 		start();
 	}
 
+	/* returns time in milliseconds */
 	inline double read() {
 		if (running) {
 			auto end = std::chrono::steady_clock::now();

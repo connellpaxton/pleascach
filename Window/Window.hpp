@@ -9,12 +9,10 @@
 
 #include <Input/Input.hpp>
 
-#ifndef WINDOW_PTR
-#define WINDOW_PTR void*
-#endif
-
 #define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
 #include <vulkan/vulkan.hpp>
+
+#include <GLFW/glfw3.h>
 
 /*
  * Window class - abstracts away implementation/platform-specific realities of window
@@ -37,7 +35,7 @@ struct Window {
 	vk::SurfaceKHR getSurface(vk::Instance& inst);
 	std::unique_ptr<Input> getInput();
 
-	WINDOW_PTR win = nullptr;
+	GLFWwindow* win = nullptr;
 
 private:
 	u32 width, height;

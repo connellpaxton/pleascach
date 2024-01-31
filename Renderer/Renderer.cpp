@@ -122,10 +122,10 @@ Renderer::Renderer(Window& win) : win(win) {
 		.pQueuePriorities = priorities,
 	};
 
-	/* enumerate available device features */
 	std::vector<const char*> req_dev_extensions;
 	req_dev_extensions.push_back("VK_KHR_swapchain");
 	req_dev_extensions.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+
 	auto dev_extentions = phys_dev.enumerateDeviceExtensionProperties();
 	Log::info("%zu available device extensions\n", dev_extentions.size());
 	for (const auto& ext : dev_extentions) {
@@ -141,7 +141,11 @@ Renderer::Renderer(Window& win) : win(win) {
 		"VK_LAYER_KHRONOS_validation"
 	};
 
-	auto dev_info = vk::DeviceCreateInfo{
+	const auto features = vk::PhysicalDeviceFeatures {
+		.geometryShader = vk::True,
+	};
+
+	auto dev_info = vk::DeviceCreateInfo {
 		.flags = vk::DeviceCreateFlagBits(0),
 		.queueCreateInfoCount = 1,
 		.pQueueCreateInfos = &queue_info,
@@ -149,6 +153,7 @@ Renderer::Renderer(Window& win) : win(win) {
 		.ppEnabledLayerNames = dev_layer_names.data(),
 		.enabledExtensionCount = static_cast<u32>(req_dev_extensions.size()),
 		.ppEnabledExtensionNames = req_dev_extensions.data(),
+		.pEnabledFeatures = &features,
 	};
 
 	dev = phys_dev.createDevice(dev_info);
@@ -181,6 +186,7 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	std::vector<Shader> shaders = {
 		{ dev, "assets/shaders/basic.vert.spv", vk::ShaderStageFlagBits::eVertex },
+		{ dev, "assets/shaders/explode.geom.spv", vk::ShaderStageFlagBits::eGeometry },
 		{ dev, "assets/shaders/basic.frag.spv", vk::ShaderStageFlagBits::eFragment },
 	};
 
@@ -191,17 +197,19 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	/* initialize models */
 //	models.push_back(std::make_shared<Model>(phys_dev, dev, "assets/models/dragon.gltf"));
+	Timer model_timer;
 	models.push_back(std::make_shared<Model>(phys_dev, dev, "assets/models/dragon.gltf"));
+	auto t = model_timer.stop();
 
-	Log::debug("#%zu vertex indices\n", models[0]->indices.size());
+	Log::debug("Models loaded in %lf milliseconds\n", model_timer.read());
 
 	pipeline = std::make_unique<GraphicsPipeline>(dev, shaders, swapchain->extent, *render_pass, bindings, *models[0]->vertex_buffer);
 
 	pipeline->update(0, *uniform_buffer);
 	pipeline->update(1, textures[0]);
 
-	shaders[0].cleanup();
-	shaders[1].cleanup();
+	for (auto& shader : shaders)
+		shader.cleanup();
 
 	ui = std::make_unique<UI>(this);
 }
@@ -263,7 +271,7 @@ void Renderer::draw() {
 	command_buffer->begin();
 	
 	vk::ClearValue clear_values[] = {
-		vk::ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f),
+		vk::ClearColorValue(1.0f, 1.0f, 1.0f, 1.0f),
 		vk::ClearDepthStencilValue {.depth = 1.0f}
 	};
 

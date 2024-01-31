@@ -11,6 +11,7 @@ struct Camera;
 struct UI {
 	struct UI_Info {
 		float fps = 0.0;
+		bool& flycam;
 		/* camera stuff */
 		Camera& cam;
 	} info;

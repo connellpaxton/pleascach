@@ -77,7 +77,11 @@ void Input::handleMovementKeys(Renderer& ren) {
 	if (ImGui::GetIO().WantCaptureKeyboard)
 		return;
 
-	const auto forward = glm::vec3(glm::cos(ren.cam.phi), 0.0, glm::sin(ren.cam.phi));
+	glm::vec3 forward;
+	if (ren.flycam)
+		forward = glm::vec3(glm::sin(ren.cam.theta)*glm::cos(ren.cam.phi), glm::cos(ren.cam.theta), glm::sin(ren.cam.theta)*glm::sin(ren.cam.phi));
+	else
+		forward = glm::vec3(glm::cos(ren.cam.phi), 0.0, glm::sin(ren.cam.phi));
 	const auto right = glm::cross(forward, glm::vec3(0.0, 1.0, 0.0));
 	const auto speed = glfwGetKey(in, GLFW_KEY_LEFT_SHIFT)? 2.0f : 1.0f;
 

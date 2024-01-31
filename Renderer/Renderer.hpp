@@ -63,4 +63,5 @@ struct Renderer {
 	Camera cam {};
 
 	bool capture_mouse = false;
+	bool flycam = false;
 };
