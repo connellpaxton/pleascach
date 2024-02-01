@@ -64,4 +64,8 @@ struct Renderer {
 
 	bool capture_mouse = false;
 	bool flycam = false;
+	/* time speed */
+	float time = 0.0;
+	float speed = 1.0;
+	bool running = true;
 };

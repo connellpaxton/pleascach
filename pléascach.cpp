@@ -21,7 +21,6 @@ int main(int argc, char* argv[]) {
 		auto in = win.getInput();
 		Renderer ren(win);
 
-		bool paused = false;
 		while (!in->shouldClose()) {
 			Timer frame_timer;
 			in->poll();
@@ -63,11 +62,15 @@ int main(int argc, char* argv[]) {
 							ren.capture_mouse = !ren.capture_mouse;
 							in->setCursor(!ren.capture_mouse);
 						} else if (event.key.key == GLFW_KEY_R && event.key.state == GLFW_PRESS) {
-							ren.frame = 0;
+							ren.time = 0;
 						} else if (event.key.key == GLFW_KEY_C && event.key.state == GLFW_PRESS) {
 							ren.flycam = !ren.flycam;
 						} else if (event.key.key == GLFW_KEY_P && event.key.state == GLFW_PRESS) {
-							paused = !paused;
+							ren.running = !ren.running;
+						} else if (event.key.key == GLFW_KEY_T && event.key.state == GLFW_PRESS) {
+							ren.speed *= 10.0;
+						} else if (event.key.key == GLFW_KEY_Y && event.key.state == GLFW_PRESS) {
+							ren.speed /= 10.0;
 						}
 					break;
 				}
@@ -80,8 +83,6 @@ int main(int argc, char* argv[]) {
 
 			while (frame_timer.read() < 16.60)
 				;
-			if(paused)
-				ren.frame -= 1;
 		}
 
 	} catch (const std::string& e) {

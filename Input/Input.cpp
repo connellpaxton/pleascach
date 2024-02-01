@@ -36,8 +36,8 @@ Input::Input(INPUT_PTR in) : in(in) {
 
 	glfwSetKeyCallback(in, [](GLFWwindow* in, int key, int scancode, int action, int mods) {
 		int state = (action == GLFW_PRESS || action == GLFW_REPEAT);
-		static const char* action_strings[] = { "RELEASE", "PRESS", "REPEAT" };
-		Log::info("Event Received:Key:\"%s\" %s\n", glfwGetKeyName(key, scancode), action_strings[action]);
+	//	static const char* action_strings[] = { "RELEASE", "PRESS", "REPEAT" };
+	//	Log::info("Event Received:Key:\"%s\" %s\n", glfwGetKeyName(key, scancode), action_strings[action]);
 		Input* input = reinterpret_cast<Input*>(glfwGetWindowUserPointer(in));
 		InputModifierBit i_mods = eNONE;
 

@@ -320,17 +320,16 @@ void Renderer::draw() {
 
 	const auto p = glm::perspective(glm::radians(90.0f), static_cast<float>(sz.width) / static_cast<float>(sz.height), 0.01f, 2000.0f);
 
-	const auto t = static_cast<float>(frame) * 0.0167f;
 
 	uniform_buffer->upload(UniformData{
 		.mvp = p * cam.view(),
-		.time = t,
+		.time = time,
 		.aspect_ratio = static_cast<float>(sz.width)/static_cast<float>(sz.height),
 	});
 
 
 	//command_buffer->draw(std::size(triangle), 1, 0, 0);
-	command_buffer->command_buffer.drawIndexed(models[0]->indices.size(), 1, 0, 0, 0);
+	command_buffer->command_buffer.drawIndexed(models[0]->indices.size(), 10, 0, 0, 0);
 
 	/*command_buffer->bind(*models[1]->vertex_buffer);
 	command_buffer->command_buffer.bindIndexBuffer(*models[1]->index_buffer, 0, vk::IndexType::eUint16);	
@@ -385,6 +384,7 @@ void Renderer::present() {
 	}
 
 	frame++;
+	time += 0.0167f * speed * static_cast<float>(running);
 }
 
 Renderer::~Renderer() {
