@@ -21,6 +21,7 @@ int main(int argc, char* argv[]) {
 		auto in = win.getInput();
 		Renderer ren(win);
 
+		bool paused = false;
 		while (!in->shouldClose()) {
 			Timer frame_timer;
 			in->poll();
@@ -65,6 +66,8 @@ int main(int argc, char* argv[]) {
 							ren.frame = 0;
 						} else if (event.key.key == GLFW_KEY_C && event.key.state == GLFW_PRESS) {
 							ren.flycam = !ren.flycam;
+						} else if (event.key.key == GLFW_KEY_P && event.key.state == GLFW_PRESS) {
+							paused = !paused;
 						}
 					break;
 				}
@@ -77,6 +80,8 @@ int main(int argc, char* argv[]) {
 
 			while (frame_timer.read() < 16.60)
 				;
+			if(paused)
+				ren.frame -= 1;
 		}
 
 	} catch (const std::string& e) {
