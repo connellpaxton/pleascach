@@ -11,7 +11,7 @@
 
 #include <Scene/Camera.hpp>
 
-UI::UI(Renderer* ren) : info{ .flycam = ren->flycam, .cam = ren->cam }, dev(ren->dev) {
+UI::UI(Renderer* ren) : info{ .flycam = ren->flycam,  .time = ren->time, .cam = ren->cam, }, dev(ren->dev) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
@@ -86,10 +86,11 @@ void UI::newFrame() {
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	ImGui::SetNextWindowBgAlpha(0.8f);
+	ImGui::SetNextWindowBgAlpha(0.5f);
 	ImGui::Begin("Rendering Info", nullptr);
 
 	ImGui::Text("FPS: %f", info.fps);
+	ImGui::Text("Time: %f", info.time);
 	ImGui::Checkbox("Fly Camera", &info.flycam);
 	ImGui::SliderAngle("Theta", &info.cam.theta, 0.01, 179.9);
 	ImGui::SliderAngle("Phi", &info.cam.phi, 0.0, 360.0, "%.0f def");

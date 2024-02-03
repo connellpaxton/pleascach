@@ -185,9 +185,9 @@ Renderer::Renderer(Window& win) : win(win) {
 	});
 
 	std::vector<Shader> shaders = {
-		{ dev, "assets/shaders/basic.vert.spv", vk::ShaderStageFlagBits::eVertex },
-		{ dev, "assets/shaders/explode.geom.spv", vk::ShaderStageFlagBits::eGeometry },
-		{ dev, "assets/shaders/basic.frag.spv", vk::ShaderStageFlagBits::eFragment },
+		{ dev, "assets/shaders/fraglight.vert.spv", vk::ShaderStageFlagBits::eVertex },
+		{ dev, "assets/shaders/fraglight.geom.spv", vk::ShaderStageFlagBits::eGeometry },
+		{ dev, "assets/shaders/gooch.frag.spv", vk::ShaderStageFlagBits::eFragment },
 	};
 
 	std::vector<vk::DescriptorSetLayoutBinding> bindings = {
@@ -196,7 +196,6 @@ Renderer::Renderer(Window& win) : win(win) {
 	};
 
 	/* initialize models */
-//	models.push_back(std::make_shared<Model>(phys_dev, dev, "assets/models/dragon.gltf"));
 	Timer model_timer;
 	models.push_back(std::make_shared<Model>(phys_dev, dev, "assets/models/dragon.gltf"));
 	auto t = model_timer.stop();
@@ -271,7 +270,7 @@ void Renderer::draw() {
 	command_buffer->begin();
 	
 	vk::ClearValue clear_values[] = {
-		vk::ClearColorValue(1.0f, 1.0f, 1.0f, 1.0f),
+		vk::ClearColorValue(0.0f, 0.0f, 0.0f, 0.0f),
 		vk::ClearDepthStencilValue {.depth = 1.0f}
 	};
 
@@ -321,10 +320,11 @@ void Renderer::draw() {
 	const auto p = glm::perspective(glm::radians(90.0f), static_cast<float>(sz.width) / static_cast<float>(sz.height), 0.01f, 2000.0f);
 
 
-	uniform_buffer->upload(UniformData{
+	uniform_buffer->upload(UniformData {
 		.mvp = p * cam.view(),
 		.time = time,
-		.aspect_ratio = static_cast<float>(sz.width)/static_cast<float>(sz.height),
+	//	.aspect_ratio= static_cast<float>(sz.width) / static_cast<float>(sz.height),
+		.cam_pos = cam.pos,
 	});
 
 

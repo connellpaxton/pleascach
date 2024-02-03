@@ -13,4 +13,4 @@ layout (set = 0, binding = 1) uniform sampler2D tex;
 
 void main() {
 	FragColor = vec4(norm, 1.0);
-}
+}	
