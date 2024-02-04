@@ -185,9 +185,9 @@ Renderer::Renderer(Window& win) : win(win) {
 	});
 
 	std::vector<Shader> shaders = {
-		{ dev, "assets/shaders/fraglight.vert.spv", vk::ShaderStageFlagBits::eVertex },
-		{ dev, "assets/shaders/fraglight.geom.spv", vk::ShaderStageFlagBits::eGeometry },
-		{ dev, "assets/shaders/gooch.frag.spv", vk::ShaderStageFlagBits::eFragment },
+			{dev, "assets/shaders/fraglight.vert.spv", vk::ShaderStageFlagBits::eVertex},
+			{ dev, "assets/shaders/fraglight.geom.spv", vk::ShaderStageFlagBits::eGeometry },
+			{ dev, "assets/shaders/lambert.frag.spv", vk::ShaderStageFlagBits::eFragment },
 	};
 
 	std::vector<vk::DescriptorSetLayoutBinding> bindings = {
