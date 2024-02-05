@@ -45,11 +45,20 @@ float screen_space_tess(vec4 p0, vec4 p1) {
 }
 
 void main() {
+
 	if(gl_InvocationID == 0) {
+		/*
 		gl_TessLevelOuter[0] = screen_space_tess(gl_in[3].gl_Position, gl_in[0].gl_Position);
 		gl_TessLevelOuter[1] = screen_space_tess(gl_in[0].gl_Position, gl_in[1].gl_Position);
 		gl_TessLevelOuter[2] = screen_space_tess(gl_in[1].gl_Position, gl_in[2].gl_Position);
 		gl_TessLevelOuter[3] = screen_space_tess(gl_in[2].gl_Position, gl_in[3].gl_Position);
+		gl_TessLevelInner[0] = mix(gl_TessLevelOuter[0], gl_TessLevelOuter[3], 0.5);
+		gl_TessLevelInner[1] = mix(gl_TessLevelOuter[2], gl_TessLevelOuter[1], 0.5);*/
+		
+		gl_TessLevelOuter[0] = tess_factor;
+		gl_TessLevelOuter[1] = tess_factor;
+		gl_TessLevelOuter[2] = tess_factor;
+		gl_TessLevelOuter[3] = tess_factor;
 		gl_TessLevelInner[0] = mix(gl_TessLevelOuter[0], gl_TessLevelOuter[3], 0.5);
 		gl_TessLevelInner[1] = mix(gl_TessLevelOuter[2], gl_TessLevelOuter[1], 0.5);
 	}

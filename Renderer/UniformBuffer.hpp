@@ -13,7 +13,11 @@ struct UniformData {
 	glm::mat4 view;
 	glm::mat4 proj;
 	float time;
+	float pad0;
+	float pad1;
+	float pad2;
 	glm::vec3 cam_pos;
+	float pad3;
 	glm::vec2 viewport;
 	float tess_factor;
 	float tess_edge_size;

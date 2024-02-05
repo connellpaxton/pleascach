@@ -223,6 +223,8 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	terrain_pipeline = std::make_unique<GraphicsPipeline>(dev, terrain_shaders, swapchain->extent, *render_pass, bindings, *terrain->vertex_buffer, GraphicsPipeline::eTERRAIN);
 
+	terrain_pipeline->update(1, textures[1]);
+
 	for (auto& shader : shaders)
 		shader.cleanup();
 	for (auto& shader : terrain_shaders)

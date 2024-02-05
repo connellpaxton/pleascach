@@ -5,7 +5,6 @@
 
 
 float Terrain::getHeight(int32_t x, int32_t y) {
-	Log::debug("Height queried at %d, %d\n", x, y);
 	if (x < 0)
 		x += 64;
 	if (y < 0)
