@@ -5,17 +5,16 @@
 
 
 float Terrain::getHeight(int32_t x, int32_t y) {
+	Log::debug("Height queried at %d, %d\n", x, y);
 	if (x < 0)
-		x += heightmap_tex->extent.width;
+		x += 64;
 	if (y < 0)
-		y += heightmap_tex->extent.height;
+		y += 64;
 
-	if (x <= heightmap_tex->extent.width)
-		x -= heightmap_tex->extent.width;
-	if (y <= heightmap_tex->extent.height)
-		y -= heightmap_tex->extent.height;
+	x %= 64;
+	y %= 64;
 
-	return heightmap_tex->image_data[y * heightmap_tex->extent.width + x * 4];
+	return heightmap_tex->image_data[(y * heightmap_tex->extent.height * heightmap_tex->extent.width / 64 + x * heightmap_tex->extent.width / 64) * 4];
 }
 
 Terrain::Terrain(vk::PhysicalDevice phys_dev, vk::Device dev, Texture& tex) : phys_dev(phys_dev), dev(dev) {
@@ -26,12 +25,15 @@ Terrain::Terrain(vk::PhysicalDevice phys_dev, vk::Device dev, Texture& tex) : ph
 	const auto uv_scale = 1.0f;
 	const auto vertex_count = patch_size * patch_size;
 
-	vertices.reserve(vertex_count);
+	vertices.resize(vertex_count);
 
 	for (size_t x = 0; x < patch_size; x++)
 		for (size_t y = 0; y < patch_size; y++)
-			vertices.push_back(Vertex {
-				.pos = glm::vec3(2.0f*x+1.0f - patch_size, 0.0f, 2.0f * y + 1.0f - patch_size),
+			vertices[x + y*patch_size] = (Vertex {
+				.pos = glm::vec3(
+					2.0f * x + 1.0f - patch_size,
+					0.0f,
+					2.0f * y * 1.0f - patch_size),
 				.uv = glm::vec2(static_cast<float>(x)/patch_size, static_cast<float>(y) / patch_size) * uv_scale,
 			});
 
@@ -54,8 +56,8 @@ Terrain::Terrain(vk::PhysicalDevice phys_dev, vk::Device dev, Texture& tex) : ph
 	*		+----+----+----+
 	*/
 
-	for(auto x = 0_u32; x < patch_size; x++)
-		for (auto y = 0_u32; y < patch_size; y++) {
+	for(auto x = 0_i32; x < patch_size; x++)
+		for (auto y = 0_i32; y < patch_size; y++) {
 			float moores_heights[3][3] = {
 				{ getHeight(x - 1, y - 1), getHeight(x - 1, y), getHeight(x - 1, y + 1) },
 				{ getHeight(x + 0, y - 1), getHeight(x + 0, y), getHeight(x + 0, y + 1) },
@@ -84,8 +86,8 @@ Terrain::Terrain(vk::PhysicalDevice phys_dev, vk::Device dev, Texture& tex) : ph
 	const auto w = patch_size - 1;
 	indices.resize(w * w * 4);
 
-	for (auto x = 0_u32; x < patch_size; x++)
-		for (auto y = 0_u32; y < patch_size; y++) {
+	for (auto x = 0_u32; x < w; x++)
+		for (auto y = 0_u32; y < w; y++) {
 			auto idx = x + y * w * 4;
 			indices[idx] = x+y*patch_size;
 			indices[idx+1] = indices[idx] + patch_size;

@@ -20,7 +20,7 @@ struct Buffer {
 	}
 	template<typename T>
 	inline void upload(const std::vector<T>& data) {
-		upload(reinterpret_cast<uint8_t*>(data.data()), data.size()*sizeof(T));
+		upload(reinterpret_cast<const uint8_t*>(data.data()), data.size()*sizeof(T));
 	}
 
 	operator vk::Buffer& () {

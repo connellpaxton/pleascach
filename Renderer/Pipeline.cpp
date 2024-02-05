@@ -9,7 +9,7 @@
 
 #include <util/log.hpp>
 
-GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& shaders, const vk::Extent2D& extent, const RenderPass& render_pass, vk::ArrayProxy<vk::DescriptorSetLayoutBinding> bindings, const VertexBuffer& vertex_buffer, enum Type type = Type::GLTF) : dev(dev) {
+GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& shaders, const vk::Extent2D& extent, const RenderPass& render_pass, vk::ArrayProxy<vk::DescriptorSetLayoutBinding> bindings, const VertexBuffer& vertex_buffer, enum Type type) : dev(dev) {
 	/* create layout
 	 * Eventually add a graphicspipline constructor that allows specification of layouts etc
 	 * kinda like how Image::Image has all those versions
@@ -80,10 +80,21 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 		.primitiveRestartEnable = vk::False,
 	};
 
+	const vk::PipelineTessellationStateCreateInfo* ptesselation_info = nullptr;
+
+	const auto tess_info = vk::PipelineTessellationStateCreateInfo {
+		/* quads*/
+		.patchControlPoints = 4,
+	};
+
+	if(type == Type::eTERRAIN) {
+		ptesselation_info = &tess_info;
+	}
+
 	const auto raster_info = vk::PipelineRasterizationStateCreateInfo {
 		.depthClampEnable = vk::False,
 		.polygonMode = type == Type::eGLTF? vk::PolygonMode::eFill : vk::PolygonMode::eLine,
-		.cullMode = vk::CullModeFlagBits::eBack,
+		.cullMode = vk::CullModeFlagBits::eNone,
 		.frontFace = vk::FrontFace::eCounterClockwise,
 		.depthBiasEnable = vk::False,
 		.lineWidth = 1.0,
@@ -154,7 +165,7 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 		.pStages = shader_info.data(),
 		.pVertexInputState = &vertex_input_info,
 		.pInputAssemblyState = &input_asm_info,
-		.pTessellationState = nullptr,
+		.pTessellationState = ptesselation_info,
 		.pViewportState = &viewport_info,
 		.pRasterizationState = &raster_info,
 		.pMultisampleState = &multisample_info,

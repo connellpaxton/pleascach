@@ -72,4 +72,7 @@ struct Renderer {
 	float time = 0.0;
 	float speed = 1.0;
 	bool running = true;
+
+	float tess_factor;
+	float tess_edge_size = 20.0f;
 };

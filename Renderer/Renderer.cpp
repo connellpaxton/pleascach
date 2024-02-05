@@ -143,6 +143,8 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	const auto features = vk::PhysicalDeviceFeatures{
 		.geometryShader = vk::True,
+		.tessellationShader = vk::True,
+		.fillModeNonSolid = vk::True,
 	};
 
 	auto dev_info = vk::DeviceCreateInfo{
@@ -182,6 +184,7 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	textures = createResources({
 		"assets/textures/oil.jpg",
+		"assets/textures/heightmap.png",
 	});
 
 	std::vector<Shader> shaders = {
@@ -209,7 +212,7 @@ Renderer::Renderer(Window& win) : win(win) {
 
 
 	/* create Terrain */
-	terrain = std::make_unique<Terrain>(phys_dev, dev, textures[0]);
+	terrain = std::make_unique<Terrain>(phys_dev, dev, textures[1]);
 
 	std::vector<Shader> terrain_shaders = {
 		{ dev, "assets/shaders/terrain.vert.spv", vk::ShaderStageFlagBits::eVertex },
@@ -218,7 +221,7 @@ Renderer::Renderer(Window& win) : win(win) {
 		{ dev, "assets/shaders/terrain.frag.spv", vk::ShaderStageFlagBits::eFragment },
 	};
 
-	terrain_pipeline = std::make_unique<GraphicsPipeline>(dev, terrain_shaders, swapchain->extent, *render_pass, bindings, terrain->vertex_buffer, GraphicsPipeline::eTERRAIN);
+	terrain_pipeline = std::make_unique<GraphicsPipeline>(dev, terrain_shaders, swapchain->extent, *render_pass, bindings, *terrain->vertex_buffer, GraphicsPipeline::eTERRAIN);
 
 	for (auto& shader : shaders)
 		shader.cleanup();
@@ -236,7 +239,7 @@ std::vector<Texture> Renderer::createResources(const std::vector<std::string>& n
 	texture_cmd.begin();
 
 	for (const auto& name : names) {
-		ret.push_back({phys_dev, dev, texture_cmd, name});
+		ret.push_back({phys_dev, dev, texture_cmd, name, false});
 	}
 
 	texture_cmd.end();
@@ -338,11 +341,13 @@ void Renderer::draw() {
 	uniform_buffer->upload(UniformData {
 		.mvp = p * cam.view(),
 		.time = time,
-	//	.aspect_ratio= static_cast<float>(sz.width) / static_cast<float>(sz.height),
 		.cam_pos = cam.pos,
+		.viewport = glm::vec2(viewport.width, viewport.y),
+		.tess_factor = tess_factor,
+		.tess_edge_size = tess_edge_size,
 	});
 
-	command_buffer->command_buffer.drawIndexed(models[0]->indices.size(), 10, 0, 0, 0);
+	//command_buffer->command_buffer.drawIndexed(models[0]->indices.size(), 10, 0, 0, 0);
 
 	command_buffer->bind(*terrain_pipeline);
 	command_buffer->command_buffer.setViewport(0, viewport);
@@ -411,9 +416,13 @@ Renderer::~Renderer() {
 	for(auto& model : models)
 		model.reset();
 
+	terrain.reset();
+
 	uniform_buffer.reset();
 	vertex_buffer.reset();
+	terrain_pipeline.reset();
 	pipeline.reset();
+
 
 	for (auto& tex : textures) {
 		tex.cleanup();

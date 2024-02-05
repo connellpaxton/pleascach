@@ -13,6 +13,9 @@ struct UniformData {
 	glm::mat4 mvp;
 	float time;
 	glm::vec3 cam_pos;
+	glm::vec2 viewport;
+	float tess_factor;
+	float tess_edge_size;
 };
 
 struct UniformBuffer {

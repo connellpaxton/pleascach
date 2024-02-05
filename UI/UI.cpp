@@ -11,7 +11,7 @@
 
 #include <Scene/Camera.hpp>
 
-UI::UI(Renderer* ren) : info{ .flycam = ren->flycam,  .time = ren->time, .cam = ren->cam, }, dev(ren->dev) {
+UI::UI(Renderer* ren) : info{ .flycam = ren->flycam,  .time = ren->time, .cam = ren->cam, .tess_factor = ren->tess_factor, .tess_edge_size = ren->tess_edge_size }, dev(ren->dev) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
@@ -92,11 +92,8 @@ void UI::newFrame() {
 	ImGui::Text("FPS: %f", info.fps);
 	ImGui::Text("Time: %f", info.time);
 	ImGui::Checkbox("Fly Camera", &info.flycam);
-	ImGui::SliderAngle("Theta", &info.cam.theta, 0.01, 179.9);
-	ImGui::SliderAngle("Phi", &info.cam.phi, 0.0, 360.0, "%.0f def");
-	ImGui::SliderFloat("cam.x", &info.cam.pos.x, -1e2, 1e2);
-	ImGui::SliderFloat("cam.y", &info.cam.pos.y, -1e2, 1e2);
-	ImGui::SliderFloat("cam.z", &info.cam.pos.z, -1e2, 1e2);
+	ImGui::SliderFloat("Tessellation Factor: %f", &info.tess_factor, 0.0, 20.0);
+	ImGui::SliderFloat("Edge Size: %f", &info.tess_edge_size, 0.0, 40.0);
 
 	ImGui::End();
 }

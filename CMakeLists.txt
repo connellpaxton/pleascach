@@ -28,6 +28,8 @@ file(GLOB SHADER_SOURCE_FILES
 	assets/shaders/*.frag
 	assets/shaders/*.vert
 	assets/shaders/*.geom
+	assets/shaders/*.tese
+	assets/shaders/*.tesc
 )
 
 foreach(SHADER_SOURCE ${SHADER_SOURCE_FILES})

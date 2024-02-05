@@ -18,6 +18,7 @@ Texture::Texture(vk::PhysicalDevice phys_dev, vk::Device dev, CommandBuffer& com
 
 
 	image_data = stbi_load(fname.c_str(), reinterpret_cast<int*>(&extent.width), reinterpret_cast<int*>(&extent.height), &n_channels, STBI_rgb_alpha);
+	Log::info("Texture is %dx%d loaded at %p\n", extent.width, extent.height, image_data);
 	extent.depth = 1;
 
 	image = std::make_unique<Image>(phys_dev, dev, extent, vk::Format::eR8G8B8A8Unorm,
@@ -31,8 +32,10 @@ Texture::Texture(vk::PhysicalDevice phys_dev, vk::Device dev, CommandBuffer& com
 		vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
 	staging->upload(image_data);
-	if(free_memory)
+	if(free_memory) {
 		stbi_image_free(image_data);
+		image_data = nullptr;
+	}
 
 	/* pipeline memory barrier ensures this doesn't get reordered wrong */
 

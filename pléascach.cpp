@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
 
 			while (in->queue.size()) {
 				/* take event from front of queue, then process it */
-				const auto& event = in->queue.front();
+				const auto event = in->queue.front();
 				in->queue.pop();
 				switch (event.tag) {
 					case InputEvent::Tag::eRESIZE:
