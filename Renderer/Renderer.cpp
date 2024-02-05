@@ -22,7 +22,7 @@ using namespace std::string_literals;
 
 Renderer::Renderer(Window& win) : win(win) {
 	/* Create Instance object */
-	auto app_info = vk::ApplicationInfo {
+	auto app_info = vk::ApplicationInfo{
 		.pApplicationName = "Pléascach Demo",
 		.applicationVersion = VK_MAKE_API_VERSION(0, 0, 1, 0),
 		.pEngineName = "Pléascach",
@@ -54,8 +54,8 @@ Renderer::Renderer(Window& win) : win(win) {
 	}
 
 	const char* my_layers[] = {
-//		"VK_LAYER_LUNARG_api_dump",
-		"VK_LAYER_KHRONOS_validation",
+		//		"VK_LAYER_LUNARG_api_dump",
+				"VK_LAYER_KHRONOS_validation",
 	};
 
 	auto inst_info = vk::InstanceCreateInfo{
@@ -97,7 +97,7 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	phys_dev = phys_devs[discrete_idx];
 	Log::info("Selected device: \"%s\" (#%zu)\n", phys_dev.getProperties().deviceName.data(), discrete_idx);
-	
+
 	/* find queue family */
 	auto queue_family_props = phys_dev.getQueueFamilyProperties();
 	queue_family = -1;
@@ -115,7 +115,7 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	Log::info("Selected queue family: %i\n", queue_family);
 
-	float priorities[] = {1.0f};
+	float priorities[] = { 1.0f };
 	auto queue_info = vk::DeviceQueueCreateInfo{
 		.queueFamilyIndex = static_cast<u32>(queue_family),
 		.queueCount = 1,
@@ -131,7 +131,7 @@ Renderer::Renderer(Window& win) : win(win) {
 	for (const auto& ext : dev_extentions) {
 		Log::info("\t\"%s\"\n", ext.extensionName.data());
 	}
-	
+
 	auto dev_layers = phys_dev.enumerateDeviceLayerProperties();
 	Log::info("%zu available device layers\n", dev_layers.size());
 	for (const auto& layer : dev_layers) {
@@ -141,11 +141,11 @@ Renderer::Renderer(Window& win) : win(win) {
 		"VK_LAYER_KHRONOS_validation"
 	};
 
-	const auto features = vk::PhysicalDeviceFeatures {
+	const auto features = vk::PhysicalDeviceFeatures{
 		.geometryShader = vk::True,
 	};
 
-	auto dev_info = vk::DeviceCreateInfo {
+	auto dev_info = vk::DeviceCreateInfo{
 		.flags = vk::DeviceCreateFlagBits(0),
 		.queueCreateInfoCount = 1,
 		.pQueueCreateInfos = &queue_info,
@@ -167,7 +167,7 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	queue = dev.getQueue(queue_family, 0);
 
-	render_fence = dev.createFence(vk::FenceCreateInfo { .flags = vk::FenceCreateFlagBits::eSignaled });
+	render_fence = dev.createFence(vk::FenceCreateInfo {.flags = vk::FenceCreateFlagBits::eSignaled });
 
 	image_wait_semaphore = dev.createSemaphore(vk::SemaphoreCreateInfo{});
 	render_wait_semaphore = dev.createSemaphore(vk::SemaphoreCreateInfo{});
@@ -180,12 +180,12 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	uniform_buffer = std::make_unique<UniformBuffer>(phys_dev, dev);
 
-	textures = createTextures({
+	textures = createResources({
 		"assets/textures/oil.jpg",
 	});
 
 	std::vector<Shader> shaders = {
-			{dev, "assets/shaders/fraglight.vert.spv", vk::ShaderStageFlagBits::eVertex},
+			{dev, "assets/shaders/fraglight.vert.spv", vk::ShaderStageFlagBits::eVertex },
 			{ dev, "assets/shaders/fraglight.geom.spv", vk::ShaderStageFlagBits::eGeometry },
 			{ dev, "assets/shaders/lambert.frag.spv", vk::ShaderStageFlagBits::eFragment },
 	};
@@ -207,13 +207,28 @@ Renderer::Renderer(Window& win) : win(win) {
 	pipeline->update(0, *uniform_buffer);
 	pipeline->update(1, textures[0]);
 
+
+	/* create Terrain */
+	terrain = std::make_unique<Terrain>(phys_dev, dev, textures[0]);
+
+	std::vector<Shader> terrain_shaders = {
+		{ dev, "assets/shaders/terrain.vert.spv", vk::ShaderStageFlagBits::eVertex },
+		{ dev, "assets/shaders/terrain.tesc.spv", vk::ShaderStageFlagBits::eTessellationControl },
+		{ dev, "assets/shaders/terrain.tese.spv", vk::ShaderStageFlagBits::eTessellationEvaluation },
+		{ dev, "assets/shaders/terrain.frag.spv", vk::ShaderStageFlagBits::eFragment },
+	};
+
+	terrain_pipeline = std::make_unique<GraphicsPipeline>(dev, terrain_shaders, swapchain->extent, *render_pass, bindings, terrain->vertex_buffer, GraphicsPipeline::eTERRAIN);
+
 	for (auto& shader : shaders)
+		shader.cleanup();
+	for (auto& shader : terrain_shaders)
 		shader.cleanup();
 
 	ui = std::make_unique<UI>(this);
 }
 
-std::vector<Texture> Renderer::createTextures(const std::vector<std::string>& names) {
+std::vector<Texture> Renderer::createResources(const std::vector<std::string>& names) {
 	std::vector<Texture> ret;
 
 	CommandBuffer texture_cmd(dev, queue_family);
@@ -327,13 +342,14 @@ void Renderer::draw() {
 		.cam_pos = cam.pos,
 	});
 
-
-	//command_buffer->draw(std::size(triangle), 1, 0, 0);
 	command_buffer->command_buffer.drawIndexed(models[0]->indices.size(), 10, 0, 0, 0);
 
-	/*command_buffer->bind(*models[1]->vertex_buffer);
-	command_buffer->command_buffer.bindIndexBuffer(*models[1]->index_buffer, 0, vk::IndexType::eUint16);	
-	command_buffer->command_buffer.drawIndexed(models[1]->indices.size(), 1, 0, 0, 0);*/
+	command_buffer->bind(*terrain_pipeline);
+	command_buffer->command_buffer.setViewport(0, viewport);
+	command_buffer->command_buffer.setScissor(0, scissor);
+
+	command_buffer->bind(terrain.get());
+	command_buffer->command_buffer.drawIndexed(terrain->indices.size(), 1, 0, 0, 0);
 
 	/* draw User Interface stuff */
 	ui->newFrame();

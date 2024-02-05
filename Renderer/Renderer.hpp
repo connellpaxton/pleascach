@@ -10,6 +10,7 @@
 #include <Renderer/RenderPass.hpp>
 
 #include <Scene/Camera.hpp>
+#include <Scene/Terrain.hpp>
 
 #include <Model/Model.hpp>
 
@@ -25,7 +26,7 @@ struct Renderer {
 	Renderer(Window& win);
 	~Renderer();
 
-	std::vector<Texture> createTextures(const std::vector<std::string>& names);
+	std::vector<Texture> createResources(const std::vector<std::string>& names);
 
 	void draw();
 	void present();
@@ -47,10 +48,13 @@ struct Renderer {
 	std::unique_ptr<CommandBuffer> command_buffer;
 	std::unique_ptr<RenderPass> render_pass;
 
-	/* For now, couple it all together as one pipeline with one uniform buffer, vertex buffer, etc */
+
 	std::unique_ptr<GraphicsPipeline> pipeline;
+	std::unique_ptr<GraphicsPipeline> terrain_pipeline;
 	std::unique_ptr<VertexBuffer> vertex_buffer;
 	std::unique_ptr<UniformBuffer> uniform_buffer;
+
+	std::unique_ptr<Terrain> terrain;
 
 	std::vector<Texture> textures;
 

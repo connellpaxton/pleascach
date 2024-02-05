@@ -9,7 +9,7 @@
 
 #include <util/log.hpp>
 
-GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& shaders, const vk::Extent2D& extent, const RenderPass& render_pass, vk::ArrayProxy<vk::DescriptorSetLayoutBinding> bindings, const VertexBuffer& vertex_buffer) : dev(dev) {
+GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& shaders, const vk::Extent2D& extent, const RenderPass& render_pass, vk::ArrayProxy<vk::DescriptorSetLayoutBinding> bindings, const VertexBuffer& vertex_buffer, enum Type type = Type::GLTF) : dev(dev) {
 	/* create layout
 	 * Eventually add a graphicspipline constructor that allows specification of layouts etc
 	 * kinda like how Image::Image has all those versions
@@ -74,16 +74,16 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 		.pVertexAttributeDescriptions = attrs.data(),
 	};
 
-	const auto input_asm_info = vk::PipelineInputAssemblyStateCreateInfo {
-		.topology = vk::PrimitiveTopology::eTriangleList,
+	const auto input_asm_info = vk::PipelineInputAssemblyStateCreateInfo{
+		.topology = type == Type::eGLTF ? vk::PrimitiveTopology::eTriangleList : vk::PrimitiveTopology::ePatchList,
 		/* matters later if we use strip primitives */
 		.primitiveRestartEnable = vk::False,
 	};
 
 	const auto raster_info = vk::PipelineRasterizationStateCreateInfo {
 		.depthClampEnable = vk::False,
-		.polygonMode = vk::PolygonMode::eFill,
-		.cullMode = vk::CullModeFlagBits::eNone,
+		.polygonMode = type == Type::eGLTF? vk::PolygonMode::eFill : vk::PolygonMode::eLine,
+		.cullMode = vk::CullModeFlagBits::eBack,
 		.frontFace = vk::FrontFace::eCounterClockwise,
 		.depthBiasEnable = vk::False,
 		.lineWidth = 1.0,

@@ -2,6 +2,8 @@
 #include <Renderer/Pipeline.hpp>
 #include <Renderer/VertexBuffer.hpp>
 
+#include <Scene/Terrain.hpp>
+
 #include <Model/Model.hpp>
 
 #include <Memory/Buffer.hpp>
@@ -78,6 +80,11 @@ void CommandBuffer::bind(const VertexBuffer& vertex_buffer, uint32_t binding) {
 void CommandBuffer::bind(std::shared_ptr<Model> model) {
 	bind(*model->vertex_buffer);
 	command_buffer.bindIndexBuffer(*model->index_buffer, 0, vk::IndexType::eUint16);
+}
+
+void CommandBuffer::bind(Terrain* terrain) {
+	bind(*terrain->vertex_buffer);
+	command_buffer.bindIndexBuffer(*terrain->index_buffer, 0, vk::IndexType::eUint32);
 }
 
 void CommandBuffer::draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance) {
