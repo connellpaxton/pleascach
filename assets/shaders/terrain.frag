@@ -6,9 +6,13 @@ layout (location = 2) in vec3 pos;
 layout (location = 0) out vec4 FragColor;
 
 layout (set = 0, binding = 0) uniform Matrices {
-	mat4 mvp;
+	mat4 view;
+	mat4 proj;
 	float time;
 	vec3 cam_pos;
+	vec2 viewport;
+	float tess_factor;
+	float tess_edge_size;
 };
 
 layout (set = 0, binding = 1) uniform sampler2D tex;     

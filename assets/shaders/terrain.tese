@@ -1,7 +1,8 @@
 #version 450 core
 
 layout (set = 0, binding = 0) uniform Matrices {
-	mat4 mvp;
+	mat4 view;
+	mat4 proj;
 	float time;
 	vec3 cam_pos;
 	vec2 viewport;
@@ -36,7 +37,10 @@ void main() {
 	/* not displacing yet */
 	vec4 pos1 = mix(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_TessCoord.x);
 	vec4 pos2 = mix(gl_in[3].gl_Position, gl_in[2].gl_Position, gl_TessCoord.x);
-	_pos = mix(pos1, pos2, gl_TessCoord.y).xyz;
 
-	gl_Position = mvp * mix(pos1, pos2, gl_TessCoord.y);
+	vec4 fpos = mix(pos1, pos2, gl_TessCoord.y);
+	fpos.y += textureLod(heightmap, _texCoord, 0.0).r;
+
+	_pos = fpos.xyz;
+	gl_Position = proj * view * fpos;
 }

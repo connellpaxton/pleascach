@@ -1,7 +1,8 @@
 #version 450 core
 
 layout (set = 0, binding = 0) uniform Matrices {
-	mat4 mvp;
+	mat4 view;
+	mat4 proj;
 	float time;
 	vec3 cam_pos;
 	vec2 viewport;
@@ -24,14 +25,14 @@ layout (location = 2) out vec3 _pos[4];
 
 float screen_space_tess(vec4 p0, vec4 p1) {
 	/* calc midpoint + distance btw the two points */
-	vec4 mid = (p0+p1) / 2.0;
+	vec4 mid = (p0+p1) * 0.5;
 	float r = distance(p0, p1) / 2.0;
 
-	vec4 v0 = mvp * mid;
+	vec4 v0 = view * mid;
 
 	/* projevt into clip spaace */
-	vec4 clip0 = mvp  * (v0 - vec4(r, 0.0, 0.0, 0.0));
-	vec4 clip1 = mvp  * (v0 + vec4(r, 0.0, 0.0, 0.0));
+	vec4 clip0 = proj  * (v0 - vec4(r, 0.0, 0.0, 0.0));
+	vec4 clip1 = proj  * (v0 + vec4(r, 0.0, 0.0, 0.0));
 
 	clip0 /= clip0.w;
 	clip1 /= clip1.w;

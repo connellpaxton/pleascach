@@ -8,8 +8,13 @@ layout (location = 1) out vec2 texCoord;
 layout (location = 2) out vec3 pos;
 
 layout (set = 0, binding = 0) uniform Matrices {
-	mat4 mvp;
+	mat4 view;
+	mat4 proj;
 	float time;
+	vec3 cam_pos;
+	vec2 viewport;
+	float tess_factor;
+	float tess_edge_size;
 };
 
 void main() {

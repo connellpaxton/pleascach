@@ -27,7 +27,7 @@ struct Texture {
 			.binding = binding,
 			.descriptorType = vk::DescriptorType::eCombinedImageSampler,
 			.descriptorCount = 1,
-			.stageFlags = vk::ShaderStageFlagBits::eFragment,
+			.stageFlags = vk::ShaderStageFlagBits::eFragment | vk::ShaderStageFlagBits::eTessellationEvaluation,
 			.pImmutableSamplers = nullptr,
 		};
 	}

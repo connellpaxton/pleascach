@@ -33,7 +33,7 @@ Terrain::Terrain(vk::PhysicalDevice phys_dev, vk::Device dev, Texture& tex) : ph
 				.pos = glm::vec3(
 					2.0f * x + 1.0f - patch_size,
 					0.0f,
-					2.0f * y * 1.0f - patch_size),
+					2.0f * y + 1.0f - patch_size),
 				.uv = glm::vec2(static_cast<float>(x)/patch_size, static_cast<float>(y) / patch_size) * uv_scale,
 			});
 
@@ -88,7 +88,7 @@ Terrain::Terrain(vk::PhysicalDevice phys_dev, vk::Device dev, Texture& tex) : ph
 
 	for (auto x = 0_u32; x < w; x++)
 		for (auto y = 0_u32; y < w; y++) {
-			auto idx = x + y * w * 4;
+			auto idx = (x + y * w) * 4;
 			indices[idx] = x+y*patch_size;
 			indices[idx+1] = indices[idx] + patch_size;
 			indices[idx+2] = indices[idx+1] + 1;

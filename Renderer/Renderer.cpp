@@ -339,7 +339,8 @@ void Renderer::draw() {
 
 
 	uniform_buffer->upload(UniformData {
-		.mvp = p * cam.view(),
+		.view = cam.view(),
+		.proj = p,
 		.time = time,
 		.cam_pos = cam.pos,
 		.viewport = glm::vec2(viewport.width, viewport.y),

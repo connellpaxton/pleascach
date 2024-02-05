@@ -10,7 +10,8 @@
 #include <memory>
 
 struct UniformData {
-	glm::mat4 mvp;
+	glm::mat4 view;
+	glm::mat4 proj;
 	float time;
 	glm::vec3 cam_pos;
 	glm::vec2 viewport;
