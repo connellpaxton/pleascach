@@ -23,6 +23,7 @@ layout (location = 0) out vec3 _norm;
 layout (location = 1) out vec2 _texCoord;
 layout (location = 2) out vec3 _pos;
 
+
 void main() {
 	/* interpolation of UV coordinates */
 	vec2 uv1 = mix(texCoord[0], texCoord[1], gl_TessCoord.x);
@@ -39,7 +40,7 @@ void main() {
 	vec4 pos2 = mix(gl_in[3].gl_Position, gl_in[2].gl_Position, gl_TessCoord.x);
 
 	vec4 fpos = mix(pos1, pos2, gl_TessCoord.y);
-	fpos.y += 5.0 * textureLod(heightmap, _texCoord, 0.0).r;
+	fpos.y += 5.0 * textureLod(heightmap, _texCoord, 0.0).r + cos(fpos.x*fpos.y);
 
 	_pos = fpos.xyz;
 	gl_Position = proj * view * fpos;

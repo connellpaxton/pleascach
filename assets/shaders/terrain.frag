@@ -18,5 +18,10 @@ layout (set = 0, binding = 0) uniform Matrices {
 layout (set = 0, binding = 1) uniform sampler2D tex;     
 
 void main() {
-	FragColor = vec4(1.0);
+	vec3 light_pos = normalize(vec3(cos(time), sin(time), 0.0))*10.0;
+	vec3 L = normalize(light_pos-pos);
+	float r = length(light_pos-pos);
+	float t = clamp(dot(L, norm), 0.0, 1.0) * 20.0/(r*r);
+
+	FragColor = vec4(vec3(t * 0.8) + vec3(0.2, 0.0, 0.1), 1.0);
 }
