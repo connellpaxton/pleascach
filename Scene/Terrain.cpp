@@ -13,7 +13,14 @@ float Terrain::getHeight(int32_t x, int32_t y) {
 	x %= 64;
 	y %= 64;
 
-	return heightmap_tex->image_data[(y * heightmap_tex->extent.height * heightmap_tex->extent.width / 64 + x * heightmap_tex->extent.width / 64) * 4];
+	float xf = x;
+	float yf = y;
+	xf /= 64.0;
+	xf *= heightmap_tex->extent.width;
+	yf /= 64.0;
+	yf *= heightmap_tex->extent.height;
+
+	return static_cast<float>(heightmap_tex->image_data[static_cast<int>(static_cast<int>(yf) * heightmap_tex->extent.width + xf) * 4]) / 256.0f;
 }
 
 Terrain::Terrain(vk::PhysicalDevice phys_dev, vk::Device dev, Texture& tex) : phys_dev(phys_dev), dev(dev) {
@@ -73,9 +80,9 @@ Terrain::Terrain(vk::PhysicalDevice phys_dev, vk::Device dev, Texture& tex) : ph
 				- moores_heights[0][2] - 2.0f * moores_heights[1][2] - moores_heights[2][2]
 			);
 			/* fill in missing component, first scalar scales bump */
-			normal.y = 15.0 * glm::sqrt(glm::abs(1.0 - normal.x*normal.x - normal.z*normal.z));
+			normal.y = 0.25 * glm::sqrt(glm::abs(1.0 - normal.x*normal.x - normal.z*normal.z));
 
-			
+			//vertices[x + y * patch_size].norm = glm::vec3(getHeight(x, y));
 			vertices[x + y * patch_size].norm = glm::normalize(normal * glm::vec3(2.0f, 1.0f, 2.0f));
 		}
 

@@ -230,7 +230,7 @@ Renderer::Renderer(Window& win) : win(win) {
 		{ dev, "assets/shaders/terrain.vert.spv", vk::ShaderStageFlagBits::eVertex },
 		{ dev, "assets/shaders/terrain.tesc.spv", vk::ShaderStageFlagBits::eTessellationControl },
 		{ dev, "assets/shaders/terrain.tese.spv", vk::ShaderStageFlagBits::eTessellationEvaluation },
-		{ dev, "assets/shaders/gooch.frag.spv", vk::ShaderStageFlagBits::eFragment },
+		{ dev, "assets/shaders/terrain.frag.spv", vk::ShaderStageFlagBits::eFragment },
 	};
 
 	terrain_pipeline = std::make_unique<GraphicsPipeline>(dev, terrain_shaders, swapchain->extent, *render_pass, bindings, *terrain->vertex_buffer, GraphicsPipeline::eTERRAIN);
