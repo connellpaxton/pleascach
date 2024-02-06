@@ -23,5 +23,5 @@ void main() {
 	float r = length(light_pos-pos);
 	float t = clamp(dot(L, norm), 0.0, 1.0) * 20.0/(r*r);
 
-	FragColor = vec4(vec3(t * 0.8) + vec3(0.2, 0.0, 0.1), 1.0);
+	FragColor = vec4(norm * texture(tex, texCoord).xyz + t, 1.0);
 }

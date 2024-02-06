@@ -95,7 +95,7 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 		.depthClampEnable = vk::False,
 		.polygonMode = type == Type::eGLTF? vk::PolygonMode::eFill : vk::PolygonMode::eLine,
 		.cullMode = vk::CullModeFlagBits::eNone,
-		.frontFace = vk::FrontFace::eCounterClockwise,
+		.frontFace = Type::eGLTF ? vk::FrontFace::eClockwise : vk::FrontFace::eCounterClockwise,
 		.depthBiasEnable = vk::False,
 		.lineWidth = 1.0,
 	};

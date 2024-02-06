@@ -53,12 +53,20 @@ Renderer::Renderer(Window& win) : win(win) {
 		Log::info("\t\"%s\"\n", layer.layerName.data());
 	}
 
+	vk::ValidationFeatureEnableEXT enabled[] = { vk::ValidationFeatureEnableEXT::eDebugPrintf, vk::ValidationFeatureEnableEXT::eBestPractices };
+	vk::ValidationFeaturesEXT validation_features{ };
+	validation_features.disabledValidationFeatureCount = 0;
+	validation_features.enabledValidationFeatureCount = std::size(enabled);
+	validation_features.pDisabledValidationFeatures = nullptr;
+	validation_features.pEnabledValidationFeatures = enabled;
+
 	const char* my_layers[] = {
 		//		"VK_LAYER_LUNARG_api_dump",
 				"VK_LAYER_KHRONOS_validation",
 	};
 
 	auto inst_info = vk::InstanceCreateInfo{
+		.pNext = &validation_features,
 		.pApplicationInfo = &app_info,
 		.enabledLayerCount = std::size(my_layers),
 		.ppEnabledLayerNames = my_layers,
@@ -125,6 +133,7 @@ Renderer::Renderer(Window& win) : win(win) {
 	std::vector<const char*> req_dev_extensions;
 	req_dev_extensions.push_back("VK_KHR_swapchain");
 	req_dev_extensions.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+	req_dev_extensions.push_back("VK_KHR_shader_non_semantic_info");
 
 	auto dev_extentions = phys_dev.enumerateDeviceExtensionProperties();
 	Log::info("%zu available device extensions\n", dev_extentions.size());
@@ -184,7 +193,7 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	textures = createResources({
 		"assets/textures/oil.jpg",
-		"assets/textures/heightmap.png",
+		"assets/textures/eire.png",
 	});
 
 	std::vector<Shader> shaders = {
@@ -208,7 +217,7 @@ Renderer::Renderer(Window& win) : win(win) {
 	pipeline = std::make_unique<GraphicsPipeline>(dev, shaders, swapchain->extent, *render_pass, bindings, *models[0]->vertex_buffer);
 
 	pipeline->update(0, *uniform_buffer);
-	pipeline->update(1, textures[0]);
+	pipeline->update(1, textures[1]);
 
 
 	/* create Terrain */
@@ -223,6 +232,7 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	terrain_pipeline = std::make_unique<GraphicsPipeline>(dev, terrain_shaders, swapchain->extent, *render_pass, bindings, *terrain->vertex_buffer, GraphicsPipeline::eTERRAIN);
 
+	terrain_pipeline->update(0, *uniform_buffer);
 	terrain_pipeline->update(1, textures[1]);
 
 	for (auto& shader : shaders)
@@ -324,21 +334,9 @@ void Renderer::draw() {
 	/* no secondary command buffers (yet), so contents are passed inline */
 	command_buffer->command_buffer.beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
 
-	command_buffer->bind(*pipeline);
-
-	command_buffer->command_buffer.setViewport(0, viewport);
-	command_buffer->command_buffer.setScissor(0, scissor);
-
-
-	command_buffer->bind(models[0]);
-
-
-	command_buffer->bind(pipeline->layout, pipeline->desc_set);
-
 	auto sz = win.getDimensions();
 
 	const auto p = glm::perspective(glm::radians(90.0f), static_cast<float>(sz.width) / static_cast<float>(sz.height), 0.01f, 2000.0f);
-
 
 	uniform_buffer->upload(UniformData {
 		.view = cam.view(),
@@ -350,12 +348,11 @@ void Renderer::draw() {
 		.tess_edge_size = tess_edge_size,
 	});
 
-	//command_buffer->command_buffer.drawIndexed(models[0]->indices.size(), 10, 0, 0, 0);
-
 	command_buffer->bind(*terrain_pipeline);
 	command_buffer->command_buffer.setViewport(0, viewport);
 	command_buffer->command_buffer.setScissor(0, scissor);
 
+	command_buffer->bind(terrain_pipeline->layout, terrain_pipeline->desc_set);
 	command_buffer->bind(terrain.get());
 	command_buffer->command_buffer.drawIndexed(terrain->indices.size(), 1, 0, 0, 0);
 

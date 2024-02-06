@@ -40,7 +40,7 @@ void main() {
 	vec4 pos2 = mix(gl_in[3].gl_Position, gl_in[2].gl_Position, gl_TessCoord.x);
 
 	vec4 fpos = mix(pos1, pos2, gl_TessCoord.y);
-	fpos.y += 5.0 * textureLod(heightmap, _texCoord, 0.0).r + cos(fpos.x*fpos.y);
+	fpos.y += 15.0 * texture(heightmap, _texCoord).r; //+ cos(fpos.x*fpos.y);
 
 	_pos = fpos.xyz;
 	gl_Position = proj * view * fpos;

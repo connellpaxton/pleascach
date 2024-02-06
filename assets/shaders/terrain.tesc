@@ -1,4 +1,5 @@
 #version 450 core
+#extension GL_EXT_debug_printf : enable
 
 layout (set = 0, binding = 0) uniform Matrices {
 	mat4 view;
@@ -25,42 +26,41 @@ layout (location = 2) out vec3 _pos[4];
 
 float screen_space_tess(vec4 p0, vec4 p1) {
 	/* calc midpoint + distance btw the two points */
-	vec4 mid = (p0+p1) * 0.5;
+	vec4 midp = 0.5*(p0+p1);
 	float r = distance(p0, p1) / 2.0;
 
-	vec4 v0 = view * mid;
+	vec4 v0 = view * midp;
 
-	/* projevt into clip spaace */
-	vec4 clip0 = proj  * (v0 - vec4(r, 0.0, 0.0, 0.0));
-	vec4 clip1 = proj  * (v0 + vec4(r, 0.0, 0.0, 0.0));
+	/* project into clip spaace */
+	vec4 clip0 = proj  * (v0 - vec4(r, vec3(0.0)));
+	vec4 clip1 = proj  * (v0 + vec4(r, vec3(0.0)));
 
 	clip0 /= clip0.w;
 	clip1 /= clip1.w;
 
 	/* convert to viewport coords */
-	clip0.xy * viewport;
-	clip1.xy * viewport;
+	clip0.xy *= viewport;
+	clip1.xy *= viewport;
 
-	return clamp(distance(clip0, clip0) / tess_edge_size * tess_factor, 1.0, 64.0);
+	return clamp(distance(clip0, clip1) / tess_edge_size * tess_factor, 1.0, 64.0);
 }
 
 void main() {
 
 	if(gl_InvocationID == 0) {
-		/*
 		gl_TessLevelOuter[0] = screen_space_tess(gl_in[3].gl_Position, gl_in[0].gl_Position);
 		gl_TessLevelOuter[1] = screen_space_tess(gl_in[0].gl_Position, gl_in[1].gl_Position);
 		gl_TessLevelOuter[2] = screen_space_tess(gl_in[1].gl_Position, gl_in[2].gl_Position);
 		gl_TessLevelOuter[3] = screen_space_tess(gl_in[2].gl_Position, gl_in[3].gl_Position);
 		gl_TessLevelInner[0] = mix(gl_TessLevelOuter[0], gl_TessLevelOuter[3], 0.5);
-		gl_TessLevelInner[1] = mix(gl_TessLevelOuter[2], gl_TessLevelOuter[1], 0.5);*/
+		gl_TessLevelInner[1] = mix(gl_TessLevelOuter[2], gl_TessLevelOuter[1], 0.5);
 		
-		gl_TessLevelOuter[0] = tess_factor;
+		/*gl_TessLevelOuter[0] = tess_factor;
 		gl_TessLevelOuter[1] = tess_factor;
 		gl_TessLevelOuter[2] = tess_factor;
 		gl_TessLevelOuter[3] = tess_factor;
 		gl_TessLevelInner[0] = mix(gl_TessLevelOuter[0], gl_TessLevelOuter[3], 0.5);
-		gl_TessLevelInner[1] = mix(gl_TessLevelOuter[2], gl_TessLevelOuter[1], 0.5);
+		gl_TessLevelInner[1] = mix(gl_TessLevelOuter[2], gl_TessLevelOuter[1], 0.5);*/
 	}
 
 	gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
