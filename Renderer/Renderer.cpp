@@ -19,8 +19,6 @@
 
 #include <UI/UI.hpp>
 
-
-
 using namespace std::string_literals;
 
 Renderer::Renderer(Window& win) : win(win) {
@@ -200,9 +198,8 @@ Renderer::Renderer(Window& win) : win(win) {
 	});
 
 	std::vector<Shader> shaders = {
-			{dev, "assets/shaders/fraglight.vert.spv", vk::ShaderStageFlagBits::eVertex },
-			{ dev, "assets/shaders/fraglight.geom.spv", vk::ShaderStageFlagBits::eGeometry },
-			{ dev, "assets/shaders/lambert.frag.spv", vk::ShaderStageFlagBits::eFragment },
+			{dev, "assets/shaders/ray.vert.spv", vk::ShaderStageFlagBits::eVertex },
+			{ dev, "assets/shaders/ray.frag.spv", vk::ShaderStageFlagBits::eFragment },
 	};
 
 	std::vector<vk::DescriptorSetLayoutBinding> bindings = {
@@ -210,37 +207,24 @@ Renderer::Renderer(Window& win) : win(win) {
 		textures[0].binding(1),
 	};
 
-	/* initialize models */
-	Timer model_timer;
-	models.push_back(std::make_shared<Model>(phys_dev, dev, "assets/models/dragon.gltf"));
-	auto t = model_timer.stop();
+	vertex_buffer = std::make_unique<VertexBuffer>(phys_dev, dev, 6);
 
-	Log::debug("Models loaded in %lf milliseconds\n", model_timer.read());
+	/* simple quad */
+	vertex_buffer->upload(std::vector<Vertex> {
+		{ { -1.0,-1.0 } },
+		{ { -1.0, 1.0 } },
+		{ {  1.0, 1.0 } },
+		{ {  1.0, 1.0 } },
+		{ {  1.0,-1.0 } },
+		{ { -1.0,-1.0 } },
+	});
 
-	pipeline = std::make_unique<GraphicsPipeline>(dev, shaders, swapchain->extent, *render_pass, bindings, *models[0]->vertex_buffer);
+	pipeline = std::make_unique<GraphicsPipeline>(dev, shaders, swapchain->extent, *render_pass, bindings, *vertex_buffer);
 
 	pipeline->update(0, *uniform_buffer);
 	pipeline->update(1, textures[1]);
 
-
-	/* create Terrain */
-	terrain = std::make_unique<Terrain>(phys_dev, dev, textures[1]);
-
-	std::vector<Shader> terrain_shaders = {
-		{ dev, "assets/shaders/terrain.vert.spv", vk::ShaderStageFlagBits::eVertex },
-		{ dev, "assets/shaders/terrain.tesc.spv", vk::ShaderStageFlagBits::eTessellationControl },
-		{ dev, "assets/shaders/terrain.tese.spv", vk::ShaderStageFlagBits::eTessellationEvaluation },
-		{ dev, "assets/shaders/terrain.frag.spv", vk::ShaderStageFlagBits::eFragment },
-	};
-
-	terrain_pipeline = std::make_unique<GraphicsPipeline>(dev, terrain_shaders, swapchain->extent, *render_pass, bindings, *terrain->vertex_buffer, GraphicsPipeline::eTERRAIN);
-
-	terrain_pipeline->update(0, *uniform_buffer);
-	terrain_pipeline->update(1, textures[1]);
-
 	for (auto& shader : shaders)
-		shader.cleanup();
-	for (auto& shader : terrain_shaders)
 		shader.cleanup();
 
 	ui = std::make_unique<UI>(this);
@@ -339,30 +323,19 @@ void Renderer::draw() {
 
 	auto sz = win.getDimensions();
 
-	const auto p = glm::perspective(glm::radians(90.0f), static_cast<float>(sz.width) / static_cast<float>(sz.height), 0.01f, 2000.0f);
-
-	auto uni = UniformData{
-		.view = cam.view(),
-		.proj = p,
+	uniform_buffer->upload(UniformData{
+		.viewport = glm::vec2(viewport.width, viewport.y),
 		.time = time,
 		.cam_pos = cam.pos,
 		.cam_dir = cam.dir(),
-		.viewport = glm::vec2(viewport.width, viewport.y),
-		.tess_factor = tess_factor,
-		.tess_edge_size = tess_edge_size,
-	};
+	});
 
-	std::memcpy(uni.frustum, frustum(p * uni.view).data(), sizeof(uni.frustum));
-
-	uniform_buffer->upload(uni);
-
-	command_buffer->bind(*terrain_pipeline);
+	command_buffer->bind(*pipeline);
 	command_buffer->command_buffer.setViewport(0, viewport);
 	command_buffer->command_buffer.setScissor(0, scissor);
-
-	command_buffer->bind(terrain_pipeline->layout, terrain_pipeline->desc_set);
-	command_buffer->bind(terrain.get());
-	command_buffer->command_buffer.drawIndexed(terrain->indices.size(), 1, 0, 0, 0);
+	command_buffer->bind(pipeline->layout, pipeline->desc_set);
+	command_buffer->bind(*vertex_buffer);
+	command_buffer->command_buffer.draw(6, 1, 0, 0);
 
 	/* draw User Interface stuff */
 	ui->newFrame();
@@ -421,16 +394,9 @@ Renderer::~Renderer() {
 
 	ui.reset();
 
-	for(auto& model : models)
-		model.reset();
-
-	terrain.reset();
-
 	uniform_buffer.reset();
 	vertex_buffer.reset();
-	terrain_pipeline.reset();
 	pipeline.reset();
-
 
 	for (auto& tex : textures) {
 		tex.cleanup();

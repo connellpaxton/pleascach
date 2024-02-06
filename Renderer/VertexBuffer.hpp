@@ -9,10 +9,7 @@
 #include <tinygltf/tiny_gltf.h>
 
 struct Vertex {
-	glm::vec3 pos;
-	glm::vec3 norm;
-	glm::vec2 uv;
-	glm::vec3 color;
+	glm::vec2 pos;
 };
 
 struct VertexBuffer {
@@ -37,24 +34,9 @@ struct VertexBuffer {
 			{
 				.location = 0,
 				.binding = binding,
-				.format = vk::Format::eR32G32B32Sfloat,
-				.offset = offsetof(Vertex, pos),
-			}, {
-				.location = 1,
-				.binding = binding,
-				.format = vk::Format::eR32G32B32Sfloat,
-				.offset = offsetof(Vertex, norm),
-			},{
-				.location = 2,
-				.binding = binding,
 				.format = vk::Format::eR32G32Sfloat,
-				.offset = offsetof(Vertex, uv),
-			},{
-				.location = 3,
-				.binding = binding,
-				.format = vk::Format::eR32G32B32Sfloat,
-				.offset = offsetof(Vertex, color),
-			}
+				.offset = offsetof(Vertex, pos),
+			},
 		};
 	}
 };

@@ -15,8 +15,6 @@ struct UI {
 		float& time;
 		/* camera stuff */
 		Camera& cam;
-		float& tess_factor;
-		float& tess_edge_size;
 	} info;
 
 	vk::Device dev;

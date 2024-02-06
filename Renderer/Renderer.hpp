@@ -10,9 +10,6 @@
 #include <Renderer/RenderPass.hpp>
 
 #include <Scene/Camera.hpp>
-#include <Scene/Terrain.hpp>
-
-#include <Model/Model.hpp>
 
 #include <UI/UI.hpp>
 
@@ -50,21 +47,18 @@ struct Renderer {
 
 
 	std::unique_ptr<GraphicsPipeline> pipeline;
-	std::unique_ptr<GraphicsPipeline> terrain_pipeline;
+	/* just holds single quad */
 	std::unique_ptr<VertexBuffer> vertex_buffer;
 	std::unique_ptr<UniformBuffer> uniform_buffer;
-
-	std::unique_ptr<Terrain> terrain;
 
 	std::vector<Texture> textures;
 
 	uint32_t current_image_idx;
 	uint64_t frame = 0;
 
-	std::vector<std::shared_ptr<Model>> models;
 	std::unique_ptr<UI> ui;
 
-	Camera cam{ .pos = glm::vec3(0.0, 5.0, 0.0), };
+	Camera cam{ .pos = glm::vec3(0.0, -10.0, 0.0), };
 
 	bool capture_mouse = false;
 	bool flycam = false;
@@ -72,7 +66,4 @@ struct Renderer {
 	float time = 0.0;
 	float speed = 1.0;
 	bool running = true;
-
-	float tess_factor = 1.8f;
-	float tess_edge_size = 20.0f;
 };

@@ -10,15 +10,10 @@ struct RenderPass;
 struct Texture;
 
 struct GraphicsPipeline {
-	enum Type {
-		eGLTF,
-		eTERRAIN,
-	};
-
 	GraphicsPipeline(vk::Device dev, const std::vector<Shader>& shaders,
 				const vk::Extent2D& extent, const RenderPass& render_pass,
 				vk::ArrayProxy<vk::DescriptorSetLayoutBinding> bindings,
-				const VertexBuffer& vertex_buffer, enum Type type = Type::eGLTF);
+				const VertexBuffer& vertex_buffer);
 	vk::Device dev;
 	vk::Pipeline pipeline;
 	vk::PipelineLayout layout;
