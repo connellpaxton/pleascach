@@ -346,6 +346,7 @@ void Renderer::draw() {
 		.proj = p,
 		.time = time,
 		.cam_pos = cam.pos,
+		.cam_dir = cam.dir(),
 		.viewport = glm::vec2(viewport.width, viewport.y),
 		.tess_factor = tess_factor,
 		.tess_edge_size = tess_edge_size,

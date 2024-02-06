@@ -9,6 +9,22 @@
 
 #include <memory>
 
+/* Uniform:
+ * 
+ * layout (set = 0, binding = 0) uniform Matrices {
+ *		mat4 view;
+ *		mat4 proj;
+ *		float time;
+ *		vec3 cam_pos;
+ *		vec3 cam_dir;
+ *		vec4 frustum[6];
+ *		vec2 viewport;
+ *		float tess_factor;
+ *		float tess_edge_size;
+ *	};
+ * 
+ */
+
 struct UniformData {
 	glm::mat4 view;
 	glm::mat4 proj;
@@ -18,6 +34,8 @@ struct UniformData {
 	float pad2;
 	glm::vec3 cam_pos;
 	float pad3;
+	glm::vec3 cam_dir;
+	float pad4;
 	glm::vec4 frustum[6];
 	glm::vec2 viewport;
 	float tess_factor;

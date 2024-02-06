@@ -10,6 +10,7 @@ layout (set = 0, binding = 0) uniform Matrices {
 	mat4 proj;
 	float time;
 	vec3 cam_pos;
+	vec3 cam_dir;
 	vec4 frustum[6];
 	vec2 viewport;
 	float tess_factor;
@@ -19,8 +20,8 @@ layout (set = 0, binding = 0) uniform Matrices {
 layout (set = 0, binding = 1) uniform sampler2D heightmap;
 
 void main() {
-	//vec3 light_pos = vec3(10.0*cos(time), 10.0, 0.0);
-	vec3 L = normalize(cam_pos-pos);
+	/* extract L (light direction) from view matrix */
+	vec3 L = -cam_dir;
 	float r = length(cam_pos-pos);
 	float t = clamp(dot(L, norm), 0.0, 1.0) * 20.0/(r*r);
 

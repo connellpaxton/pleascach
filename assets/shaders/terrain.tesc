@@ -6,6 +6,7 @@ layout (set = 0, binding = 0) uniform Matrices {
 	mat4 proj;
 	float time;
 	vec3 cam_pos;
+	vec3 cam_dir;
 	vec4 frustum[6];
 	vec2 viewport;
 	float tess_factor;
