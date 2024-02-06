@@ -64,7 +64,7 @@ struct Renderer {
 	std::vector<std::shared_ptr<Model>> models;
 	std::unique_ptr<UI> ui;
 
-	Camera cam {};
+	Camera cam{ .pos = glm::vec3(0.0, 5.0, 0.0), };
 
 	bool capture_mouse = false;
 	bool flycam = false;
@@ -73,6 +73,6 @@ struct Renderer {
 	float speed = 1.0;
 	bool running = true;
 
-	float tess_factor = 1.0f;
+	float tess_factor = 1.8f;
 	float tess_edge_size = 20.0f;
 };
