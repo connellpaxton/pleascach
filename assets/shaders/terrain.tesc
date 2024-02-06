@@ -6,6 +6,7 @@ layout (set = 0, binding = 0) uniform Matrices {
 	mat4 proj;
 	float time;
 	vec3 cam_pos;
+	vec4 frustum[6];
 	vec2 viewport;
 	float tess_factor;
 	float tess_edge_size;
@@ -45,22 +46,39 @@ float screen_space_tess(vec4 p0, vec4 p1) {
 	return clamp(distance(clip0, clip1) / tess_edge_size * tess_factor, 1.0, 64.0);
 }
 
+bool frustum_culling() {
+	/* square root of patch size */
+	const float r = 8.0f;
+	/* ensure this is consistent with tese shader */
+	vec4 fpos = gl_in[gl_InvocationID].gl_Position;
+	fpos.y += 15.0 * textureLod(heightmap, texCoord[0], 0.0).r;
+	
+	for(int i = 0; i < 6; i++) {
+		if(dot(fpos, frustum[i]) + r < 0.0)
+			return false;
+	}
+	return true;
+}
+
 void main() {
 
 	if(gl_InvocationID == 0) {
-		gl_TessLevelOuter[0] = screen_space_tess(gl_in[3].gl_Position, gl_in[0].gl_Position);
-		gl_TessLevelOuter[1] = screen_space_tess(gl_in[0].gl_Position, gl_in[1].gl_Position);
-		gl_TessLevelOuter[2] = screen_space_tess(gl_in[1].gl_Position, gl_in[2].gl_Position);
-		gl_TessLevelOuter[3] = screen_space_tess(gl_in[2].gl_Position, gl_in[3].gl_Position);
-		gl_TessLevelInner[0] = mix(gl_TessLevelOuter[0], gl_TessLevelOuter[3], 0.5);
-		gl_TessLevelInner[1] = mix(gl_TessLevelOuter[2], gl_TessLevelOuter[1], 0.5);
-		
-		/*gl_TessLevelOuter[0] = tess_factor;
-		gl_TessLevelOuter[1] = tess_factor;
-		gl_TessLevelOuter[2] = tess_factor;
-		gl_TessLevelOuter[3] = tess_factor;
-		gl_TessLevelInner[0] = mix(gl_TessLevelOuter[0], gl_TessLevelOuter[3], 0.5);
-		gl_TessLevelInner[1] = mix(gl_TessLevelOuter[2], gl_TessLevelOuter[1], 0.5);*/
+		/* perform frustum culling */
+		if(frustum_culling()) {
+			gl_TessLevelOuter[0] = screen_space_tess(gl_in[3].gl_Position, gl_in[0].gl_Position);
+			gl_TessLevelOuter[1] = screen_space_tess(gl_in[0].gl_Position, gl_in[1].gl_Position);
+			gl_TessLevelOuter[2] = screen_space_tess(gl_in[1].gl_Position, gl_in[2].gl_Position);
+			gl_TessLevelOuter[3] = screen_space_tess(gl_in[2].gl_Position, gl_in[3].gl_Position);
+			gl_TessLevelInner[0] = mix(gl_TessLevelOuter[0], gl_TessLevelOuter[3], 0.5);
+			gl_TessLevelInner[1] = mix(gl_TessLevelOuter[2], gl_TessLevelOuter[1], 0.5);
+		} else {
+			gl_TessLevelOuter[0] = 0.0;
+			gl_TessLevelOuter[1] = 0.0;
+			gl_TessLevelOuter[2] = 0.0;
+			gl_TessLevelOuter[3] = 0.0;
+			gl_TessLevelInner[0] = 0.0;
+			gl_TessLevelInner[1] = 0.0;
+		}
 	}
 
 	gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;

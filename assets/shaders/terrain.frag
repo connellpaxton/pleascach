@@ -10,6 +10,7 @@ layout (set = 0, binding = 0) uniform Matrices {
 	mat4 proj;
 	float time;
 	vec3 cam_pos;
+	vec4 frustum[6];
 	vec2 viewport;
 	float tess_factor;
 	float tess_edge_size;
@@ -23,5 +24,5 @@ void main() {
 	float r = length(light_pos-pos);
 	float t = clamp(dot(L, norm), 0.0, 1.0) * 20.0/(r*r);
 
-	FragColor = vec4(norm * texture(tex, texCoord).xyz + t, 1.0);
+	FragColor = vec4(1.0);
 }

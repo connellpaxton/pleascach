@@ -18,6 +18,7 @@ struct UniformData {
 	float pad2;
 	glm::vec3 cam_pos;
 	float pad3;
+	glm::vec4 frustum[6];
 	glm::vec2 viewport;
 	float tess_factor;
 	float tess_edge_size;

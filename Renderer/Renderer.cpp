@@ -8,6 +8,7 @@
 #include <Memory/Memory.hpp>
 
 #include <util/Timer.hpp>
+#include <util/geo.hpp>
 
 #include <Renderer/Pipeline.hpp>
 #include <Renderer/Shader.hpp>
@@ -17,6 +18,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <UI/UI.hpp>
+
+
 
 using namespace std::string_literals;
 
@@ -338,7 +341,7 @@ void Renderer::draw() {
 
 	const auto p = glm::perspective(glm::radians(90.0f), static_cast<float>(sz.width) / static_cast<float>(sz.height), 0.01f, 2000.0f);
 
-	uniform_buffer->upload(UniformData {
+	auto uni = UniformData{
 		.view = cam.view(),
 		.proj = p,
 		.time = time,
@@ -346,7 +349,11 @@ void Renderer::draw() {
 		.viewport = glm::vec2(viewport.width, viewport.y),
 		.tess_factor = tess_factor,
 		.tess_edge_size = tess_edge_size,
-	});
+	};
+
+	std::memcpy(uni.frustum, frustum(p * uni.view).data(), sizeof(uni.frustum));
+
+	uniform_buffer->upload(uni);
 
 	command_buffer->bind(*terrain_pipeline);
 	command_buffer->command_buffer.setViewport(0, viewport);
