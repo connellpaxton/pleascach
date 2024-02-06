@@ -92,7 +92,7 @@ void UI::newFrame() {
 	ImGui::Text("FPS: %f", info.fps);
 	ImGui::Text("Time: %f", info.time);
 	ImGui::Checkbox("Fly Camera", &info.flycam);
-	ImGui::SliderFloat("Tessellation Factor", &info.tess_factor, 0.0, 100.0);
+	ImGui::SliderFloat("Tessellation Factor", &info.tess_factor, 0.1, 10.0);
 	ImGui::SliderFloat("Edge Size", &info.tess_edge_size, 0.0, 40.0);
 
 	ImGui::End();

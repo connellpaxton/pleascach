@@ -16,13 +16,19 @@ layout (set = 0, binding = 0) uniform Matrices {
 	float tess_edge_size;
 };
 
-layout (set = 0, binding = 1) uniform sampler2D tex;     
+layout (set = 0, binding = 1) uniform sampler2D heightmap;     
+
+float height(vec2 uv) {
+	return 15.0 * texture(heightmap, uv).r;
+}
 
 void main() {
+	vec3 N = norm;
+
 	vec3 light_pos = normalize(vec3(cos(time), sin(time), 0.0))*10.0;
 	vec3 L = normalize(light_pos-pos);
 	float r = length(light_pos-pos);
-	float t = clamp(dot(L, norm), 0.0, 1.0) * 20.0/(r*r);
+	float t = clamp(dot(L, N), 0.0, 1.0) * 20.0/(r*r);
 
 	FragColor = vec4(1.0);
 }

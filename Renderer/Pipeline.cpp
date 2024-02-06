@@ -93,7 +93,7 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 
 	const auto raster_info = vk::PipelineRasterizationStateCreateInfo {
 		.depthClampEnable = vk::False,
-		.polygonMode = type == Type::eGLTF? vk::PolygonMode::eFill : vk::PolygonMode::eLine,
+		.polygonMode = type == Type::eGLTF? vk::PolygonMode::eFill : vk::PolygonMode::eFill,
 		.cullMode = vk::CullModeFlagBits::eNone,
 		.frontFace = Type::eGLTF ? vk::FrontFace::eClockwise : vk::FrontFace::eCounterClockwise,
 		.depthBiasEnable = vk::False,

@@ -73,7 +73,7 @@ Terrain::Terrain(vk::PhysicalDevice phys_dev, vk::Device dev, Texture& tex) : ph
 				- moores_heights[0][2] - 2.0f * moores_heights[1][2] - moores_heights[2][2]
 			);
 			/* fill in missing component, first scalar scales bump */
-			normal.y = 0.25 * glm::sqrt(glm::abs(1.0 - normal.x*normal.x - normal.z*normal.z));
+			normal.y = 15.0 * glm::sqrt(glm::abs(1.0 - normal.x*normal.x - normal.z*normal.z));
 
 			
 			vertices[x + y * patch_size].norm = glm::normalize(normal * glm::vec3(2.0f, 1.0f, 2.0f));
