@@ -15,7 +15,11 @@ struct Camera {
 	glm::vec3 pos = glm::vec3(0.0f);
 
 	inline glm::vec3 dir() {
-		return glm::vec3(sin(theta) * cos(phi), cos(theta), sin(theta) * sin(phi));
+		return glm::normalize(glm::vec3(
+			sin(theta) * cos(phi),
+			cos(theta),
+			sin(theta) * sin(phi)
+		));
 	}
 
 	inline glm::mat4 view() {

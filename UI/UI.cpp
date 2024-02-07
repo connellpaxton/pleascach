@@ -89,9 +89,18 @@ void UI::newFrame() {
 	ImGui::SetNextWindowBgAlpha(0.5f);
 	ImGui::Begin("Rendering Info", nullptr);
 
+	auto target = info.cam.dir() + info.cam.pos;
+
 	ImGui::Text("FPS: %f", info.fps);
 	ImGui::Text("Time: %f", info.time);
-	ImGui::Checkbox("Fly Camera", &info.flycam);
+	ImGui::Text("Target: %f %f %f", target.x, target.y, target.z);
+	ImGui::SliderFloat("Theta", &info.cam.theta, 0.0, glm::pi<float>());
+	ImGui::SliderFloat("Phi", &info.cam.phi, 0.0, glm::two_pi<float>());
+	
+	ImGui::SliderFloat("X", &info.cam.pos.x, -10.0, 10.0);
+	ImGui::SliderFloat("Y", &info.cam.pos.y, -10.0, 10.0);
+	ImGui::SliderFloat("Z", &info.cam.pos.z, -10.0, 10.0);
+
 
 	ImGui::End();
 }

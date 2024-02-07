@@ -58,7 +58,7 @@ struct Renderer {
 
 	std::unique_ptr<UI> ui;
 
-	Camera cam{ .pos = glm::vec3(0.0, -10.0, 0.0), };
+	Camera cam{ .pos = glm::vec3(0.0, 0.0, -1.0), };
 
 	bool capture_mouse = false;
 	bool flycam = false;

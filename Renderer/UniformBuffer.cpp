@@ -8,10 +8,6 @@ UniformBuffer::UniformBuffer(vk::PhysicalDevice phys_dev, vk::Device dev) {
 			vk::MemoryPropertyFlagBits::eHostCoherent | vk::MemoryPropertyFlagBits::eHostVisible
 	);
 
-	Log::debug("Offset of time: %zu\n", offsetof(UniformData, time));
-	Log::debug("Offset of cam_pos: %zu\n", offsetof(UniformData, cam_pos));
-	Log::debug("Offset of viewport: %zu\n", offsetof(UniformData, viewport));
-
 }
 
 void UniformBuffer::upload(const UniformData& data) {

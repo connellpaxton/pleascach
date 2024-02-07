@@ -82,18 +82,15 @@ void Input::handleMovementKeys(Renderer& ren) {
 		forward = glm::vec3(glm::sin(ren.cam.theta)*glm::cos(ren.cam.phi), glm::cos(ren.cam.theta), glm::sin(ren.cam.theta)*glm::sin(ren.cam.phi));
 	else
 		forward = glm::vec3(glm::cos(ren.cam.phi), 0.0, glm::sin(ren.cam.phi));
-	const auto right = glm::cross(forward, glm::vec3(0.0, 1.0, 0.0));
+	const auto right = glm::cross(glm::vec3(0.0, 1.0, 0.0), forward);
 	const auto speed = glfwGetKey(in, GLFW_KEY_LEFT_SHIFT)? 2.0f : 1.0f;
 
-	if(glfwGetKey(in, GLFW_KEY_UP)) {
-		ren.cam.theta -= 0.01;
-	}
 
 	if(glfwGetKey(in, GLFW_KEY_UP)) {
-		ren.cam.theta -= 0.01;
+		ren.cam.theta -= 0.02;
 	}
 	if(glfwGetKey(in, GLFW_KEY_DOWN)) {
-		ren.cam.theta += 0.01;
+		ren.cam.theta += 0.02;
 	}
 	
 	if(glfwGetKey(in, GLFW_KEY_LEFT)) {
