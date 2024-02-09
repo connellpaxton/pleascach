@@ -323,11 +323,11 @@ void Renderer::draw() {
 
 	auto sz = win.getDimensions();
 
-	uniform_buffer->upload(UniformData{
-		.view = cam.view(),
-		.viewport = glm::vec2(viewport.width, viewport.y),
+	uniform_buffer->upload(UniformData {
+		.cam_pos = cam.pos,
 		.time = time,
-		.focal_length = 2.0,
+		.viewport = glm::vec4(viewport.width, viewport.y, 0.0, 0.0),
+		.cam_dir = cam.dir(),
 	});
 
 	command_buffer->bind(*pipeline);

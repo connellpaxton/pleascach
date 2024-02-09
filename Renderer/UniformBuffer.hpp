@@ -11,20 +11,19 @@
 
 /* Uniform:
  * 
- * layout (set = 0, binding = 0) uniform Matrices {
- * 		mat4 view;
- *		vec2 viewport;
- *		float time;
- *		float focal_length;
- *	};
- * 
+layout (set = 0, binding = 0) uniform Matrices {
+	vec3 cam_pos;
+	float time;
+	vec4 viewport;
+	vec3 cam_dir;
+}; 
  */
 
 struct UniformData {
-	glm::mat4 view;
-	glm::vec2 viewport;
+	glm::vec3 cam_pos;
 	float time;
-	float focal_length = 2.0;
+	glm::vec4 viewport;
+	glm::vec3 cam_dir;
 };
 
 struct UniformBuffer {
