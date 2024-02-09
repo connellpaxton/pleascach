@@ -23,7 +23,7 @@ void main() {
 	/* extract L (light direction) from view matrix */
 	vec3 L = -cam_dir;
 	float r = length(cam_pos-pos);
-	float t = clamp(dot(L, norm), 0.0, 1.0) * 20.0/(r*r);
+	float t = clamp(dot(L, norm), 0.0, 1.0) * 200.0/(r*r);
 
-	FragColor = vec4(t*norm, 1.0);
+	FragColor = vec4(vec3(t), 1.0);
 }

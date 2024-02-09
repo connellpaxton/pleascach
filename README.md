@@ -1,5 +1,12 @@
 # Pléascach
 
+Small Vulkan 3D renderer.
+![really cool wireframe tessellated terrain)](capture.png "Terrain Capture")
+## Features
+- glTF Model loading
+- Tessellation-controlled heightmap terrains with dynamic normal calculation
+- Working lighting!
+
 ## Short Term Changes
 - Make index buffer device-local instead of host-coherent
 	- Possibly restructure Buffer class to use templates to change
