@@ -2,6 +2,7 @@
 #include <Renderer/Shader.hpp>
 #include <Renderer/RenderPass.hpp>
 #include <Renderer/UniformBuffer.hpp>
+#include <Renderer/ShaderBuffer.hpp>
 #include <Renderer/VertexBuffer.hpp>
 #include <Resources/Texture.hpp>
 
@@ -187,6 +188,21 @@ void GraphicsPipeline::update(uint32_t binding, const UniformBuffer& uni) {
 		.dstBinding = binding,
 		.descriptorCount = 1,
 		.descriptorType = vk::DescriptorType::eUniformBuffer,
+		.pBufferInfo = &buff_info,
+	}, nullptr);
+}
+
+void GraphicsPipeline::update(uint32_t binding, const ShaderBuffer& ssbo) {
+	auto buff_info = vk::DescriptorBufferInfo{
+		.buffer = ssbo,
+		.offset = 0,
+		.range = vk::WholeSize,
+	};
+	dev.updateDescriptorSets(vk::WriteDescriptorSet {
+		.dstSet = desc_set,
+		.dstBinding = binding,
+		.descriptorCount = 1,
+		.descriptorType = vk::DescriptorType::eStorageBuffer,
 		.pBufferInfo = &buff_info,
 	}, nullptr);
 }

@@ -9,6 +9,10 @@
 
 #include <memory>
 
+#include <util/glsl_types.hpp>
+
+using namespace glsl;
+
 /* Uniform:
  * 
 layout (set = 0, binding = 0) uniform Matrices {
@@ -16,14 +20,16 @@ layout (set = 0, binding = 0) uniform Matrices {
 	float time;
 	vec4 viewport;
 	vec3 cam_dir;
+	uint n_objects;
 }; 
  */
 
 struct UniformData {
-	glm::vec3 cam_pos;
+	vec3 cam_pos;
 	float time;
-	glm::vec4 viewport;
-	glm::vec3 cam_dir;
+	vec4 viewport;
+	vec3 cam_dir;
+	uint n_objects;
 };
 
 struct UniformBuffer {

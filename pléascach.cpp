@@ -80,9 +80,10 @@ int main(int argc, char* argv[]) {
 			ren.present();
 			const auto t = frame_timer.read();
 			ren.ui->info.fps = 1000.0f / t;
+			ren.time += t / 1000.0 * ren.speed * static_cast<float>(ren.running);
 
-			while (frame_timer.read() < 16.60)
-				;
+			/*while (frame_timer.read() < 16.60)
+				;*/
 		}
 
 	} catch (const std::string& e) {

@@ -191,9 +191,9 @@ Renderer::Renderer(Window& win) : win(win) {
 	command_buffer = std::make_unique<CommandBuffer>(dev, queue_family);
 
 	uniform_buffer = std::make_unique<UniformBuffer>(phys_dev, dev);
+	shader_buffer = std::make_unique<ShaderBuffer>(phys_dev, dev);
 
 	textures = createResources({
-		"assets/textures/oil.jpg",
 		"assets/textures/eire.png",
 	});
 
@@ -205,13 +205,14 @@ Renderer::Renderer(Window& win) : win(win) {
 	std::vector<vk::DescriptorSetLayoutBinding> bindings = {
 		uniform_buffer->binding(0),
 		textures[0].binding(1),
+		shader_buffer->binding(2),
 	};
 
 	vertex_buffer = std::make_unique<VertexBuffer>(phys_dev, dev, 6);
 
 	/* simple quad */
 	vertex_buffer->upload(std::vector<Vertex> {
-		{ { -1.0,-1.0 } },
+		{ { -1.0, -1.0 } },
 		{ { -1.0, 1.0 } },
 		{ {  1.0, 1.0 } },
 		{ {  1.0, 1.0 } },
@@ -219,10 +220,16 @@ Renderer::Renderer(Window& win) : win(win) {
 		{ { -1.0,-1.0 } },
 	});
 
+	shader_buffer->upload(std::vector<Object> {
+		{ { 0.0, -10.0, 0.0, 0.0 }, { 1.0, 0.0, 0.0, 0.0 }, 0, Shape::SPHERE },
+		{ { 0.0, -12.0, 0.0, 0.0 }, { 10.0, 1.0, 10.0, 0.0 }, 1, Shape::BOX  },
+	});
+
 	pipeline = std::make_unique<GraphicsPipeline>(dev, shaders, swapchain->extent, *render_pass, bindings, *vertex_buffer);
 
 	pipeline->update(0, *uniform_buffer);
-	pipeline->update(1, textures[1]);
+	pipeline->update(1, textures[0]);
+	pipeline->update(2, *shader_buffer);
 
 	for (auto& shader : shaders)
 		shader.cleanup();
@@ -328,6 +335,7 @@ void Renderer::draw() {
 		.time = time,
 		.viewport = glm::vec4(viewport.width, viewport.y, 0.0, 0.0),
 		.cam_dir = cam.dir(),
+		.n_objects = 2,
 	});
 
 	command_buffer->bind(*pipeline);
@@ -335,6 +343,7 @@ void Renderer::draw() {
 	command_buffer->command_buffer.setScissor(0, scissor);
 	command_buffer->bind(pipeline->layout, pipeline->desc_set);
 	command_buffer->bind(*vertex_buffer);
+	shader_buffer->objects[0].center.y += glm::sin(time)/10.0;
 	command_buffer->command_buffer.draw(6, 1, 0, 0);
 
 	/* draw User Interface stuff */
@@ -345,7 +354,6 @@ void Renderer::draw() {
 	command_buffer->command_buffer.endRenderPass();
 	
 	command_buffer->end();
-
 
 	vk::PipelineStageFlags stage_flags = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 
@@ -386,7 +394,6 @@ void Renderer::present() {
 	}
 
 	frame++;
-	time += 0.0167f * speed * static_cast<float>(running);
 }
 
 Renderer::~Renderer() {
@@ -395,6 +402,7 @@ Renderer::~Renderer() {
 	ui.reset();
 
 	uniform_buffer.reset();
+	shader_buffer.reset();
 	vertex_buffer.reset();
 	pipeline.reset();
 

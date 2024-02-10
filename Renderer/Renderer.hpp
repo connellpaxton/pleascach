@@ -8,6 +8,7 @@
 #include <Renderer/Swapchain.hpp>
 #include <Renderer/CommandBuffer.hpp>
 #include <Renderer/RenderPass.hpp>
+#include <Renderer/ShaderBuffer.hpp>
 
 #include <Scene/Camera.hpp>
 
@@ -48,6 +49,7 @@ struct Renderer {
 
 	std::unique_ptr<GraphicsPipeline> pipeline;
 	/* just holds single quad */
+	std::unique_ptr<ShaderBuffer> shader_buffer;
 	std::unique_ptr<VertexBuffer> vertex_buffer;
 	std::unique_ptr<UniformBuffer> uniform_buffer;
 

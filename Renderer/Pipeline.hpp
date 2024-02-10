@@ -4,6 +4,7 @@
 #include <vulkan/vulkan.hpp>
 
 struct Shader;
+struct ShaderBuffer;
 struct UniformBuffer;
 struct VertexBuffer;
 struct RenderPass;
@@ -27,6 +28,7 @@ struct GraphicsPipeline {
 
 	/* create overload for every type of object we need to update */
 	void update(uint32_t binding, const UniformBuffer& uni);
+	void update(uint32_t binding, const ShaderBuffer& ssbo);
 	void update(uint32_t binding, const Texture& tex);
 
 	~GraphicsPipeline();
