@@ -199,7 +199,7 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	std::vector<Shader> shaders = {
 			{dev, "assets/shaders/ray.vert.spv", vk::ShaderStageFlagBits::eVertex },
-			{ dev, "assets/shaders/ray.frag.spv", vk::ShaderStageFlagBits::eFragment },
+			{ dev, "assets/shaders/manual.frag.spv", vk::ShaderStageFlagBits::eFragment },
 	};
 
 	std::vector<vk::DescriptorSetLayoutBinding> bindings = {
