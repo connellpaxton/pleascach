@@ -23,23 +23,25 @@ namespace Q3BSP {
 
 		union {
 			Lump lumps[17];
-			Lump	entities,
-					textures,
-					planes,
-					nodes,
-					leafs,
-					leaf_faces,
-					leaf_brushes,
-					models,
-					brushes,
-					brush_sides,
-					vertices,
-					mesh_vertices,
-					effects,
-					faces,
-					lightmaps,
-					lightvols,
-					vis_info;
+			struct {
+				Lump	entities,
+						textures,
+						planes,
+						nodes,
+						leafs,
+						leaf_faces,
+						leaf_brushes,
+						models,
+						brushes,
+						brush_sides,
+						vertices,
+						mesh_vertices,
+						effects,
+						faces,
+						lightmaps,
+						lightvols,
+						vis_info;
+			};
 		};
 	};
 
@@ -108,7 +110,8 @@ namespace Q3BSP {
 	};
 	
 	struct Vertex {
-		glm::vec3 tex_coords;
+		glm::vec3 position;
+		glm::vec2 tex_coords;
 		glm::vec2 lightmap_coords;
 		glm::vec3 normal;
 		glm::u8vec4 color;

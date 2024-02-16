@@ -191,7 +191,11 @@ Renderer::Renderer(Window& win) : win(win) {
 	command_buffer = std::make_unique<CommandBuffer>(dev, queue_family);
 
 	uniform_buffer = std::make_unique<UniformBuffer>(phys_dev, dev);
-	shader_buffer = std::make_unique<ShaderBuffer>(phys_dev, dev);
+
+	/* load map */
+	bsp = std::make_unique<Q3BSP::BSP>("assets/maps/git.bsp");
+
+	shader_buffer = std::make_unique<ShaderBuffer>(phys_dev, dev, bsp->planes.size());
 
 	textures = createResources({
 		"assets/textures/oil.jpg",
@@ -220,10 +224,6 @@ Renderer::Renderer(Window& win) : win(win) {
 		{ { -1.0,-1.0 } },
 	});
 
-	/* load map */
-	bsp = std::make_unique<Q3BSP::BSP>("assets/maps/git.bsp");
-
-	std::vector<Object> objects;
 	objects.reserve(bsp->planes.size());
 	uint id = 0;
 	for (const auto& plane : bsp->planes) {
@@ -358,7 +358,7 @@ void Renderer::draw() {
 	command_buffer->command_buffer.setScissor(0, scissor);
 	command_buffer->bind(pipeline->layout, pipeline->desc_set);
 	command_buffer->bind(*vertex_buffer);
-	shader_buffer->objects[0].center.y += glm::sin(time)/10.0;
+	//shader_buffer->objects[0].center.y += glm::sin(time)/10.0;
 	command_buffer->command_buffer.draw(6, 1, 0, 0);
 
 	/* draw User Interface stuff */

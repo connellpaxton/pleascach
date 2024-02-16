@@ -3,6 +3,8 @@
 #include <util/file.hpp>
 #include <util/log.hpp>
 
+#include <cstring>
+
 using namespace Q3BSP;
 
 static inline void copy_data(void* file_data, std::string& dst, Lump& lump) {
@@ -12,9 +14,11 @@ static inline void copy_data(void* file_data, std::string& dst, Lump& lump) {
 
 template<typename T>
 static inline void copy_data(void* file_data, std::vector<T>& dst, Lump& lump) {
+	Log::debug("Size: %zu (%zu)\n", lump.len/sizeof(T), lump.len);
 	dst.resize(lump.len / sizeof(T));
+	puts("ALLOC'D");
 	//Log::debug("%p %p\n", dst.data(), (u8*)file_data + lump.offset);
-	std::memcpy(dst.data(), (u8*)file_data + (size_t)lump.offset, lump.len);
+	std::memcpy(dst.data(), ((u8*)file_data) + lump.offset, lump.len);
 }
 
 BSP::BSP(const std::string& fname) : filename(fname) {
@@ -28,11 +32,9 @@ BSP::BSP(const std::string& fname) : filename(fname) {
 		Log::error("BSP file missing magic!\n");
 	}
 
-	size_t i = 0;
-	for (auto& lump : header->lumps) {
-		i++;
-		Log::debug("%i: Offset: %u | Length: %u\n", i, lump.offset, lump.len);
-		Log::debug("\tPointer: 0x%p\n", (u8*)file_data.data() + (size_t)lump.offset);
+	for (size_t i = 0; i < std::size(header->lumps); i++) {
+		Log::debug("%i: Offset: %u | Length: %u\n", i, header->lumps[i].offset, header->lumps[i].len);
+		Log::debug("\tPointer: 0x%p\n", (u8*)file_data.data() + (size_t)header->lumps[i].offset);
 	}
 
 	copy_data(file_data.data(), entities, header->entities);
@@ -51,10 +53,10 @@ BSP::BSP(const std::string& fname) : filename(fname) {
 	copy_data(file_data.data(), faces, header->faces);
 	copy_data(file_data.data(), lightmaps, header->lightmaps);
 	copy_data(file_data.data(), lightvols, header->lightvols);
-	
-	vis_info.sz_vectors = *reinterpret_cast<u32*>(file_data.data() + header->vis_info.offset);
-	vis_info.vectors.resize(header->vis_info.len);
-	std::memcpy(vis_info.vectors.data(), file_data.data() + header->vis_info.offset + sizeof(u32), header->vis_info.len);
 
-	vis_info = *reinterpret_cast<VisibilityInfo*>(file_data.data() + header->vis_info.offset);
+	vis_info.sz_vectors = reinterpret_cast<u32*>(file_data.data() + header->vis_info.offset)[1];
+	auto sz = header->vis_info.len;
+	Log::debug("Size: %u\n", sz);
+	vis_info.vectors.resize(sz);
+	std::memcpy(vis_info.vectors.data(), file_data.data() + header->vis_info.offset + 2*sizeof(u32), sz);
 }

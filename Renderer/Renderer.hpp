@@ -60,6 +60,8 @@ struct Renderer {
 	uint32_t current_image_idx;
 	uint64_t frame = 0;
 
+	std::vector<Object> objects;
+
 	std::unique_ptr<UI> ui;
 
 	Camera cam{ .pos = glm::vec3(0.0, 0.0, -1.0), };

@@ -11,7 +11,7 @@
 
 #include <Scene/Camera.hpp>
 
-UI::UI(Renderer* ren) : info { .flycam = ren->flycam,  .time = ren->time, .rad = ren->rad, .cam = ren->cam }, dev(ren->dev) {
+UI::UI(Renderer* ren) : info { .flycam = ren->flycam,  .time = ren->time, .rad = ren->rad, .cam = ren->cam, .objects = ren->objects}, dev(ren->dev) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
@@ -95,9 +95,15 @@ void UI::newFrame() {
 	ImGui::SliderFloat("Theta", &info.cam.theta, 0.0, glm::pi<float>());
 	ImGui::SliderFloat("Phi", &info.cam.phi, 0.0, glm::two_pi<float>());
 	
-	ImGui::SliderFloat("X", &info.cam.pos.x, -10.0, 10.0);
-	ImGui::SliderFloat("Y", &info.cam.pos.y, -10.0, 10.0);
-	ImGui::SliderFloat("Z", &info.cam.pos.z, -10.0, 10.0);
+	ImGui::SliderFloat("X", &info.cam.pos.x, -1000.0, 1000.0);
+	ImGui::SliderFloat("Y", &info.cam.pos.y, -1000.0, 1000.0);
+	ImGui::SliderFloat("Z", &info.cam.pos.z, -1000.0, 1000.0);
+
+	if(ImGui::CollapsingHeader("Objects")) {
+		for(const auto& obj : info.objects) {
+			ImGui::Text("(%f %f %f) + %f", obj.center.x, obj.center.y, obj.center.z, obj.dimensions.x);
+		}
+	}
 
 
 	ImGui::End();

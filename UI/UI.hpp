@@ -5,6 +5,9 @@
 
 #include <Renderer/CommandBuffer.hpp>
 
+#include <vector>
+
+struct Object;
 struct Renderer;
 struct Camera;
 
@@ -17,6 +20,7 @@ struct UI {
 		float& rad;
 		/* camera stuff */
 		Camera& cam;
+		const std::vector<Object>& objects;
 	} info;
 
 	vk::Device dev;

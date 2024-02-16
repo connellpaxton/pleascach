@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <util/glsl_types.hpp>
 
 #include <Scene/Object.hpp>
