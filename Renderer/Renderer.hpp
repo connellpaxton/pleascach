@@ -5,11 +5,12 @@
 #define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
 #include <vulkan/vulkan.hpp>
 
-#include <Renderer/Swapchain.hpp>
 #include <Renderer/CommandBuffer.hpp>
 #include <Renderer/RenderPass.hpp>
 #include <Renderer/ShaderBuffer.hpp>
+#include <Renderer/Swapchain.hpp>
 
+#include <Scene/BSP.hpp>
 #include <Scene/Camera.hpp>
 
 #include <UI/UI.hpp>
@@ -46,7 +47,6 @@ struct Renderer {
 	std::unique_ptr<CommandBuffer> command_buffer;
 	std::unique_ptr<RenderPass> render_pass;
 
-
 	std::unique_ptr<GraphicsPipeline> pipeline;
 	/* just holds single quad */
 	std::unique_ptr<ShaderBuffer> shader_buffer;
@@ -54,6 +54,8 @@ struct Renderer {
 	std::unique_ptr<UniformBuffer> uniform_buffer;
 
 	std::vector<Texture> textures;
+
+	std::unique_ptr<Q3BSP::BSP> bsp;
 
 	uint32_t current_image_idx;
 	uint64_t frame = 0;
@@ -67,5 +69,6 @@ struct Renderer {
 	/* time speed */
 	float time = 0.0;
 	float speed = 1.0;
+	float rad = 1.0;
 	bool running = true;
 };

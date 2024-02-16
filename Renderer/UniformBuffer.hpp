@@ -21,6 +21,7 @@ layout (set = 0, binding = 0) uniform Matrices {
 	vec4 viewport;
 	vec3 cam_dir;
 	uint n_objects;
+	float rad;
 }; 
  */
 
@@ -30,6 +31,7 @@ struct UniformData {
 	vec4 viewport;
 	vec3 cam_dir;
 	uint n_objects;
+	float rad;
 };
 
 struct UniformBuffer {

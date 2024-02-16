@@ -13,6 +13,8 @@ struct UI {
 		float fps = 0.0;
 		bool& flycam;
 		float& time;
+		/* for cantor */
+		float& rad;
 		/* camera stuff */
 		Camera& cam;
 	} info;

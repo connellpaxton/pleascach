@@ -11,7 +11,7 @@
 
 #include <Scene/Camera.hpp>
 
-UI::UI(Renderer* ren) : info { .flycam = ren->flycam,  .time = ren->time, .cam = ren->cam }, dev(ren->dev) {
+UI::UI(Renderer* ren) : info { .flycam = ren->flycam,  .time = ren->time, .rad = ren->rad, .cam = ren->cam }, dev(ren->dev) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
@@ -89,11 +89,9 @@ void UI::newFrame() {
 	ImGui::SetNextWindowBgAlpha(0.5f);
 	ImGui::Begin("Rendering Info", nullptr);
 
-	auto target = info.cam.dir() + info.cam.pos;
-
 	ImGui::Text("FPS: %f", info.fps);
 	ImGui::Text("Time: %f", info.time);
-	ImGui::Text("Target: %f %f %f", target.x, target.y, target.z);
+	ImGui::SliderFloat("Rad", &info.rad, 0.0, 3.0);
 	ImGui::SliderFloat("Theta", &info.cam.theta, 0.0, glm::pi<float>());
 	ImGui::SliderFloat("Phi", &info.cam.phi, 0.0, glm::two_pi<float>());
 	

@@ -6,8 +6,9 @@ using namespace glsl;
 
 
 enum Shape {
-	SPHERE,
-	BOX,
+	eSPHERE,
+	eBOX,
+	ePLANE,
 };
 
 struct Object {

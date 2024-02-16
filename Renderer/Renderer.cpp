@@ -194,12 +194,12 @@ Renderer::Renderer(Window& win) : win(win) {
 	shader_buffer = std::make_unique<ShaderBuffer>(phys_dev, dev);
 
 	textures = createResources({
-		"assets/textures/eire.png",
+		"assets/textures/oil.jpg",
 	});
 
 	std::vector<Shader> shaders = {
 			{dev, "assets/shaders/ray.vert.spv", vk::ShaderStageFlagBits::eVertex },
-			{ dev, "assets/shaders/manual.frag.spv", vk::ShaderStageFlagBits::eFragment },
+			{ dev, "assets/shaders/ray.frag.spv", vk::ShaderStageFlagBits::eFragment },
 	};
 
 	std::vector<vk::DescriptorSetLayoutBinding> bindings = {
@@ -220,10 +220,24 @@ Renderer::Renderer(Window& win) : win(win) {
 		{ { -1.0,-1.0 } },
 	});
 
-	shader_buffer->upload(std::vector<Object> {
-		{ { 0.0, -10.0, 0.0, 0.0 }, { 1.0, 0.0, 0.0, 0.0 }, 0, Shape::SPHERE },
-		{ { 0.0, -12.0, 0.0, 0.0 }, { 10.0, 1.0, 10.0, 0.0 }, 1, Shape::BOX  },
-	});
+	/* load map */
+	bsp = std::make_unique<Q3BSP::BSP>("assets/maps/git.bsp");
+
+	std::vector<Object> objects;
+	objects.reserve(bsp->planes.size());
+	uint id = 0;
+	for (const auto& plane : bsp->planes) {
+		/* for planes, center.xyz holds normal, dimensions.x holds distance */
+		objects.push_back(Object{
+			.center = glm::vec4(plane.norm, 0.0),
+			.dimensions = glm::vec4(plane.dist, 0.0, 0.0, 0.0),
+			.id = id,
+			.shape = Shape::ePLANE,
+		});
+		id++;
+	}
+
+	shader_buffer->upload(objects);
 
 	pipeline = std::make_unique<GraphicsPipeline>(dev, shaders, swapchain->extent, *render_pass, bindings, *vertex_buffer);
 
@@ -330,12 +344,13 @@ void Renderer::draw() {
 
 	auto sz = win.getDimensions();
 
-	uniform_buffer->upload(UniformData {
+	uniform_buffer->upload(UniformData{
 		.cam_pos = cam.pos,
 		.time = time,
 		.viewport = glm::vec4(viewport.width, viewport.y, 0.0, 0.0),
 		.cam_dir = cam.dir(),
 		.n_objects = 2,
+		.rad = rad,
 	});
 
 	command_buffer->bind(*pipeline);
