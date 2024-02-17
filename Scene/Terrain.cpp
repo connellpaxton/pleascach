@@ -3,7 +3,6 @@
 
 #include <util/int.hpp>
 
-
 float Terrain::getHeight(int32_t x, int32_t y) {
 	if (x < 0)
 		x += 64;
@@ -20,7 +19,7 @@ float Terrain::getHeight(int32_t x, int32_t y) {
 	yf /= 64.0;
 	yf *= heightmap_tex->extent.height;
 
-	return static_cast<float>(heightmap_tex->image_data[static_cast<int>(static_cast<int>(yf) * heightmap_tex->extent.width + xf) * 4]) / 256.0f;
+	return static_cast<float>(heightmap_tex->image_data[static_cast<int>(static_cast<int>(yf) * heightmap_tex->extent.width + xf) * 4]) / 256.0f * 15.0f;
 }
 
 Terrain::Terrain(vk::PhysicalDevice phys_dev, vk::Device dev, Texture& tex) : phys_dev(phys_dev), dev(dev) {
@@ -70,20 +69,26 @@ Terrain::Terrain(vk::PhysicalDevice phys_dev, vk::Device dev, Texture& tex) : ph
 				{ getHeight(x + 1, y - 1), getHeight(x + 1, y), getHeight(x + 1, y + 1) },
 			};
 
-			auto normal = glm::vec3(
-				/* x gets X sobel filter */
-				  moores_heights[0][0] + 2.0f * moores_heights[0][1] + moores_heights[0][2]
-				- moores_heights[2][0] - 2.0f * moores_heights[2][1] - moores_heights[2][2],
-				0.0,
-				/* z gets Y sobel filter */
-				  moores_heights[0][0] + 2.0f * moores_heights[1][0] + moores_heights[2][0]
-				- moores_heights[0][2] - 2.0f * moores_heights[1][2] - moores_heights[2][2]
-			);
+			// auto normal = glm::vec3(
+			// 	/* x gets X sobel filter */
+			// 	  moores_heights[0][0] + 2.0f * moores_heights[0][1] + moores_heights[0][2]
+			// 	- moores_heights[2][0] - 2.0f * moores_heights[2][1] - moores_heights[2][2],
+			// 	0.0,
+			// 	/* z gets Y sobel filter */
+			// 	  moores_heights[0][0] + 2.0f * moores_heights[1][0] + moores_heights[2][0]
+			// 	- moores_heights[0][2] - 2.0f * moores_heights[1][2] - moores_heights[2][2]
+			// );
+
+			auto relx = glm::vec3(2.0, getHeight(x + 1, y)-getHeight(x, y), 0.0);
+			auto relz = glm::vec3(0.0, getHeight(x, y + 1)-getHeight(x, y), 2.0);
+			auto normal = glm::normalize(glm::cross(relz, relx));
+
+
 			/* fill in missing component, first scalar scales bump */
-			normal.y = 0.25 * glm::sqrt(glm::abs(1.0 - normal.x*normal.x - normal.z*normal.z));
+			//normal.y = 0.25 * glm::sqrt(glm::abs(1.0 - normal.x*normal.x - normal.z*normal.z));
 
 			//vertices[x + y * patch_size].norm = glm::vec3(getHeight(x, y));
-			vertices[x + y * patch_size].norm = glm::normalize(normal * glm::vec3(2.0f, 1.0f, 2.0f));
+			vertices[x + y * patch_size].norm = normal;
 		}
 
 	vertex_buffer = std::make_unique<VertexBuffer>(phys_dev, dev, vertices.size());

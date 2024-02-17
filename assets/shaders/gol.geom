@@ -11,8 +11,15 @@ layout (location = 0) out vec3 _norm;
 layout (location = 1) out vec2 _texCoord;
 
 layout (set = 0, binding = 0) uniform Matrices {
-	mat4 mvp;
+	mat4 view;
+	mat4 proj;
 	float time;
+	vec3 cam_pos;
+	vec3 cam_dir;
+	vec4 frustum[6];
+	vec2 viewport;
+	float tess_factor;
+	float tess_edge_size;
 };
 
 vec4 explode(vec4 pos, vec3 n) {
@@ -26,7 +33,7 @@ void main(void) {
 
 	if (time < 3.0) {
 		for(int i = 0; i < gl_in.length(); i++) {
-			gl_Position = mvp * gl_in[i].gl_Position;
+			gl_Position = proj * view * gl_in[i].gl_Position;
 			_norm = norm[i];
 			_texCoord = texCoord[i];
 			EmitVertex();
@@ -35,7 +42,7 @@ void main(void) {
 	vec3 n = norm[0] + norm[1] + norm[2];
 	n/=3;
 	for(int i = 0; i < gl_in.length(); i++) {
-		gl_Position = mvp * explode(gl_in[i].gl_Position*abs(cos(time)), n);
+		gl_Position = proj * view * explode(gl_in[i].gl_Position*abs(cos(time)), n);
 		_texCoord = texCoord[i];
 		_norm = n;
 		EmitVertex();

@@ -222,7 +222,6 @@ Renderer::Renderer(Window& win) : win(win) {
 	pipeline->update(0, *uniform_buffer);
 	pipeline->update(1, textures[1]);
 
-
 	/* create Terrain */
 	terrain = std::make_unique<Terrain>(phys_dev, dev, textures[1]);
 
@@ -363,6 +362,11 @@ void Renderer::draw() {
 	command_buffer->bind(terrain_pipeline->layout, terrain_pipeline->desc_set);
 	command_buffer->bind(terrain.get());
 	command_buffer->command_buffer.drawIndexed(terrain->indices.size(), 1, 0, 0, 0);
+
+	command_buffer->bind(*pipeline);
+	command_buffer->bind(pipeline->layout, pipeline->desc_set);
+	command_buffer->bind(models[0]);
+	command_buffer->command_buffer.drawIndexed(models[0]->indices.size(), 10, 0, 0, 0);
 
 	/* draw User Interface stuff */
 	ui->newFrame();
