@@ -23,32 +23,36 @@ static inline void copy_data(void* file_data, std::vector<T>& dst, Lump& lump) {
 	std::memcpy(dst.data(), ((u8*)file_data) + lump.offset, lump.len);
 }
 
-void BSP::load_indices(const glm::vec3& cam_pos) {
+void BSP::load_indices(const glm::vec3& cam_pos, bool visibility_test) {
 	std::set<int> present_faces;
 	std::vector<Face> visible_faces;
-	auto leaf_idx = determine_leaf(cam_pos);
-	if (leaf_idx == last_leaf)
-		return;
+	if (visibility_test) {
+		auto leaf_idx = determine_leaf(cam_pos);
+		if (leaf_idx == last_leaf)
+			return;
 
-	last_leaf = leaf_idx;
-	auto& cam_leaf = leafs[leaf_idx];
+		last_leaf = leaf_idx;
+		auto& cam_leaf = leafs[leaf_idx];
 
 
-	std::vector<Leaf> visible_leafs;
-	for (auto& leaf : leafs) {
-		if (determine_visibility(cam_leaf.cluster_idx, leaf.cluster_idx))
-			visible_leafs.push_back(leaf);
-	}
-
-	for (const auto& leaf : visible_leafs) {
-		for (size_t i = 0; i < leaf.n_leaf_faces; i++) {
-			auto idx = leaf_faces[leaf.first_leaf_face_idx + i].face_idx;
-			if (present_faces.contains(idx))
-				continue;
-
-			present_faces.insert(idx);
-			visible_faces.push_back(faces[idx]);
+		std::vector<Leaf> visible_leafs;
+		for (auto& leaf : leafs) {
+			if (determine_visibility(cam_leaf.cluster_idx, leaf.cluster_idx))
+				visible_leafs.push_back(leaf);
 		}
+
+		for (const auto& leaf : visible_leafs) {
+			for (size_t i = 0; i < leaf.n_leaf_faces; i++) {
+				auto idx = leaf_faces[leaf.first_leaf_face_idx + i].face_idx;
+				if (present_faces.contains(idx))
+					continue;
+
+				present_faces.insert(idx);
+				visible_faces.push_back(faces[idx]);
+			}
+		}
+	} else {
+		visible_faces = faces;
 	}
 
 	for (auto& face : visible_faces) {
@@ -99,6 +103,13 @@ bool BSP::determine_visibility(int vis, int cluster) {
 	return !!(set & (1 << (cluster & 0x7)));
 }
 
+/* changes handedness by swapping z and y */
+static inline void change_swizzle(glm::vec3& v) {
+	auto tmp = v.y;
+	v.y = v.z;
+	v.z = tmp;
+}
+
 BSP::BSP(vk::PhysicalDevice phys_dev, vk::Device dev, const std::string& fname) : dev(dev), filename(fname) {
 	file_data = file::slurpb(fname);
 	Log::debug("File size: %zu\n", file_data.size());
@@ -113,6 +124,10 @@ BSP::BSP(vk::PhysicalDevice phys_dev, vk::Device dev, const std::string& fname) 
 	copy_data(file_data.data(), entities, header->entities);
 	copy_data(file_data.data(), textures, header->textures);
 	copy_data(file_data.data(), planes, header->planes);
+	/* change swizzle */
+	for (auto& plane : planes) {
+		change_swizzle(plane.norm);
+	}
 	copy_data(file_data.data(), nodes, header->nodes);
 	copy_data(file_data.data(), leafs, header->leafs);
 	copy_data(file_data.data(), leaf_faces, header->leaf_faces);
@@ -121,6 +136,12 @@ BSP::BSP(vk::PhysicalDevice phys_dev, vk::Device dev, const std::string& fname) 
 	copy_data(file_data.data(), brushes, header->brushes);
 	copy_data(file_data.data(), brush_sides, header->brush_sides);
 	copy_data(file_data.data(), vertices, header->vertices);
+	/* correct for handedness */
+	for (auto& vertex : vertices) {
+		change_swizzle(vertex.pos);
+		change_swizzle(vertex.norm);
+	}
+
 	copy_data(file_data.data(), mesh_vertices, header->mesh_vertices);
 	copy_data(file_data.data(), effects, header->effects);
 	copy_data(file_data.data(), faces, header->faces);
@@ -136,7 +157,7 @@ BSP::BSP(vk::PhysicalDevice phys_dev, vk::Device dev, const std::string& fname) 
 	vertex_buffer->upload(vertices);
 
 	/* set limit at 256Mi indices */
-	index_buffer = std::make_unique<Buffer>(phys_dev, dev, 0x1000000 * sizeof(u32),
+	index_buffer = std::make_unique<Buffer>(phys_dev, dev, 0x10000000 * sizeof(u32),
 		vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eHostCoherent | vk::MemoryPropertyFlagBits::eHostVisible
 	);
 }

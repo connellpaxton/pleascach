@@ -12,6 +12,7 @@ struct UI {
 	struct UI_Info {
 		float fps = 0.0;
 		bool& flycam;
+		bool& visibility_testing;
 		float& time;
 		/* camera stuff */
 		Camera& cam;

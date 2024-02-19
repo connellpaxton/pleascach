@@ -207,7 +207,7 @@ namespace Q3BSP {
 
 	struct BSP {
 		BSP(vk::PhysicalDevice phys_dev, vk::Device dev, const std::string& fname);
-		void load_indices(const glm::vec3& cam_pos);
+		void load_indices(const glm::vec3& cam_pos, bool visibility_testing);
 		int determine_leaf(glm::vec3 cam_pos);
 		bool determine_visibility(int vis, int cluster);
 

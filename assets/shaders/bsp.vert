@@ -32,14 +32,8 @@ vec4 unpackABGR(uint packedABGR) {
 
 
 void main() {
-  mat4 zup_to_yup = mat4(
-    1.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 1.0, 0.0,
-    0.0, 1.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 1.0
-  );
 
-  gl_Position = proj * view * zup_to_yup * vec4(aPos, 1.0);
+  gl_Position = proj * view * vec4(aPos, 1.0);
   texCoord = aTexCoord;
   norm = aNorm;
   color = unpackABGR(aColor);

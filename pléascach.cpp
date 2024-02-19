@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
 
 			while (in->queue.size()) {
 				/* take event from front of queue, then process it */
-				const auto event = in->queue.front();
+				const InputEvent event = in->queue.front();
 				in->queue.pop();
 				switch (event.tag) {
 					case InputEvent::Tag::eRESIZE:
@@ -71,6 +71,8 @@ int main(int argc, char* argv[]) {
 							ren.speed *= 10.0;
 						} else if (event.key.key == GLFW_KEY_Y && event.key.state == GLFW_PRESS) {
 							ren.speed /= 10.0;
+						} else if (event.key.key == GLFW_KEY_V && event.key.state == GLFW_PRESS) {
+							ren.visibility_testing = !ren.visibility_testing;
 						}
 					break;
 				}

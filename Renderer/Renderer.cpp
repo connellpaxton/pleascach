@@ -356,7 +356,7 @@ void Renderer::draw() {
 
 	auto scissor = vk::Rect2D {
 		.offset = {0, 0},
-		.extent = swapchain->extent,
+		.extent = win.getDimensions(),
 	};
 	
 	/* no secondary command buffers (yet), so contents are passed inline */
@@ -381,24 +381,27 @@ void Renderer::draw() {
 
 	uniform_buffer->upload(uni);
 
-	/*
-	command_buffer->bind(*terrain_pipeline);
 	command_buffer->command_buffer.setViewport(0, viewport);
 	command_buffer->command_buffer.setScissor(0, scissor);
 
+	/*if (line_mode)
+		command_buffer->command_buffer.setPolygonModeEXT(vk::PolygonMode::eLine);
+	else
+		command_buffer->command_buffer.setPolygonModeEXT(vk::PolygonMode::eFill);*/
+	
+	/*command_buffer->bind(*terrain_pipeline);
+
 	command_buffer->bind(terrain_pipeline->layout, terrain_pipeline->desc_set);
 	command_buffer->bind(terrain.get());
-	command_buffer->command_buffer.drawIndexed(terrain->indices.size(), 1, 0, 0, 0);
+	command_buffer->command_buffer.drawIndexed(terrain->indices.size(), 1, 0, 0, 0);*/
 
-	command_buffer->bind(*model_pipeline);
+	/*command_buffer->bind(*model_pipeline);
 	command_buffer->bind(model_pipeline->layout, model_pipeline->desc_set);
 	command_buffer->bind(models[0]);
 	command_buffer->command_buffer.drawIndexed(models[0]->indices.size(), 10, 0, 0, 0);*/
 
-	bsp->load_indices(cam.pos);
+	bsp->load_indices(cam.pos, visibility_testing);
 	command_buffer->bind(bsp.get());
-	command_buffer->command_buffer.setViewport(0, viewport);
-	command_buffer->command_buffer.setScissor(0, scissor);
 	command_buffer->command_buffer.drawIndexed(bsp->indices.size(), 1, 0, 0, 0);
 
 	/* draw User Interface stuff */
