@@ -40,21 +40,16 @@ void BSP::load_indices(const glm::vec3& cam_pos) {
 			visible_leafs.push_back(leaf);
 	}
 
-	Log::debug("%zu visible leafs.\n", visible_leafs.size());
-
 	for (const auto& leaf : visible_leafs) {
-//		Log::debug("Faces: %zu vs %zu\n", leaf.first_leaf_face_idx + leaf.n_leaf_faces, faces.size());
 		for (size_t i = 0; i < leaf.n_leaf_faces; i++) {
 			auto idx = leaf_faces[leaf.first_leaf_face_idx + i].face_idx;
 			if (present_faces.contains(idx))
 				continue;
 
 			present_faces.insert(idx);
-//			Log::debug("Face idx: %zu (v.s. %zu)\n", idx, faces.size());
 			visible_faces.push_back(faces[idx]);
 		}
 	}
-	Log::debug("%zu visible faces.\n", visible_leafs.size());
 
 	for (auto& face : visible_faces) {
 		switch (face.type) {

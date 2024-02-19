@@ -147,7 +147,7 @@ namespace Q3BSP {
 				}, {
 					.location = 4,
 					.binding = binding,
-					.format = vk::Format::eR8G8B8A8Uint,
+					.format = vk::Format::eR32Uint,
 					.offset = offsetof(Vertex, color),
 				}
 			};

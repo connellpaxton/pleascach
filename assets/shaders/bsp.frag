@@ -2,6 +2,7 @@
 
 layout (location = 0) in vec3 norm;
 layout (location = 1) in vec2 texCoord;
+layout (location = 2) in vec4 color;
 layout (location = 0) out vec4 FragColor;
 
 layout (set = 0, binding = 0) uniform Matrices {
@@ -19,5 +20,5 @@ layout (set = 0, binding = 0) uniform Matrices {
 layout (set = 0, binding = 1) uniform sampler2D tex;     
 
 void main() {
-	FragColor = vec4((abs(norm)*0.5+vec3(0.5)).r);
+	FragColor = color;
 }	
