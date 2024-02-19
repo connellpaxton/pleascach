@@ -3,9 +3,10 @@
 #define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
 #include <vulkan/vulkan.hpp>
 
+#include <Renderer/VertexBuffer.hpp>
+
 struct Shader;
 struct UniformBuffer;
-struct VertexBuffer;
 struct RenderPass;
 struct Texture;
 
@@ -18,7 +19,7 @@ struct GraphicsPipeline {
 	GraphicsPipeline(vk::Device dev, const std::vector<Shader>& shaders,
 				const vk::Extent2D& extent, const RenderPass& render_pass,
 				vk::ArrayProxy<vk::DescriptorSetLayoutBinding> bindings,
-				const VertexBuffer& vertex_buffer, enum Type type = Type::eGLTF);
+				const vk::VertexInputBindingDescription& vertex_binding, const std::vector<vk::VertexInputAttributeDescription>& vertex_attrs, enum Type type = Type::eGLTF);
 	vk::Device dev;
 	vk::Pipeline pipeline;
 	vk::PipelineLayout layout;

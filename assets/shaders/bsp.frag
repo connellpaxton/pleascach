@@ -19,5 +19,5 @@ layout (set = 0, binding = 0) uniform Matrices {
 layout (set = 0, binding = 1) uniform sampler2D tex;     
 
 void main() {
-	FragColor = vec4(norm, 1.0);
+	FragColor = vec4((abs(norm)*0.5+vec3(0.5)).r);
 }	

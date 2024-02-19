@@ -71,12 +71,6 @@ void CommandBuffer::bind(vk::PipelineLayout layout, vk::ArrayProxy<vk::Descripto
 	command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, 0, desc_sets, nullptr);
 }
 
-void CommandBuffer::bind(const VertexBuffer& vertex_buffer, uint32_t binding) {
-	const std::array<vk::DeviceSize, 1> offsets = {0};
-	
-	command_buffer.bindVertexBuffers(binding, vertex_buffer.buffer->buffer, offsets);
-}
-
 void CommandBuffer::bind(std::shared_ptr<Model> model) {
 	bind(*model->vertex_buffer);
 	command_buffer.bindIndexBuffer(*model->index_buffer, 0, vk::IndexType::eUint16);
@@ -86,6 +80,14 @@ void CommandBuffer::bind(Terrain* terrain) {
 	bind(*terrain->vertex_buffer);
 	command_buffer.bindIndexBuffer(*terrain->index_buffer, 0, vk::IndexType::eUint32);
 }
+
+void CommandBuffer::bind(Q3BSP::BSP* bsp) {
+	bind(*bsp->pipeline);
+	bind(*bsp->vertex_buffer);
+	command_buffer.bindIndexBuffer(*bsp->index_buffer, 0, vk::IndexType::eUint32);
+	bind(bsp->pipeline->layout, bsp->pipeline->desc_set);
+}
+
 
 void CommandBuffer::draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance) {
 	command_buffer.draw(vertex_count, instance_count, first_vertex, first_instance);

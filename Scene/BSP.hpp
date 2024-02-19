@@ -6,6 +6,12 @@
 #include <vector>
 #include <string>
 
+#define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
+#include <vulkan/vulkan.hpp> 
+
+#include <Renderer/VertexBuffer.hpp>
+#include <Renderer/Pipeline.hpp>
+
 /* contains loading functions for Quake III-style BSPs */
 namespace Q3BSP {
 	struct Lump {
@@ -108,13 +114,44 @@ namespace Q3BSP {
 		i32 plane_idx;
 		i32 texture_idx;
 	};
-	
+
 	struct Vertex {
-		glm::vec3 position;
-		glm::vec2 tex_coords;
+		glm::vec3 pos;
+		glm::vec2 uv;
 		glm::vec2 lightmap_coords;
-		glm::vec3 normal;
+		glm::vec3 norm;
 		glm::u8vec4 color;
+		
+		static inline std::vector<vk::VertexInputAttributeDescription> attrs(uint32_t binding) {
+			return std::vector<vk::VertexInputAttributeDescription> {
+				{
+					.location = 0,
+					.binding = binding,
+					.format = vk::Format::eR32G32B32Sfloat,
+					.offset = offsetof(Vertex, pos),
+				}, {
+					.location = 1,
+					.binding = binding,
+					.format = vk::Format::eR32G32Sfloat,
+					.offset = offsetof(Vertex, uv),
+				}, {
+					.location = 2,
+					.binding = binding,
+					.format = vk::Format::eR32G32Sfloat,
+					.offset = offsetof(Vertex, lightmap_coords),
+				}, {
+					.location = 3,
+					.binding = binding,
+					.format = vk::Format::eR32G32B32Sfloat,
+					.offset = offsetof(Vertex, norm),
+				}, {
+					.location = 4,
+					.binding = binding,
+					.format = vk::Format::eR8G8B8A8Uint,
+					.offset = offsetof(Vertex, color),
+				}
+			};
+		}
 	};
 
 	struct MeshVertex {
@@ -169,8 +206,13 @@ namespace Q3BSP {
 	};
 
 	struct BSP {
+		BSP(vk::PhysicalDevice phys_dev, vk::Device dev, const std::string& fname);
+		void load_indices(const glm::vec3& cam_pos);
+		int determine_leaf(glm::vec3 cam_pos);
+		bool determine_visibility(int vis, int cluster);
+
+		vk::Device dev;
 		Header* header;
-		BSP(const std::string& fname);
 		std::string filename;
 		std::vector<u8> file_data;
 		std::string entities;
@@ -190,5 +232,17 @@ namespace Q3BSP {
 		std::vector<Lightmap> lightmaps;
 		std::vector<Lightvol> lightvols;
 		VisibilityInfo vis_info;
+
+		std::vector<u32> indices;
+		std::unique_ptr<Buffer> index_buffer;
+		std::unique_ptr<GeneralVertexBuffer<Vertex>> vertex_buffer;
+		std::unique_ptr<GraphicsPipeline> pipeline;
+		/* to eliminate needless re-loading*/
+		int last_leaf = -0x1337;
+
+		~BSP() {
+			vertex_buffer.reset();
+			pipeline.reset();
+		}
 	};
 }

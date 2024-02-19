@@ -200,15 +200,37 @@ Renderer::Renderer(Window& win) : win(win) {
 	});
 
 	std::vector<Shader> shaders = {
-			{dev, "assets/shaders/fraglight.vert.spv", vk::ShaderStageFlagBits::eVertex },
-			{ dev, "assets/shaders/fraglight.geom.spv", vk::ShaderStageFlagBits::eGeometry },
-			{ dev, "assets/shaders/lambert.frag.spv", vk::ShaderStageFlagBits::eFragment },
+		{ dev, "assets/shaders/basic.vert.spv", vk::ShaderStageFlagBits::eVertex },
+		{ dev, "assets/shaders/basic.geom.spv", vk::ShaderStageFlagBits::eGeometry },
+		{ dev, "assets/shaders/basic.frag.spv", vk::ShaderStageFlagBits::eFragment },
+	};
+
+	std::vector<Shader> model_shaders = {
+		{ dev, "assets/shaders/fraglight.vert.spv", vk::ShaderStageFlagBits::eVertex },
+		{ dev, "assets/shaders/fraglight.geom.spv", vk::ShaderStageFlagBits::eGeometry },
+		{ dev, "assets/shaders/lambert.frag.spv", vk::ShaderStageFlagBits::eFragment },
 	};
 
 	std::vector<vk::DescriptorSetLayoutBinding> bindings = {
 		uniform_buffer->binding(0),
 		textures[0].binding(1),
 	};
+
+	/* Create default pipeline */
+	vertex_buffer = std::make_unique<VertexBuffer>(phys_dev, dev, 0x1000000 / sizeof(BasicVertex));
+	vertex_pipeline = std::make_unique<GraphicsPipeline>(dev, shaders, swapchain->extent, *render_pass, bindings, vertex_buffer->binding(0), vertex_buffer->attrs(0));
+	vertex_pipeline->update(0, *uniform_buffer);
+	vertex_pipeline->update(1, textures[1]);
+
+	/* BSP loader */
+	bsp = std::make_unique<Q3BSP::BSP>(phys_dev, dev, "assets/maps/git.bsp");
+	std::vector<Shader> bsp_shaders = {
+		{ dev, "assets/shaders/bsp.vert.spv", vk::ShaderStageFlagBits::eVertex },
+		{ dev, "assets/shaders/bsp.frag.spv", vk::ShaderStageFlagBits::eFragment },
+	};
+	bsp->pipeline = std::make_unique<GraphicsPipeline>(dev, bsp_shaders, swapchain->extent, *render_pass, bindings, bsp->vertex_buffer->binding(0), bsp->vertex_buffer->attrs(0));
+	bsp->pipeline->update(0, *uniform_buffer);
+	bsp->pipeline->update(1, textures[1]);
 
 	/* initialize models */
 	Timer model_timer;
@@ -217,10 +239,10 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	Log::debug("Models loaded in %lf milliseconds\n", model_timer.read());
 
-	pipeline = std::make_unique<GraphicsPipeline>(dev, shaders, swapchain->extent, *render_pass, bindings, *models[0]->vertex_buffer);
+	model_pipeline = std::make_unique<GraphicsPipeline>(dev, model_shaders, swapchain->extent, *render_pass, bindings, models[0]->vertex_buffer->binding(0), models[0]->vertex_buffer->attrs(0));
 
-	pipeline->update(0, *uniform_buffer);
-	pipeline->update(1, textures[1]);
+	model_pipeline->update(0, *uniform_buffer);
+	model_pipeline->update(1, textures[1]);
 
 	/* create Terrain */
 	terrain = std::make_unique<Terrain>(phys_dev, dev, textures[1]);
@@ -232,12 +254,16 @@ Renderer::Renderer(Window& win) : win(win) {
 		{ dev, "assets/shaders/terrain.frag.spv", vk::ShaderStageFlagBits::eFragment },
 	};
 
-	terrain_pipeline = std::make_unique<GraphicsPipeline>(dev, terrain_shaders, swapchain->extent, *render_pass, bindings, *terrain->vertex_buffer, GraphicsPipeline::eTERRAIN);
+	terrain_pipeline = std::make_unique<GraphicsPipeline>(dev, terrain_shaders, swapchain->extent, *render_pass, bindings, terrain->vertex_buffer->binding(0), terrain->vertex_buffer->attrs(0), GraphicsPipeline::eTERRAIN);
 
 	terrain_pipeline->update(0, *uniform_buffer);
 	terrain_pipeline->update(1, textures[1]);
 
 	for (auto& shader : shaders)
+		shader.cleanup();
+	for (auto& shader : bsp_shaders)
+		shader.cleanup();
+	for (auto& shader : model_shaders)
 		shader.cleanup();
 	for (auto& shader : terrain_shaders)
 		shader.cleanup();
@@ -338,7 +364,7 @@ void Renderer::draw() {
 
 	auto sz = win.getDimensions();
 
-	const auto p = glm::perspective(glm::radians(90.0f), static_cast<float>(sz.width) / static_cast<float>(sz.height), 0.01f, 2000.0f);
+	const auto p = glm::perspective(glm::radians(90.0f), static_cast<float>(sz.width) / static_cast<float>(sz.height), 0.01f, 200000.0f);
 
 	auto uni = UniformData{
 		.view = cam.view(),
@@ -355,6 +381,7 @@ void Renderer::draw() {
 
 	uniform_buffer->upload(uni);
 
+	/*
 	command_buffer->bind(*terrain_pipeline);
 	command_buffer->command_buffer.setViewport(0, viewport);
 	command_buffer->command_buffer.setScissor(0, scissor);
@@ -363,10 +390,16 @@ void Renderer::draw() {
 	command_buffer->bind(terrain.get());
 	command_buffer->command_buffer.drawIndexed(terrain->indices.size(), 1, 0, 0, 0);
 
-	command_buffer->bind(*pipeline);
-	command_buffer->bind(pipeline->layout, pipeline->desc_set);
+	command_buffer->bind(*model_pipeline);
+	command_buffer->bind(model_pipeline->layout, model_pipeline->desc_set);
 	command_buffer->bind(models[0]);
-	command_buffer->command_buffer.drawIndexed(models[0]->indices.size(), 10, 0, 0, 0);
+	command_buffer->command_buffer.drawIndexed(models[0]->indices.size(), 10, 0, 0, 0);*/
+
+	bsp->load_indices(cam.pos);
+	command_buffer->bind(bsp.get());
+	command_buffer->command_buffer.setViewport(0, viewport);
+	command_buffer->command_buffer.setScissor(0, scissor);
+	command_buffer->command_buffer.drawIndexed(bsp->indices.size(), 1, 0, 0, 0);
 
 	/* draw User Interface stuff */
 	ui->newFrame();
@@ -432,8 +465,10 @@ Renderer::~Renderer() {
 
 	uniform_buffer.reset();
 	vertex_buffer.reset();
+	vertex_pipeline.reset();
 	terrain_pipeline.reset();
-	pipeline.reset();
+	model_pipeline.reset();
+	bsp.reset();
 
 
 	for (auto& tex : textures) {

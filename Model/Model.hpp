@@ -36,7 +36,7 @@ struct Model {
 
 	std::unique_ptr<VertexBuffer> vertex_buffer;
 	std::unique_ptr<Buffer> index_buffer;
-	std::vector<Vertex> vertices;
+	std::vector<BasicVertex> vertices;
 	std::vector<uint16_t> indices;
 
 	/* recusively initialize nodes with an accumulative vertex and index buffer collector */

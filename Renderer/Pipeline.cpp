@@ -9,7 +9,8 @@
 
 #include <util/log.hpp>
 
-GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& shaders, const vk::Extent2D& extent, const RenderPass& render_pass, vk::ArrayProxy<vk::DescriptorSetLayoutBinding> bindings, const VertexBuffer& vertex_buffer, enum Type type) : dev(dev) {
+
+GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& shaders, const vk::Extent2D& extent, const RenderPass& render_pass, vk::ArrayProxy<vk::DescriptorSetLayoutBinding> bindings, const vk::VertexInputBindingDescription& vertex_binding, const std::vector<vk::VertexInputAttributeDescription>& vertex_attrs, enum Type type) : dev(dev) {
 	/* create layout
 	 * Eventually add a graphicspipline constructor that allows specification of layouts etc
 	 * kinda like how Image::Image has all those versions
@@ -62,16 +63,14 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 
 	/* vertex input setup */
 	const std::vector<vk::VertexInputBindingDescription> vertex_bindings = {
-		vertex_buffer.binding(0),
+		vertex_binding,
 	};
-
-	auto attrs = vertex_buffer.attrs(0);
 
 	const auto vertex_input_info = vk::PipelineVertexInputStateCreateInfo{
 		.vertexBindingDescriptionCount = static_cast<uint32_t>(vertex_bindings.size()),
 		.pVertexBindingDescriptions = vertex_bindings.data(),
-		.vertexAttributeDescriptionCount = static_cast<uint32_t>(attrs.size()),
-		.pVertexAttributeDescriptions = attrs.data(),
+		.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertex_attrs.size()),
+		.pVertexAttributeDescriptions = vertex_attrs.data(),
 	};
 
 	const auto input_asm_info = vk::PipelineInputAssemblyStateCreateInfo{
@@ -93,9 +92,9 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 
 	const auto raster_info = vk::PipelineRasterizationStateCreateInfo {
 		.depthClampEnable = vk::False,
-		.polygonMode = type == Type::eGLTF? vk::PolygonMode::eFill : vk::PolygonMode::eLine,
-		.cullMode = vk::CullModeFlagBits::eNone,
-		.frontFace = Type::eGLTF ? vk::FrontFace::eClockwise : vk::FrontFace::eCounterClockwise,
+		.polygonMode = vk::PolygonMode::eLine,
+		.cullMode = vk::CullModeFlagBits::eBack,
+		.frontFace = vk::FrontFace::eCounterClockwise,
 		.depthBiasEnable = vk::False,
 		.lineWidth = 1.0,
 	};

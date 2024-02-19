@@ -9,16 +9,19 @@
 #include <Renderer/CommandBuffer.hpp>
 #include <Renderer/RenderPass.hpp>
 
+#include <Renderer/VertexBuffer.hpp>
+
 #include <Scene/Camera.hpp>
+#include <Scene/BSP.hpp>
 #include <Scene/Terrain.hpp>
 
 #include <Model/Model.hpp>
 
 #include <UI/UI.hpp>
 
+
 struct Window;
 struct UniformBuffer;
-struct VertexBuffer;
 struct Texture;
 
 /* Contains all of the Vulkan objects involved in rendering the scene */
@@ -48,12 +51,13 @@ struct Renderer {
 	std::unique_ptr<CommandBuffer> command_buffer;
 	std::unique_ptr<RenderPass> render_pass;
 
-
-	std::unique_ptr<GraphicsPipeline> pipeline;
+	std::unique_ptr<GraphicsPipeline> vertex_pipeline;
+	std::unique_ptr<GraphicsPipeline> model_pipeline;
 	std::unique_ptr<GraphicsPipeline> terrain_pipeline;
 	std::unique_ptr<VertexBuffer> vertex_buffer;
 	std::unique_ptr<UniformBuffer> uniform_buffer;
 
+	std::unique_ptr<Q3BSP::BSP> bsp;
 	std::unique_ptr<Terrain> terrain;
 
 	std::vector<Texture> textures;

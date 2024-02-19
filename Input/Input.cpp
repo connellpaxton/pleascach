@@ -83,7 +83,8 @@ void Input::handleMovementKeys(Renderer& ren) {
 	else
 		forward = glm::vec3(glm::cos(ren.cam.phi), 0.0, glm::sin(ren.cam.phi));
 	const auto right = glm::cross(forward, glm::vec3(0.0, 1.0, 0.0));
-	const auto speed = glfwGetKey(in, GLFW_KEY_LEFT_SHIFT)? 2.0f : 1.0f;
+	auto speed = glfwGetKey(in, GLFW_KEY_LEFT_SHIFT)? 2.0f : 1.0f;
+	speed *= ren.speed;
 
 	if(glfwGetKey(in, GLFW_KEY_UP)) {
 		ren.cam.theta -= 0.01;
@@ -105,28 +106,28 @@ void Input::handleMovementKeys(Renderer& ren) {
 	}
 	/* move "forward" or "backward" */
 	if (glfwGetKey(in, GLFW_KEY_W)) {
-		ren.cam.pos += forward * 0.1f * speed;
+		ren.cam.pos += forward * 1.0f * speed;
 	}
 
 	if (glfwGetKey(in, GLFW_KEY_S)) {
-		ren.cam.pos += forward * -0.1f * speed;
+		ren.cam.pos += forward * -1.0f * speed;
 	}
 
 	/* move "left" or "right" */
 	if (glfwGetKey(in, GLFW_KEY_A)) {
-		ren.cam.pos -= right * 0.1f * speed;
+		ren.cam.pos -= right * 1.0f * speed;
 	}
 
 	if (glfwGetKey(in, GLFW_KEY_D)) {
-		ren.cam.pos += right * 0.1f * speed;
+		ren.cam.pos += right * 1.0f * speed;
 	}
 
 	if(glfwGetKey(in, GLFW_KEY_SPACE)) {
-		ren.cam.pos.y += 0.1;
+		ren.cam.pos.y += 1.0 * speed;
 	}
 
 	if(glfwGetKey(in, GLFW_KEY_LEFT_CONTROL)) {
-		ren.cam.pos.y -= 0.1;
+		ren.cam.pos.y -= 1.0 * speed;
 	}
 
 	ren.cam.theta = glm::clamp(ren.cam.theta, 0.01f, glm::pi<float>() - 0.01f);

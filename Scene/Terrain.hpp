@@ -16,7 +16,7 @@ struct Terrain {
 	
 	std::unique_ptr<VertexBuffer> vertex_buffer;
 	std::unique_ptr<Buffer> index_buffer;
-	std::vector<Vertex> vertices;
+	std::vector<BasicVertex> vertices;
 	std::vector<uint32_t> indices;
 
 	Terrain(vk::PhysicalDevice phys_dev, vk::Device dev, Texture& hieghtmap);

@@ -58,26 +58,26 @@ void Model::initVertices(Node* node, const tinygltf::Primitive& prim) {
 
 	auto loc = prim.attributes.find("POSITION");
 	if(loc != prim.attributes.end()) {
-		auto accessor = model->accessors[loc->second];
+		auto& accessor = model->accessors[loc->second];
 		const auto& view = model->bufferViews[accessor.bufferView];
 		pos_buff = reinterpret_cast<const float*>(&model->buffers[view.buffer].data[accessor.byteOffset+view.byteOffset]);
 		vertex_count = accessor.count;
 	}
 	loc = prim.attributes.find("NORMAL");
 	if(loc != prim.attributes.end()) {
-		auto accessor = model->accessors[loc->second];
+		auto& accessor = model->accessors[loc->second];
 		const auto& view = model->bufferViews[accessor.bufferView];
 		norm_buff = reinterpret_cast<const float*>(&model->buffers[view.buffer].data[accessor.byteOffset+view.byteOffset]);
 	}
 	loc = prim.attributes.find("TEXCOORD_0");
 	if(loc != prim.attributes.end()) {
-		auto accessor = model->accessors[loc->second];
+		auto& accessor = model->accessors[loc->second];
 		const auto& view = model->bufferViews[accessor.bufferView];
 		uv_buff = reinterpret_cast<const float*>(&model->buffers[view.buffer].data[accessor.byteOffset+view.byteOffset]);
 	}
 
 	for(size_t i = 0; i < vertex_count; i++) {
-		vertices.push_back(Vertex {
+		vertices.push_back(BasicVertex {
 			.pos = pos_buff? glm::make_vec3(pos_buff+i*3) : glm::vec3(0.0),
 			.norm = norm_buff? glm::normalize(glm::make_vec3(norm_buff+i*3)) : glm::vec3(0.0),
 			.uv = uv_buff? glm::make_vec2(uv_buff+i*2) : glm::vec2(0.0),
