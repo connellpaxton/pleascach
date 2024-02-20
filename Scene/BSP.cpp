@@ -19,7 +19,6 @@ static inline void copy_data(void* file_data, std::string& dst, Lump& lump) {
 template<typename T>
 static inline void copy_data(void* file_data, std::vector<T>& dst, Lump& lump) {
 	dst.resize(lump.len / sizeof(T));
-	//Log::debug("%p %p\n", dst.data(), (u8*)file_data + lump.offset);
 	std::memcpy(dst.data(), ((u8*)file_data) + lump.offset, lump.len);
 }
 
@@ -72,11 +71,6 @@ void BSP::load_indices(const glm::vec3& cam_pos, bool visibility_test) {
 }
 
 int BSP::determine_leaf(glm::vec3 cam_pos) {
-	/* camera coordinate transformation */
-	float tmp = cam_pos.y;
-	cam_pos.y = cam_pos.z;
-	cam_pos.z = tmp;
-
 	/* use SDF of planes to determine relative position with respect to partitioning planes */
 	int idx = 0;
 	/* positive values are node indices, negative values are leaf indices */
