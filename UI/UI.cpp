@@ -111,7 +111,7 @@ UI::UI(Renderer* ren) :
 		console->System().Log(csys::ItemType::INFO) << "Paused: " << (this->info.paused? "True" : "False") << csys::endl;
 	});
 
-	console->System().Log(csys::ItemType::INFO) << "Welcome to Ple'ascach!" << csys::endl;
+	console->System().Log(csys::ItemType::INFO) << "Welcome to Pleascach!" << csys::endl;
 }
 
 void UI::newFrame() {
