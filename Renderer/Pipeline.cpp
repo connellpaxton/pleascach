@@ -107,7 +107,7 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 	const auto depth_stencil_info = vk::PipelineDepthStencilStateCreateInfo{
 		.depthTestEnable = vk::True,
 		.depthWriteEnable = vk::True,
-		.depthCompareOp = vk::CompareOp::eLessOrEqual,
+		.depthCompareOp = vk::CompareOp::eLess,
 		.depthBoundsTestEnable = vk::False,
 		.stencilTestEnable = vk::False,
 		.minDepthBounds = 0.0,

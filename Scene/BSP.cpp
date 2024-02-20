@@ -24,12 +24,11 @@ static inline void copy_data(void* file_data, std::vector<T>& dst, Lump& lump) {
 }
 
 void BSP::load_indices(const glm::vec3& cam_pos, bool visibility_test) {
+	indices.clear();
 	std::set<int> present_faces;
 	std::vector<Face> visible_faces;
 	if (visibility_test) {
 		auto leaf_idx = determine_leaf(cam_pos);
-		if (leaf_idx == last_leaf)
-			return;
 
 		last_leaf = leaf_idx;
 		auto& cam_leaf = leafs[leaf_idx];
@@ -60,12 +59,14 @@ void BSP::load_indices(const glm::vec3& cam_pos, bool visibility_test) {
 			case Face::ePATCH:
 			break;
 			case Face::ePOLYGON:
-			case Face::eMESH:
+	//		case Face::eMESH:
 				for (size_t i = 0; i < face.n_mesh_vertices; i++)
 					indices.push_back(face.first_vertex_idx + mesh_vertices[face.first_mesh_vertex_idx+i].idx);
 			break;
 		}
 	}
+
+	assert(indices.size() % 3 == 0);
 
 	index_buffer->upload(indices);
 }

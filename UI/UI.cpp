@@ -11,7 +11,7 @@
 
 #include <Scene/Camera.hpp>
 
-UI::UI(Renderer* ren) : info{ .flycam = ren->flycam, .visibility_testing = ren->visibility_testing, .time = ren->time, .cam = ren->cam, .tess_factor = ren->tess_factor, .tess_edge_size = ren->tess_edge_size }, dev(ren->dev) {
+UI::UI(Renderer* ren) : info{ .flycam = ren->flycam, .visibility_testing = ren->visibility_testing, .time = ren->time, .cam = ren->cam, .tess_factor = ren->tess_factor, .tess_edge_size = ren->tess_edge_size, .n_indices = ren->n_indices }, dev(ren->dev) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
@@ -89,6 +89,7 @@ void UI::newFrame() {
 	ImGui::SetNextWindowBgAlpha(0.5f);
 	ImGui::Begin("Rendering Info", nullptr);
 
+	ImGui::Text("# of Indices: %zu", info.n_indices);
 	ImGui::Text("FPS: %f", info.fps);
 	ImGui::Text("Time: %f", info.time);
 	ImGui::Checkbox("Fly Camera", &info.flycam);

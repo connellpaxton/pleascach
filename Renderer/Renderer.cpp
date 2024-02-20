@@ -364,7 +364,7 @@ void Renderer::draw() {
 
 	auto sz = win.getDimensions();
 
-	const auto p = glm::perspective(glm::radians(90.0f), static_cast<float>(sz.width) / static_cast<float>(sz.height), 0.01f, 200000.0f);
+	const auto p = glm::perspective(glm::radians(90.0f), static_cast<float>(sz.width) / static_cast<float>(sz.height), 0.01f, 10000.0f);
 
 	auto uni = UniformData{
 		.view = cam.view(),
@@ -403,6 +403,8 @@ void Renderer::draw() {
 	bsp->load_indices(cam.pos, visibility_testing);
 	command_buffer->bind(bsp.get());
 	command_buffer->command_buffer.drawIndexed(bsp->indices.size(), 1, 0, 0, 0);
+
+	n_indices = bsp->indices.size();
 
 	/* draw User Interface stuff */
 	ui->newFrame();

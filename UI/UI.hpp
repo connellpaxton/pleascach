@@ -18,6 +18,7 @@ struct UI {
 		Camera& cam;
 		float& tess_factor;
 		float& tess_edge_size;
+		const size_t& n_indices;
 	} info;
 
 	vk::Device dev;
