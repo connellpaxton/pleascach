@@ -13,23 +13,7 @@ struct Renderer;
 struct Camera;
 
 struct UI {
-	struct UI_Info {
-		float fps = 0.0;
-		bool& flycam;
-		bool& visibility_testing;
-		float& time;
-		/* camera stuff */
-		Camera& cam;
-		float& tess_factor;
-		float& tess_edge_size;
-		const size_t& n_indices;
-		float& near_plane;
-		float& far_plane;
-		bool& paused;
-	} info;
-
-
-
+	Renderer* ren;
 	vk::Device dev;
 	vk::DescriptorPool desc_pool;
 

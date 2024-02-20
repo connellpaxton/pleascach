@@ -70,15 +70,17 @@ struct Renderer {
 
 	Camera cam{ .pos = glm::vec3(0.0, 5.0, 0.0), };
 
+
+	float fps;
 	bool capture_mouse = false;
 	bool flycam = false;
 	/* time speed */
 	float time = 0.0;
 	float speed = 1.0;
 	bool paused = false;
+	bool visibility_testing = false;
 
 	size_t n_indices;
-	bool visibility_testing;
 
 	float near_plane = 2.0f;
 	float far_plane = 10000.0f;

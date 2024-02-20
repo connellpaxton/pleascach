@@ -21,18 +21,12 @@ static csys::ItemLog& operator<<(csys::ItemLog& log, ImVector<float>& vec) {
 	return log << vec[vec.size() - 1] << " }";
 }
 
-static void vec_setter(ImVector<float>& v, std::vector<float> in) {
+/*static void vec_setter(ImVector<float>& v, std::vector<float> in) {
 	v.reserve(in.size());
 	std::memcpy(v.Data, in.data(), sizeof(float) * in.size());
-}
+}*/
 
-UI::UI(Renderer* ren) :
-		info {
-			.flycam = ren->flycam, .visibility_testing = ren->visibility_testing,
-			.time = ren->time, .cam = ren->cam, .tess_factor = ren->tess_factor,
-			.tess_edge_size = ren->tess_edge_size, .n_indices = ren->n_indices,
-			.near_plane = ren->near_plane, .far_plane = ren->far_plane, .paused = ren->paused
-		}, dev(ren->dev) {
+UI::UI(Renderer* ren) : ren(ren), dev(ren->dev) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
@@ -107,8 +101,13 @@ UI::UI(Renderer* ren) :
 
 	console = std::make_unique<ImGuiConsole>("developer console");
 	console->System().RegisterCommand("pause", "Pauses or unpauses the engine", [this]() {
-		this->info.paused = !this->info.paused;
-		console->System().Log(csys::ItemType::INFO) << "Paused: " << (this->info.paused? "True" : "False") << csys::endl;
+		this->ren->paused = !this->ren->paused;
+		console->System().Log(csys::ItemType::INFO) << "Paused: " << (this->ren->paused? "True" : "False") << csys::endl;
+	});
+
+	console->System().RegisterCommand("toggle-visibility-testing", "Toggles visibility testings (using clusters and frustum culling)", [this]() {
+		this->ren->visibility_testing = !this->ren->visibility_testing;
+		console->System().Log(csys::ItemType::INFO) << "Visibility Testing: " << (this->ren->visibility_testing? "Enabled" : "Disabled") << csys::endl;
 	});
 
 	console->System().Log(csys::ItemType::INFO) << "Welcome to Pleascach!" << csys::endl;
@@ -122,15 +121,14 @@ void UI::newFrame() {
 	ImGui::SetNextWindowBgAlpha(0.5f);
 	ImGui::Begin("Rendering Info", nullptr);
 
-	ImGui::Text("# of Indices: %zu", info.n_indices);
-	ImGui::Text("FPS: %f", info.fps);
-	ImGui::Text("Time: %f", info.time);
-	ImGui::Checkbox("Fly Camera", &info.flycam);
-	ImGui::Checkbox("Visibility Testing", &info.visibility_testing);
-	ImGui::SliderFloat("Near Plane", &info.near_plane, 0.00, 0.20);
-	ImGui::SliderFloat("Far Plane", &info.far_plane, 1000.0, 10000.0);
-	ImGui::SliderFloat("Tessellation Factor", &info.tess_factor, 0.1, 10.0);
-	ImGui::SliderFloat("Edge Size", &info.tess_edge_size, 0.0, 40.0);
+	ImGui::Text("# of Indices: %zu", ren->n_indices);
+	ImGui::Text("FPS: %f", ren->fps);
+	ImGui::Text("Time: %f", ren->time);
+	ImGui::Checkbox("Fly Camera", &ren->flycam);
+	ImGui::SliderFloat("Near Plane", &ren->near_plane, 0.00, 0.20);
+	ImGui::SliderFloat("Far Plane", &ren->far_plane, 1000.0, 10000.0);
+	ImGui::SliderFloat("Tessellation Factor", &ren->tess_factor, 0.1, 10.0);
+	ImGui::SliderFloat("Edge Size", &ren->tess_edge_size, 0.0, 40.0);
 
 	console->Draw();
 

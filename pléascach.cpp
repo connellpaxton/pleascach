@@ -69,8 +69,6 @@ int main(int argc, char* argv[]) {
 							ren.speed *= 10.0;
 						} else if (event.key.key == GLFW_KEY_Y && event.key.state == GLFW_PRESS) {
 							ren.speed /= 10.0;
-						} else if (event.key.key == GLFW_KEY_V && event.key.state == GLFW_PRESS) {
-							ren.visibility_testing = !ren.visibility_testing;
 						}
 					break;
 				}
@@ -79,7 +77,7 @@ int main(int argc, char* argv[]) {
 			ren.draw();
 			ren.present();
 			const auto t = frame_timer.read();
-			ren.ui->info.fps = 1000.0f / t;
+			ren.fps = 1000.0f / t;
 
 			while (frame_timer.read() < 16.60)
 				;

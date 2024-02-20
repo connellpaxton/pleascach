@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(WIN32)
 set(CMAKE_CXX_FLAGS "-D_DEBUG")
 else()
-set(CMAKE_CXX_FLAGS "-D_DEBUG -Wall")
+set(CMAKE_CXX_FLAGS "-D_DEBUG -Wall -O3")
 endif()
 
 project(Pleascach)
