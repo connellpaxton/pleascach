@@ -80,6 +80,9 @@ struct Renderer {
 	size_t n_indices;
 	bool visibility_testing;
 
+	float near_plane = 2.0f;
+	float far_plane = 10000.0f;
+
 	float tess_factor = 1.8f;
 	float tess_edge_size = 20.0f;
 };

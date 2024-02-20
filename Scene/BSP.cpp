@@ -59,7 +59,7 @@ void BSP::load_indices(const glm::vec3& cam_pos, bool visibility_test) {
 			case Face::ePATCH:
 			break;
 			case Face::ePOLYGON:
-	//		case Face::eMESH:
+			case Face::eMESH:
 				for (size_t i = 0; i < face.n_mesh_vertices; i++)
 					indices.push_back(face.first_vertex_idx + mesh_vertices[face.first_mesh_vertex_idx+i].idx);
 			break;

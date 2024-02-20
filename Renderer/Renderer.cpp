@@ -364,7 +364,7 @@ void Renderer::draw() {
 
 	auto sz = win.getDimensions();
 
-	const auto p = glm::perspective(glm::radians(90.0f), static_cast<float>(sz.width) / static_cast<float>(sz.height), 0.01f, 10000.0f);
+	const auto p = glm::perspective(glm::radians(90.0f), static_cast<float>(sz.width) / static_cast<float>(sz.height), near_plane, far_plane);
 
 	auto uni = UniformData{
 		.view = cam.view(),

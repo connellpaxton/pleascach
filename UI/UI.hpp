@@ -19,6 +19,8 @@ struct UI {
 		float& tess_factor;
 		float& tess_edge_size;
 		const size_t& n_indices;
+		float& near_plane;
+		float& far_plane;
 	} info;
 
 	vk::Device dev;

@@ -11,7 +11,13 @@
 
 #include <Scene/Camera.hpp>
 
-UI::UI(Renderer* ren) : info{ .flycam = ren->flycam, .visibility_testing = ren->visibility_testing, .time = ren->time, .cam = ren->cam, .tess_factor = ren->tess_factor, .tess_edge_size = ren->tess_edge_size, .n_indices = ren->n_indices }, dev(ren->dev) {
+UI::UI(Renderer* ren) :
+		info {
+			.flycam = ren->flycam, .visibility_testing = ren->visibility_testing,
+			.time = ren->time, .cam = ren->cam, .tess_factor = ren->tess_factor,
+			.tess_edge_size = ren->tess_edge_size, .n_indices = ren->n_indices,
+			.near_plane = ren->near_plane, .far_plane = ren->far_plane
+		}, dev(ren->dev) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
@@ -94,6 +100,8 @@ void UI::newFrame() {
 	ImGui::Text("Time: %f", info.time);
 	ImGui::Checkbox("Fly Camera", &info.flycam);
 	ImGui::Checkbox("Visibility Testing", &info.visibility_testing);
+	ImGui::SliderFloat("Near Plane", &info.near_plane, 0.00, 0.20);
+	ImGui::SliderFloat("Far Plane", &info.far_plane, 1000.0, 10000.0);
 	ImGui::SliderFloat("Tessellation Factor", &info.tess_factor, 0.1, 10.0);
 	ImGui::SliderFloat("Edge Size", &info.tess_edge_size, 0.0, 40.0);
 
