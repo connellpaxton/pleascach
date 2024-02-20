@@ -5,6 +5,10 @@
 
 #include <Renderer/CommandBuffer.hpp>
 
+#include <imgui/imgui_console.h>
+
+#include <memory>
+
 struct Renderer;
 struct Camera;
 
@@ -21,13 +25,18 @@ struct UI {
 		const size_t& n_indices;
 		float& near_plane;
 		float& far_plane;
+		bool& paused;
 	} info;
+
+
 
 	vk::Device dev;
 	vk::DescriptorPool desc_pool;
 
 	UI(Renderer* ren);
 
+
+	std::unique_ptr<ImGuiConsole> console;
 	void newFrame();
 	void render(vk::CommandBuffer cmd);
 	

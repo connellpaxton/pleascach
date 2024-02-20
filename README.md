@@ -3,9 +3,19 @@
 ###### Check out the raymarching branch (pléascach-dronuilleog)!
 
 Small Vulkan 3D renderer.
-![really cool wireframe tessellated terrain)](capture.png "Terrain Capture")
+![really cool wireframe tessellated terrain)](terrain_capture.png "Terrain Capture")
+![Quake 3 style map (unlit)](bsp_capture.png "BSP Capture")
+
+#### List of 3rd party code included in this repository:
+- Imgui (and Imgui-console): for debugging UI
+- STB: for image loading
+- GLM: for math
+- GLFW: for cross-platform windowing
+- TinyglTF: for glTF parsing
+
 ## Features
 - glTF Model loading
+- QuakeIII BSP Map Loading
 - Tessellation-controlled heightmap terrains with dynamic normal calculation
 - Working lighting!
 

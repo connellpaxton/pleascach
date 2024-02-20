@@ -65,8 +65,6 @@ int main(int argc, char* argv[]) {
 							ren.time = 0;
 						} else if (event.key.key == GLFW_KEY_C && event.key.state == GLFW_PRESS) {
 							ren.flycam = !ren.flycam;
-						} else if (event.key.key == GLFW_KEY_P && event.key.state == GLFW_PRESS) {
-							ren.running = !ren.running;
 						} else if (event.key.key == GLFW_KEY_T && event.key.state == GLFW_PRESS) {
 							ren.speed *= 10.0;
 						} else if (event.key.key == GLFW_KEY_Y && event.key.state == GLFW_PRESS) {

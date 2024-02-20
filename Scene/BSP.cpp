@@ -2,12 +2,14 @@
 
 #include <Renderer/Pipeline.hpp>
 
+#include <util/geo.hpp>
 #include <util/file.hpp>
 #include <util/log.hpp>
 
 #include <set>
 
 #include <cstring>
+
 
 using namespace Q3BSP;
 
@@ -22,12 +24,16 @@ static inline void copy_data(void* file_data, std::vector<T>& dst, Lump& lump) {
 	std::memcpy(dst.data(), ((u8*)file_data) + lump.offset, lump.len);
 }
 
-void BSP::load_indices(const glm::vec3& cam_pos, bool visibility_test) {
-	indices.clear();
+void BSP::load_indices(const glm::vec3& cam_pos, bool visibility_test, const glm::mat4& view) {
 	std::set<int> present_faces;
 	std::vector<Face> visible_faces;
 	if (visibility_test) {
 		auto leaf_idx = determine_leaf(cam_pos);
+
+		auto fr_planes = frustum(view);
+
+		if (leaf_idx == last_leaf)
+			index_buffer->upload(indices);
 
 		last_leaf = leaf_idx;
 		auto& cam_leaf = leafs[leaf_idx];
@@ -35,7 +41,22 @@ void BSP::load_indices(const glm::vec3& cam_pos, bool visibility_test) {
 
 		std::vector<Leaf> visible_leafs;
 		for (auto& leaf : leafs) {
-			if (determine_visibility(cam_leaf.cluster_idx, leaf.cluster_idx))
+
+			const auto min = leaf.bb_mins;
+			const auto max = leaf.bb_maxes;
+
+			const glm::vec3 bounding_planes[8] = {
+				{ min.x, min.y, min.z },
+				{ max.x, min.y, min.z },
+				{ max.x, max.y, min.z },
+				{ min.x, max.y, min.z },
+				{ min.x, min.y, max.z },
+				{ max.x, min.y, max.z },
+				{ max.x, max.y, max.z },
+				{ min.x, max.y, max.z },
+			};
+
+			if (determine_visibility(cam_leaf, leaf, fr_planes, bounding_planes))
 				visible_leafs.push_back(leaf);
 		}
 
@@ -52,6 +73,8 @@ void BSP::load_indices(const glm::vec3& cam_pos, bool visibility_test) {
 	} else {
 		visible_faces = faces;
 	}
+
+	indices.clear();
 
 	for (auto& face : visible_faces) {
 		switch (face.type) {
@@ -88,14 +111,19 @@ int BSP::determine_leaf(glm::vec3 cam_pos) {
 }
 
 
-bool BSP::determine_visibility(int vis, int cluster) {
+bool BSP::determine_visibility(const Leaf& cam_leaf, const Leaf& leaf, const std::array<glm::vec4, 6>& frustum, const glm::vec3 box_verts[8]) {
+	int vis = cam_leaf.cluster_idx, cluster = leaf.cluster_idx;
 	if (vis_info.vectors.size() == 0 || vis < 0)
 		return true;
 
 	int i = (vis * vis_info.sz_vectors) + (cluster >> 3);
 	u8 set = vis_info.vectors[i];
 
-	return !!(set & (1 << (cluster & 0x7)));
+	if (!(set & (1 << (cluster & 0x7))))
+		return false;
+
+	/* perform fustrum culling */
+	return box_in_frustum(frustum, box_verts);
 }
 
 /* changes handedness by swapping z and y */
@@ -152,7 +180,7 @@ BSP::BSP(vk::PhysicalDevice phys_dev, vk::Device dev, const std::string& fname) 
 	vertex_buffer->upload(vertices);
 
 	/* set limit at 256Mi indices */
-	index_buffer = std::make_unique<Buffer>(phys_dev, dev, 0x10000000 * sizeof(u32),
+	index_buffer = std::make_unique<Buffer>(phys_dev, dev, 100000 * sizeof(u32),
 		vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eHostCoherent | vk::MemoryPropertyFlagBits::eHostVisible
 	);
 }

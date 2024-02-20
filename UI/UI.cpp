@@ -2,6 +2,7 @@
 
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_vulkan.h>
+#include <imgui/imgui_console.h>
 
 #include <Window/Window.hpp>
 
@@ -11,12 +12,26 @@
 
 #include <Scene/Camera.hpp>
 
+static csys::ItemLog& operator<<(csys::ItemLog& log, ImVector<float>& vec) {
+	if (!vec.size())
+		return log << "vector<f32> {}";
+	log << "vector<f32> { ";
+	for (int i = 0; i < vec.size() - 1; i++)
+		log << vec[i] << ", ";
+	return log << vec[vec.size() - 1] << " }";
+}
+
+static void vec_setter(ImVector<float>& v, std::vector<float> in) {
+	v.reserve(in.size());
+	std::memcpy(v.Data, in.data(), sizeof(float) * in.size());
+}
+
 UI::UI(Renderer* ren) :
 		info {
 			.flycam = ren->flycam, .visibility_testing = ren->visibility_testing,
 			.time = ren->time, .cam = ren->cam, .tess_factor = ren->tess_factor,
 			.tess_edge_size = ren->tess_edge_size, .n_indices = ren->n_indices,
-			.near_plane = ren->near_plane, .far_plane = ren->far_plane
+			.near_plane = ren->near_plane, .far_plane = ren->far_plane, .paused = ren->paused
 		}, dev(ren->dev) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -85,6 +100,18 @@ UI::UI(Renderer* ren) :
 
 	ImGui_ImplVulkan_DestroyFontUploadObjects();
 	ImGui::StyleColorsDark();
+
+	/* set up input so we can use the keyboard */
+	auto& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+	console = std::make_unique<ImGuiConsole>("developer console");
+	console->System().RegisterCommand("pause", "Pauses or unpauses the engine", [this]() {
+		this->info.paused = !this->info.paused;
+		console->System().Log(csys::ItemType::INFO) << "Paused: " << (this->info.paused? "True" : "False") << csys::endl;
+	});
+
+	console->System().Log(csys::ItemType::INFO) << "Welcome to Ple'ascach!" << csys::endl;
 }
 
 void UI::newFrame() {
@@ -105,6 +132,8 @@ void UI::newFrame() {
 	ImGui::SliderFloat("Tessellation Factor", &info.tess_factor, 0.1, 10.0);
 	ImGui::SliderFloat("Edge Size", &info.tess_edge_size, 0.0, 40.0);
 
+	console->Draw();
+
 	ImGui::End();
 }
 
@@ -116,6 +145,7 @@ void UI::render(vk::CommandBuffer cmd) {
 UI::~UI() {
 	dev.destroyDescriptorPool(desc_pool);
 	
+	console.reset();
 	ImGui_ImplVulkan_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();

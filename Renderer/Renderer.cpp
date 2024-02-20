@@ -383,11 +383,6 @@ void Renderer::draw() {
 
 	command_buffer->command_buffer.setViewport(0, viewport);
 	command_buffer->command_buffer.setScissor(0, scissor);
-
-	/*if (line_mode)
-		command_buffer->command_buffer.setPolygonModeEXT(vk::PolygonMode::eLine);
-	else
-		command_buffer->command_buffer.setPolygonModeEXT(vk::PolygonMode::eFill);*/
 	
 	/*command_buffer->bind(*terrain_pipeline);
 
@@ -400,7 +395,7 @@ void Renderer::draw() {
 	command_buffer->bind(models[0]);
 	command_buffer->command_buffer.drawIndexed(models[0]->indices.size(), 10, 0, 0, 0);*/
 
-	bsp->load_indices(cam.pos, visibility_testing);
+	bsp->load_indices(cam.pos, visibility_testing, p*uni.view);
 	command_buffer->bind(bsp.get());
 	command_buffer->command_buffer.drawIndexed(bsp->indices.size(), 1, 0, 0, 0);
 
@@ -455,7 +450,7 @@ void Renderer::present() {
 	}
 
 	frame++;
-	time += 0.0167f * speed * static_cast<float>(running);
+	time += 0.0167f * speed * static_cast<float>(!paused);
 }
 
 Renderer::~Renderer() {

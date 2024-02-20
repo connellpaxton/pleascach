@@ -84,7 +84,6 @@ namespace Q3BSP {
 		u32 n_leaf_brushes;
 	};
 
-
 	struct LeafFaces {
 		/* list of face indices (one list per leaf) */
 		i32 face_idx;
@@ -207,9 +206,9 @@ namespace Q3BSP {
 
 	struct BSP {
 		BSP(vk::PhysicalDevice phys_dev, vk::Device dev, const std::string& fname);
-		void load_indices(const glm::vec3& cam_pos, bool visibility_testing);
+		void load_indices(const glm::vec3& cam_pos, bool visibility_testing, const glm::mat4& view);
 		int determine_leaf(glm::vec3 cam_pos);
-		bool determine_visibility(int vis, int cluster);
+		bool determine_visibility(const Leaf& cam_leaf, const Leaf& leaf, const std::array<glm::vec4, 6>& frustum, const glm::vec3 box_verts[8]);
 
 		vk::Device dev;
 		Header* header;

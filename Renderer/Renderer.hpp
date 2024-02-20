@@ -75,7 +75,7 @@ struct Renderer {
 	/* time speed */
 	float time = 0.0;
 	float speed = 1.0;
-	bool running = true;
+	bool paused = false;
 
 	size_t n_indices;
 	bool visibility_testing;
