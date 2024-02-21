@@ -127,7 +127,8 @@ bool BSP::determine_visibility(const Leaf& cam_leaf, const Leaf& leaf, const std
 }
 
 /* changes handedness by swapping z and y */
-static inline void change_swizzle(glm::vec3& v) {
+template<typename T>
+static inline void change_swizzle(T& v) {
 	auto tmp = v.y;
 	v.y = v.z;
 	v.z = tmp;
@@ -152,10 +153,22 @@ BSP::BSP(vk::PhysicalDevice phys_dev, vk::Device dev, const std::string& fname) 
 		change_swizzle(plane.norm);
 	}
 	copy_data(file_data.data(), nodes, header->nodes);
+	for (auto& node : nodes) {
+		change_swizzle(node.bb_mins);
+		change_swizzle(node.bb_maxes);
+	}
 	copy_data(file_data.data(), leafs, header->leafs);
+	for (auto& leaf : leafs) {
+		change_swizzle(leaf.bb_mins);
+		change_swizzle(leaf.bb_maxes);
+	}
 	copy_data(file_data.data(), leaf_faces, header->leaf_faces);
 	copy_data(file_data.data(), leaf_brushes, header->leaf_brushes);
 	copy_data(file_data.data(), models, header->models);
+	for (auto& model : models) {
+		change_swizzle(model.bb_mins);
+		change_swizzle(model.bb_maxes);
+	}
 	copy_data(file_data.data(), brushes, header->brushes);
 	copy_data(file_data.data(), brush_sides, header->brush_sides);
 	copy_data(file_data.data(), vertices, header->vertices);

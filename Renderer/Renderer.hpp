@@ -72,7 +72,7 @@ struct Renderer {
 
 
 	float fps;
-	bool capture_mouse = false;
+	bool in_menu = false;
 	bool flycam = false;
 	/* time speed */
 	float time = 0.0;

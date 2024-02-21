@@ -56,11 +56,17 @@ int main(int argc, char* argv[]) {
 					case InputEvent::Tag::eBUTTON:
 					break;
 					case InputEvent::Tag::eKEY:
+						if (event.key.key == GLFW_KEY_ESCAPE && event.key.state == GLFW_PRESS) {
+							ren.in_menu = !ren.in_menu;
+							in->setCursor(ren.in_menu);
+							break;
+						}
+
+						if (ren.in_menu)
+							break;
+
 						if (event.key.key == GLFW_KEY_Q) {
 							return 0;
-						} else if (event.key.key == GLFW_KEY_ESCAPE && event.key.state == GLFW_PRESS) {
-							ren.capture_mouse = !ren.capture_mouse;
-							in->setCursor(!ren.capture_mouse);
 						} else if (event.key.key == GLFW_KEY_R && event.key.state == GLFW_PRESS) {
 							ren.time = 0;
 						} else if (event.key.key == GLFW_KEY_C && event.key.state == GLFW_PRESS) {

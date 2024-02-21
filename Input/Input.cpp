@@ -79,10 +79,11 @@ void Input::handleMovementKeys(Renderer& ren) {
 
 	glm::vec3 forward;
 	if (ren.flycam)
-		forward = glm::vec3(glm::sin(ren.cam.theta)*glm::cos(ren.cam.phi), glm::cos(ren.cam.theta), glm::sin(ren.cam.theta)*glm::sin(ren.cam.phi));
-	else
-		forward = glm::vec3(glm::cos(ren.cam.phi), 0.0, glm::sin(ren.cam.phi));
-	const auto right = glm::cross(forward, glm::vec3(0.0, 1.0, 0.0));
+		forward = glm::normalize(glm::vec3(glm::sin(ren.cam.theta)*glm::cos(ren.cam.phi), glm::cos(ren.cam.theta), glm::sin(ren.cam.theta)*glm::sin(ren.cam.phi)));
+	else {
+		forward = glm::normalize(glm::vec3(glm::cos(ren.cam.phi), 0.0, glm::sin(ren.cam.phi)));
+	}
+	const auto right = glm::normalize(glm::cross(forward, glm::vec3(0.0, 1.0, 0.0)));
 	auto speed = glfwGetKey(in, GLFW_KEY_LEFT_SHIFT)? 2.0f : 1.0f;
 	speed *= ren.speed;
 
@@ -143,7 +144,7 @@ void Input::handleCursorMovement(Renderer& ren, double x, double y) {
 	if (io.WantCaptureMouse)
 		return;
 
-	if (!ren.capture_mouse) {
+	if (ren.in_menu) {
 		io.AddMousePosEvent(x, y);
 		return;
 	}
