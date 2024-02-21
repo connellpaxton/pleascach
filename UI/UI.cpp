@@ -114,8 +114,9 @@ UI::UI(Renderer* ren) : ren(ren), dev(ren->dev) {
 		const std::vector<std::string> names = {
 			"show_bboxes",
 			"visibility_testing",
-			"speed",
 			"flycam",
+			"speed",
+			"max_fps",
 		};
 
 		for(const auto& name : names)
@@ -124,8 +125,9 @@ UI::UI(Renderer* ren) : ren(ren), dev(ren->dev) {
 
 	console->System().RegisterVariable("show_bboxes", ren->show_bboxes, csys::Arg<bool>("value"));
 	console->System().RegisterVariable("visibility_testing", ren->visibility_testing, csys::Arg<bool>("value"));
-	console->System().RegisterVariable("speed", ren->speed, csys::Arg<float>("value"));
 	console->System().RegisterVariable("flycam", ren->flycam, csys::Arg<bool>("value"));
+	console->System().RegisterVariable("speed", ren->speed, csys::Arg<float>("value"));
+	console->System().RegisterVariable("max_fps", ren->speed, csys::Arg<float>("value"));
 
 	console->System().Log(csys::ItemType::eINFO) << "Welcome to Pleascach!" << csys::endl;
 }
