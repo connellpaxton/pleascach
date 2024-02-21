@@ -120,17 +120,12 @@ void UI::newFrame() {
 
 	ImGui::SetNextWindowBgAlpha(0.5f);
 	ImGui::Begin("Rendering Info", nullptr);
-
 	ImGui::Text("# of Indices: %zu", ren->n_indices);
 	ImGui::Text("FPS: %f", ren->fps);
 	ImGui::Text("Time: %f", ren->time);
-	ImGui::Checkbox("Fly Camera", &ren->flycam);
-	ImGui::SliderFloat("Near Plane", &ren->near_plane, 0.00, 0.20);
-	ImGui::SliderFloat("Far Plane", &ren->far_plane, 1000.0, 10000.0);
-	ImGui::SliderFloat("Tessellation Factor", &ren->tess_factor, 0.1, 10.0);
-	ImGui::SliderFloat("Edge Size", &ren->tess_edge_size, 0.0, 40.0);
 
-	console->Draw();
+	if(ren->in_menu)
+		console->Draw();
 
 	ImGui::End();
 }

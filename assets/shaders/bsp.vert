@@ -36,5 +36,6 @@ void main() {
   gl_Position = proj * view * vec4(aPos, 1.0);
   texCoord = aTexCoord;
   norm = aNorm;
+//  color = vec4(length(unpackABGR(aColor).xyz));
   color = unpackABGR(aColor);
 }
