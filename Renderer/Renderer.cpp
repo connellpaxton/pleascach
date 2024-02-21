@@ -355,9 +355,11 @@ void Renderer::draw() {
 
 	n_indices = bsp->indices.size();
 
-	command_buffer->bind(*box_pipeline);
-	command_buffer->bind(*box_buffer);
-	command_buffer->draw(box_buffer->buffer->size / sizeof(BoxVertex), 1);
+	if (show_bboxes) {
+		command_buffer->bind(*box_pipeline);
+		command_buffer->bind(*box_buffer);
+		command_buffer->draw(box_buffer->buffer->size / sizeof(BoxVertex), 1);
+	}
 
 	/* draw User Interface stuff */
 	ui->newFrame();
@@ -407,7 +409,7 @@ void Renderer::present() {
 	}
 
 	frame++;
-	time += 0.0167f * speed * static_cast<float>(!paused);
+	time += frametime / 1000.0 * speed * static_cast<float>(!paused);
 }
 
 Renderer::~Renderer() {

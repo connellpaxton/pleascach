@@ -104,11 +104,28 @@ UI::UI(Renderer* ren) : ren(ren), dev(ren->dev) {
 		this->ren->paused = !this->ren->paused;
 		console->System().Log(csys::ItemType::eINFO) << "Paused: " << (this->ren->paused? "True" : "False") << csys::endl;
 	});
-
-	console->System().RegisterCommand("toggle-visibility-testing", "Toggles visibility testings (using clusters and frustum culling)", [this]() {
-		this->ren->visibility_testing = !this->ren->visibility_testing;
-		console->System().Log(csys::ItemType::eINFO) << "Visibility Testing: " << (this->ren->visibility_testing? "Enabled" : "Disabled") << csys::endl;
+	
+	console->System().RegisterCommand("quit", "Quits the engine", [this]() {
+		this->ren->should_close = true;
+		console->System().Log(csys::ItemType::eINFO) << "Quitting..." << csys::endl;
 	});
+
+	console->System().RegisterCommand("list-vars", "List variables accessible from developer console", [this]() {
+		const std::vector<std::string> names = {
+			"show_bboxes",
+			"visibility_testing",
+			"speed",
+			"flycam",
+		};
+
+		for(const auto& name : names)
+			console->System().Log(csys::ItemType::eINFO) << name << csys::endl;
+	});
+
+	console->System().RegisterVariable("show_bboxes", ren->show_bboxes, csys::Arg<bool>("value"));
+	console->System().RegisterVariable("visibility_testing", ren->visibility_testing, csys::Arg<bool>("value"));
+	console->System().RegisterVariable("speed", ren->speed, csys::Arg<float>("value"));
+	console->System().RegisterVariable("flycam", ren->flycam, csys::Arg<bool>("value"));
 
 	console->System().Log(csys::ItemType::eINFO) << "Welcome to Pleascach!" << csys::endl;
 }
@@ -119,7 +136,7 @@ void UI::newFrame() {
 	ImGui::NewFrame();
 
 	ImGui::SetNextWindowBgAlpha(0.5f);
-	ImGui::Begin("Rendering Info", nullptr);
+	ImGui::Begin("Rendering Info", nullptr, ImGuiWindowFlags_::ImGuiWindowFlags_NoFocusOnAppearing);
 
 	ImGui::Text("# of Indices: %zu", ren->n_indices);
 	ImGui::Text("FPS: %f", ren->fps);

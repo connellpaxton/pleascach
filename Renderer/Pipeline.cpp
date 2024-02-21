@@ -105,7 +105,7 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 
 	const auto raster_info = vk::PipelineRasterizationStateCreateInfo {
 		.depthClampEnable = vk::False,
-		.polygonMode = vk::PolygonMode::eFill,
+		.polygonMode = type == eBOX ? vk::PolygonMode::eLine : vk::PolygonMode::eFill,
 		.cullMode = type == eBOX ? vk::CullModeFlagBits::eNone : vk::CullModeFlagBits::eBack,
 		.frontFace = vk::FrontFace::eCounterClockwise,
 		.depthBiasEnable = type == eBOX,

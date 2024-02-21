@@ -20,8 +20,11 @@ int main(int argc, char* argv[]) {
 
 		auto in = win.getInput();
 		Renderer ren(win);
+		in->setCursor(false);
 
-		while (!in->shouldClose()) {
+		bool should_close = false;
+
+		while (!in->shouldClose() || ren.should_close) {
 			Timer frame_timer;
 			in->poll();
 			in->handleMovementKeys(ren);
@@ -59,22 +62,11 @@ int main(int argc, char* argv[]) {
 						if (event.key.key == GLFW_KEY_ESCAPE && event.key.state == GLFW_PRESS) {
 							ren.in_menu = !ren.in_menu;
 							in->setCursor(ren.in_menu);
-							break;
-						}
-
-						if (ren.in_menu)
-							break;
-
-						if (event.key.key == GLFW_KEY_Q) {
-							return 0;
-						} else if (event.key.key == GLFW_KEY_R && event.key.state == GLFW_PRESS) {
-							ren.time = 0;
-						} else if (event.key.key == GLFW_KEY_C && event.key.state == GLFW_PRESS) {
-							ren.flycam = !ren.flycam;
-						} else if (event.key.key == GLFW_KEY_T && event.key.state == GLFW_PRESS) {
-							ren.speed *= 10.0;
-						} else if (event.key.key == GLFW_KEY_Y && event.key.state == GLFW_PRESS) {
-							ren.speed /= 10.0;
+						} else if (event.key.key == GLFW_KEY_Q && event.key.state == GLFW_PRESS) {
+							if (!ren.in_menu) {
+								ren.should_close = true;
+								goto quit;
+							}
 						}
 					break;
 				}
@@ -82,14 +74,19 @@ int main(int argc, char* argv[]) {
 
 			ren.draw();
 			ren.present();
-			const auto t = frame_timer.read();
-			ren.fps = 1000.0f / t;
+			ren.frametime = frame_timer.read();
+			ren.fps = 1000.0f / ren.frametime;
 
-			while (frame_timer.read() < 16.60)
+			while (frame_timer.read() < 1000 / ren.max_fps)
 				;
+			
+			ren.frametime = frame_timer.read();
 		}
 
 	} catch (const std::string& e) {
 		std::cerr << "Exception: " << e << std::endl;
-	}  
+	}
+
+quit:
+	Log::info("Quitting");
 }

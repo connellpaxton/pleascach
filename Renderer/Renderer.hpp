@@ -75,6 +75,8 @@ struct Renderer {
 	float speed = 1.0;
 	bool paused = false;
 	bool visibility_testing = false;
+	bool show_bboxes = false;
+	bool should_close = false;
 
 	size_t n_indices;
 
@@ -83,4 +85,7 @@ struct Renderer {
 
 	float tess_factor = 1.8f;
 	float tess_edge_size = 20.0f;
+
+	float frametime = 0.0;
+	float max_fps = 120.0;
 };
