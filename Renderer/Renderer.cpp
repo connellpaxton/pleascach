@@ -228,6 +228,8 @@ Renderer::Renderer(Window& win) : win(win) {
 	box_pipeline = std::make_unique<GraphicsPipeline>(dev, box_shaders, swapchain->extent, *render_pass, bindings, box_buffer->binding(0), box_buffer->attrs(0), GraphicsPipeline::Type::eBOX);
 	box_pipeline->update(0, *uniform_buffer);
 
+	for (auto& shader : box_shaders)
+		shader.cleanup();
 	for (auto& shader : bsp_shaders)
 		shader.cleanup();
 
@@ -413,6 +415,10 @@ Renderer::~Renderer() {
 
 	ui.reset();
 	bsp.reset();
+
+	box_buffer.reset();
+	box_pipeline.reset();
+	uniform_buffer.reset();
 
 
 	for (auto& tex : textures) {
