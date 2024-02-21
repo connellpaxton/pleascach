@@ -8,7 +8,7 @@
 
 #include <tinygltf/tiny_gltf.h>
 
-struct BasicVertex {
+struct glTFVertex {
 	glm::vec3 pos;
 	glm::vec3 norm;
 	glm::vec2 uv;
@@ -20,26 +20,62 @@ struct BasicVertex {
 				.location = 0,
 				.binding = binding,
 				.format = vk::Format::eR32G32B32Sfloat,
-				.offset = offsetof(BasicVertex, pos),
+				.offset = offsetof(glTFVertex, pos),
 			}, {
 				.location = 1,
 				.binding = binding,
 				.format = vk::Format::eR32G32B32Sfloat,
-				.offset = offsetof(BasicVertex, norm),
+				.offset = offsetof(glTFVertex, norm),
 			}, {
 				.location = 2,
 				.binding = binding,
 				.format = vk::Format::eR32G32Sfloat,
-				.offset = offsetof(BasicVertex, uv),
+				.offset = offsetof(glTFVertex, uv),
 			}, {
 				.location = 3,
 				.binding = binding,
 				.format = vk::Format::eR32G32B32Sfloat,
-				.offset = offsetof(BasicVertex, color),
+				.offset = offsetof(glTFVertex, color),
 			}
 		};
 	}
 };
+
+
+enum BoxType {
+	eBounding,
+	eEnemyHit,
+};
+/* for hitboxes and bounding boxes */
+struct BoxVertex {
+	glm::vec3 mins;
+	glm::vec3 maxes;
+	unsigned int id;
+
+	static inline std::vector<vk::VertexInputAttributeDescription> attrs(uint32_t binding) {
+		return std::vector<vk::VertexInputAttributeDescription> {
+			{
+				.location = 0,
+				.binding = binding,
+				.format = vk::Format::eR32G32B32Sfloat,
+				.offset = offsetof(BoxVertex, mins),
+			}, {
+				.location = 1,
+				.binding = binding,
+				.format = vk::Format::eR32G32B32Sfloat,
+				.offset = offsetof(BoxVertex, maxes),
+			}, {
+				.location = 2,
+				.binding = binding,
+				.format = vk::Format::eR32Uint,
+				.offset = offsetof(BoxVertex, id),
+			}
+		};
+	}
+
+};
+
+
 
 template<typename Vertex>
 struct GeneralVertexBuffer {
@@ -71,5 +107,5 @@ struct GeneralVertexBuffer {
 	}
 };
 
-using VertexBuffer = GeneralVertexBuffer<BasicVertex>;
+using VertexBuffer = GeneralVertexBuffer<glTFVertex>;
 

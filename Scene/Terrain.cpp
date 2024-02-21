@@ -34,7 +34,7 @@ Terrain::Terrain(vk::PhysicalDevice phys_dev, vk::Device dev, Texture& tex) : ph
 
 	for (size_t x = 0; x < patch_size; x++)
 		for (size_t y = 0; y < patch_size; y++)
-			vertices[x + y*patch_size] = (BasicVertex {
+			vertices[x + y*patch_size] = (glTFVertex {
 				.pos = glm::vec3(
 					2.0f * x + 1.0f - patch_size,
 					0.0f,

@@ -43,7 +43,7 @@ RenderPass::RenderPass(vk::Device dev, vk::Format image_format, vk::Format depth
 
 
 	/* designates producer and consumer of the image to position subpass */
-	auto color_dep = vk::SubpassDependency{
+	auto color_dep = vk::SubpassDependency {
 		.srcSubpass = vk::SubpassExternal,
 		.dstSubpass = 0,
 		.srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput,

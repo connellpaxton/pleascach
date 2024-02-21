@@ -15,6 +15,9 @@
 *.userprefs
 
 
+# compiled shaders
+assets/shaders/*.spv
+
 # Mono auto generated files
 mono_crash.*
 

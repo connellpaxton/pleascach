@@ -73,11 +73,24 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 		.pVertexAttributeDescriptions = vertex_attrs.data(),
 	};
 
-	const auto input_asm_info = vk::PipelineInputAssemblyStateCreateInfo{
-		.topology = type == Type::eGLTF ? vk::PrimitiveTopology::eTriangleList : vk::PrimitiveTopology::ePatchList,
+	auto input_asm_info = vk::PipelineInputAssemblyStateCreateInfo {
 		/* matters later if we use strip primitives */
 		.primitiveRestartEnable = vk::False,
 	};
+
+	switch (type) {
+		case eVERTEX:
+		case eGLTF:
+		case eBSP:
+			input_asm_info.topology = vk::PrimitiveTopology::eTriangleList;
+		break;
+		case eTERRAIN:
+			input_asm_info.topology = vk::PrimitiveTopology::ePatchList;
+		break;
+		case eBOX:
+			input_asm_info.topology = vk::PrimitiveTopology::ePointList;
+		break;
+	}
 
 	const vk::PipelineTessellationStateCreateInfo* ptesselation_info = nullptr;
 
@@ -93,9 +106,10 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 	const auto raster_info = vk::PipelineRasterizationStateCreateInfo {
 		.depthClampEnable = vk::False,
 		.polygonMode = vk::PolygonMode::eFill,
-		.cullMode = vk::CullModeFlagBits::eBack,
+		.cullMode = type == eBOX ? vk::CullModeFlagBits::eNone : vk::CullModeFlagBits::eBack,
 		.frontFace = vk::FrontFace::eCounterClockwise,
-		.depthBiasEnable = vk::False,
+		.depthBiasEnable = type == eBOX,
+		.depthBiasConstantFactor = 0.01,
 		.lineWidth = 1.0,
 	};
 
@@ -106,7 +120,7 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 
 	const auto depth_stencil_info = vk::PipelineDepthStencilStateCreateInfo{
 		.depthTestEnable = vk::True,
-		.depthWriteEnable = vk::True,
+		.depthWriteEnable = type != eBOX,
 		.depthCompareOp = vk::CompareOp::eLess,
 		.depthBoundsTestEnable = vk::False,
 		.stencilTestEnable = vk::False,
@@ -114,14 +128,22 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 		.maxDepthBounds = 1.0,
 	};
 	
-	const auto color_blend_attachment = vk::PipelineColorBlendAttachmentState{
-		.blendEnable = vk::False,
+	const auto color_blend_attachment = vk::PipelineColorBlendAttachmentState {
+		/* only the box has blending */
+		.blendEnable = type == eBOX,
+		.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha,
+		.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha,
+		.colorBlendOp = vk::BlendOp::eMax,
+		.srcAlphaBlendFactor = vk::BlendFactor::eOne,
+		.dstAlphaBlendFactor = vk::BlendFactor::eZero,
+		.alphaBlendOp = vk::BlendOp::eAdd,
 		.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eB
 						| vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eA,
+		
 	};
 
-	const std::array<float, 4> blend_constants = {0.0f, 0.0f, 0.0f, 0.0f};
-	const auto color_blend_info = vk::PipelineColorBlendStateCreateInfo{
+	std::array<float, 4> blend_constants = {0.0f, 0.0f, 0.0f, 0.0f };
+	 auto color_blend_info = vk::PipelineColorBlendStateCreateInfo{
 		.logicOpEnable = vk::False,
 		.logicOp = vk::LogicOp::eCopy,
 		.attachmentCount = 1,

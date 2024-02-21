@@ -194,78 +194,41 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	uniform_buffer = std::make_unique<UniformBuffer>(phys_dev, dev);
 
-	textures = createResources({
-		"assets/textures/oil.jpg",
-		"assets/textures/eire.png",
-	});
-
-	std::vector<Shader> shaders = {
-		{ dev, "assets/shaders/basic.vert.spv", vk::ShaderStageFlagBits::eVertex },
-		{ dev, "assets/shaders/basic.geom.spv", vk::ShaderStageFlagBits::eGeometry },
-		{ dev, "assets/shaders/basic.frag.spv", vk::ShaderStageFlagBits::eFragment },
-	};
-
-	std::vector<Shader> model_shaders = {
-		{ dev, "assets/shaders/fraglight.vert.spv", vk::ShaderStageFlagBits::eVertex },
-		{ dev, "assets/shaders/fraglight.geom.spv", vk::ShaderStageFlagBits::eGeometry },
-		{ dev, "assets/shaders/lambert.frag.spv", vk::ShaderStageFlagBits::eFragment },
-	};
-
 	std::vector<vk::DescriptorSetLayoutBinding> bindings = {
 		uniform_buffer->binding(0),
-		textures[0].binding(1),
 	};
-
-	/* Create default pipeline */
-	vertex_buffer = std::make_unique<VertexBuffer>(phys_dev, dev, 0x1000000 / sizeof(BasicVertex));
-	vertex_pipeline = std::make_unique<GraphicsPipeline>(dev, shaders, swapchain->extent, *render_pass, bindings, vertex_buffer->binding(0), vertex_buffer->attrs(0));
-	vertex_pipeline->update(0, *uniform_buffer);
-	vertex_pipeline->update(1, textures[1]);
 
 	/* BSP loader */
 	bsp = std::make_unique<Q3BSP::BSP>(phys_dev, dev, "assets/maps/git.bsp");
 	std::vector<Shader> bsp_shaders = {
-		{ dev, "assets/shaders/bsp.vert.spv", vk::ShaderStageFlagBits::eVertex },
-		{ dev, "assets/shaders/bsp.frag.spv", vk::ShaderStageFlagBits::eFragment },
+		{ dev, "assets/shaders/bin/bsp.vert.spv", vk::ShaderStageFlagBits::eVertex },
+		{ dev, "assets/shaders/bin/bsp.frag.spv", vk::ShaderStageFlagBits::eFragment },
 	};
 	bsp->pipeline = std::make_unique<GraphicsPipeline>(dev, bsp_shaders, swapchain->extent, *render_pass, bindings, bsp->vertex_buffer->binding(0), bsp->vertex_buffer->attrs(0));
 	bsp->pipeline->update(0, *uniform_buffer);
-	bsp->pipeline->update(1, textures[1]);
 
-	/* initialize models */
-	Timer model_timer;
-	models.push_back(std::make_shared<Model>(phys_dev, dev, "assets/models/dragon.gltf"));
-	auto t = model_timer.stop();
-
-	Log::debug("Models loaded in %lf milliseconds\n", model_timer.read());
-
-	model_pipeline = std::make_unique<GraphicsPipeline>(dev, model_shaders, swapchain->extent, *render_pass, bindings, models[0]->vertex_buffer->binding(0), models[0]->vertex_buffer->attrs(0));
-
-	model_pipeline->update(0, *uniform_buffer);
-	model_pipeline->update(1, textures[1]);
-
-	/* create Terrain */
-	terrain = std::make_unique<Terrain>(phys_dev, dev, textures[1]);
-
-	std::vector<Shader> terrain_shaders = {
-		{ dev, "assets/shaders/terrain.vert.spv", vk::ShaderStageFlagBits::eVertex },
-		{ dev, "assets/shaders/terrain.tesc.spv", vk::ShaderStageFlagBits::eTessellationControl },
-		{ dev, "assets/shaders/terrain.tese.spv", vk::ShaderStageFlagBits::eTessellationEvaluation },
-		{ dev, "assets/shaders/terrain.frag.spv", vk::ShaderStageFlagBits::eFragment },
+	/* bounding and hitboxs */
+	std::vector<Shader> box_shaders = {
+		{ dev, "assets/shaders/bin/box.vert.spv", vk::ShaderStageFlagBits::eVertex },
+		{ dev, "assets/shaders/bin/box.geom.spv", vk::ShaderStageFlagBits::eGeometry },
+		{ dev, "assets/shaders/bin/box.frag.spv", vk::ShaderStageFlagBits::eFragment },
 	};
 
-	terrain_pipeline = std::make_unique<GraphicsPipeline>(dev, terrain_shaders, swapchain->extent, *render_pass, bindings, terrain->vertex_buffer->binding(0), terrain->vertex_buffer->attrs(0), GraphicsPipeline::eTERRAIN);
+	std::vector<BoxVertex> boxes;
+	boxes.reserve(bsp->leafs.size());
+	for (auto& leaf : bsp->leafs) {
+		boxes.push_back(BoxVertex{
+			.mins = leaf.bb_mins,
+			.maxes = leaf.bb_maxes,
+		});
+	}
+	box_buffer = std::make_unique<GeneralVertexBuffer<BoxVertex>>(phys_dev, dev, boxes.size());
+	box_buffer->upload(boxes);
 
-	terrain_pipeline->update(0, *uniform_buffer);
-	terrain_pipeline->update(1, textures[1]);
+	box_pipeline = std::make_unique<GraphicsPipeline>(dev, box_shaders, swapchain->extent, *render_pass, bindings, box_buffer->binding(0), box_buffer->attrs(0), GraphicsPipeline::Type::eBOX);
+	box_pipeline->update(0, *uniform_buffer);
 
-	for (auto& shader : shaders)
-		shader.cleanup();
 	for (auto& shader : bsp_shaders)
-		shader.cleanup();
-	for (auto& shader : model_shaders)
-		shader.cleanup();
-	for (auto& shader : terrain_shaders)
 		shader.cleanup();
 
 	ui = std::make_unique<UI>(this);
@@ -383,23 +346,16 @@ void Renderer::draw() {
 
 	command_buffer->command_buffer.setViewport(0, viewport);
 	command_buffer->command_buffer.setScissor(0, scissor);
-	
-	/*command_buffer->bind(*terrain_pipeline);
 
-	command_buffer->bind(terrain_pipeline->layout, terrain_pipeline->desc_set);
-	command_buffer->bind(terrain.get());
-	command_buffer->command_buffer.drawIndexed(terrain->indices.size(), 1, 0, 0, 0);*/
-
-	/*command_buffer->bind(*model_pipeline);
-	command_buffer->bind(model_pipeline->layout, model_pipeline->desc_set);
-	command_buffer->bind(models[0]);
-	command_buffer->command_buffer.drawIndexed(models[0]->indices.size(), 10, 0, 0, 0);*/
-
-	bsp->load_indices(cam.pos, visibility_testing, p*uni.view);
+	bsp->load_indices(cam.pos, visibility_testing, p * uni.view);
 	command_buffer->bind(bsp.get());
 	command_buffer->command_buffer.drawIndexed(bsp->indices.size(), 1, 0, 0, 0);
 
 	n_indices = bsp->indices.size();
+
+	command_buffer->bind(*box_pipeline);
+	command_buffer->bind(*box_buffer);
+	command_buffer->draw(box_buffer->buffer->size / sizeof(BoxVertex), 1);
 
 	/* draw User Interface stuff */
 	ui->newFrame();
@@ -409,7 +365,6 @@ void Renderer::draw() {
 	command_buffer->command_buffer.endRenderPass();
 	
 	command_buffer->end();
-
 
 	vk::PipelineStageFlags stage_flags = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 
@@ -457,17 +412,6 @@ Renderer::~Renderer() {
 	dev.waitIdle();
 
 	ui.reset();
-
-	for(auto& model : models)
-		model.reset();
-
-	terrain.reset();
-
-	uniform_buffer.reset();
-	vertex_buffer.reset();
-	vertex_pipeline.reset();
-	terrain_pipeline.reset();
-	model_pipeline.reset();
 	bsp.reset();
 
 

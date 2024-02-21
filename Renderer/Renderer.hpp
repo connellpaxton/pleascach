@@ -51,21 +51,17 @@ struct Renderer {
 	std::unique_ptr<CommandBuffer> command_buffer;
 	std::unique_ptr<RenderPass> render_pass;
 
-	std::unique_ptr<GraphicsPipeline> vertex_pipeline;
-	std::unique_ptr<GraphicsPipeline> model_pipeline;
-	std::unique_ptr<GraphicsPipeline> terrain_pipeline;
-	std::unique_ptr<VertexBuffer> vertex_buffer;
+	std::unique_ptr<GraphicsPipeline> box_pipeline;
+	std::unique_ptr<GeneralVertexBuffer<BoxVertex>> box_buffer;
 	std::unique_ptr<UniformBuffer> uniform_buffer;
 
 	std::unique_ptr<Q3BSP::BSP> bsp;
-	std::unique_ptr<Terrain> terrain;
 
 	std::vector<Texture> textures;
 
 	uint32_t current_image_idx;
 	uint64_t frame = 0;
 
-	std::vector<std::shared_ptr<Model>> models;
 	std::unique_ptr<UI> ui;
 
 	Camera cam{ .pos = glm::vec3(0.0, 5.0, 0.0), };

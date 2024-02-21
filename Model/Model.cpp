@@ -77,7 +77,7 @@ void Model::initVertices(Node* node, const tinygltf::Primitive& prim) {
 	}
 
 	for(size_t i = 0; i < vertex_count; i++) {
-		vertices.push_back(BasicVertex {
+		vertices.push_back(glTFVertex {
 			.pos = pos_buff? glm::make_vec3(pos_buff+i*3) : glm::vec3(0.0),
 			.norm = norm_buff? glm::normalize(glm::make_vec3(norm_buff+i*3)) : glm::vec3(0.0),
 			.uv = uv_buff? glm::make_vec2(uv_buff+i*2) : glm::vec2(0.0),

@@ -12,14 +12,17 @@ struct Texture;
 
 struct GraphicsPipeline {
 	enum Type {
+		eVERTEX,
 		eGLTF,
+		eBSP,
 		eTERRAIN,
+		eBOX,
 	};
 
 	GraphicsPipeline(vk::Device dev, const std::vector<Shader>& shaders,
 				const vk::Extent2D& extent, const RenderPass& render_pass,
 				vk::ArrayProxy<vk::DescriptorSetLayoutBinding> bindings,
-				const vk::VertexInputBindingDescription& vertex_binding, const std::vector<vk::VertexInputAttributeDescription>& vertex_attrs, enum Type type = Type::eGLTF);
+				const vk::VertexInputBindingDescription& vertex_binding, const std::vector<vk::VertexInputAttributeDescription>& vertex_attrs, enum Type type = Type::eVERTEX);
 	vk::Device dev;
 	vk::Pipeline pipeline;
 	vk::PipelineLayout layout;

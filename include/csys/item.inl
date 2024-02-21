@@ -39,17 +39,17 @@ namespace csys
     {
         switch (m_Type)
         {
-            case COMMAND:
+            case eCOMMAND:
                 return s_Command.data() + m_Data;
-            case LOG:
+            case eLOG:
                 return '\t' + m_Data;
-            case WARNING:
+            case eWARNING:
                 return s_Warning.data() + m_Data;
-            case ERROR:
+            case eERROR:
                 return s_Error.data() + m_Data;
-            case INFO:
+            case eINFO:
                 return m_Data;
-            case NONE:
+            case eNONE:
             default:
                 return "";
         }

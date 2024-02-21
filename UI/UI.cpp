@@ -102,15 +102,15 @@ UI::UI(Renderer* ren) : ren(ren), dev(ren->dev) {
 	console = std::make_unique<ImGuiConsole>("developer console");
 	console->System().RegisterCommand("pause", "Pauses or unpauses the engine", [this]() {
 		this->ren->paused = !this->ren->paused;
-		console->System().Log(csys::ItemType::INFO) << "Paused: " << (this->ren->paused? "True" : "False") << csys::endl;
+		console->System().Log(csys::ItemType::eINFO) << "Paused: " << (this->ren->paused? "True" : "False") << csys::endl;
 	});
 
 	console->System().RegisterCommand("toggle-visibility-testing", "Toggles visibility testings (using clusters and frustum culling)", [this]() {
 		this->ren->visibility_testing = !this->ren->visibility_testing;
-		console->System().Log(csys::ItemType::INFO) << "Visibility Testing: " << (this->ren->visibility_testing? "Enabled" : "Disabled") << csys::endl;
+		console->System().Log(csys::ItemType::eINFO) << "Visibility Testing: " << (this->ren->visibility_testing? "Enabled" : "Disabled") << csys::endl;
 	});
 
-	console->System().Log(csys::ItemType::INFO) << "Welcome to Pleascach!" << csys::endl;
+	console->System().Log(csys::ItemType::eINFO) << "Welcome to Pleascach!" << csys::endl;
 }
 
 void UI::newFrame() {
@@ -120,6 +120,7 @@ void UI::newFrame() {
 
 	ImGui::SetNextWindowBgAlpha(0.5f);
 	ImGui::Begin("Rendering Info", nullptr);
+
 	ImGui::Text("# of Indices: %zu", ren->n_indices);
 	ImGui::Text("FPS: %f", ren->fps);
 	ImGui::Text("Time: %f", ren->time);

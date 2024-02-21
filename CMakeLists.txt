@@ -25,17 +25,22 @@ add_executable (pleascach ${SOURCES})
 
 # shader compilation
 file(GLOB SHADER_SOURCE_FILES
-	assets/shaders/*.frag
-	assets/shaders/*.vert
-	assets/shaders/*.geom
-	assets/shaders/*.tese
-	assets/shaders/*.tesc
+	assets/shaders/**/*.frag
+	assets/shaders/**/*.vert
+	assets/shaders/**/*.geom
+	assets/shaders/**/*.tese
+	assets/shaders/**/*.tesc
+	assets/shaders/*/*/*.frag
+	assets/shaders/*/*/*.vert
+	assets/shaders/*/*/*.geom
+	assets/shaders/*/*/*.tese
+	assets/shaders/*/*/*.tesc
 )
 
 foreach(SHADER_SOURCE ${SHADER_SOURCE_FILES})
 	message("Processing shader file")
 	get_filename_component(FILE_NAME ${SHADER_SOURCE} NAME)
-	set(SPIRV "${CMAKE_SOURCE_DIR}/assets/shaders/${FILE_NAME}.spv")
+	set(SPIRV "${CMAKE_SOURCE_DIR}/assets/shaders/bin/${FILE_NAME}.spv")
 	add_custom_command(
 		OUTPUT ${SPIRV}
 		COMMAND ${Vulkan_GLSLC_EXECUTABLE} -o ${SPIRV} ${SHADER_SOURCE}

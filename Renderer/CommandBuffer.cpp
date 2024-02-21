@@ -65,6 +65,7 @@ void CommandBuffer::copy(Buffer& src, Image& dst, vk::ImageLayout layout) {
 
 void CommandBuffer::bind(const GraphicsPipeline& pipeline) {
 	command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline.pipeline);
+	command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline.layout, 0, pipeline.desc_set, nullptr);
 }
 
 void CommandBuffer::bind(vk::PipelineLayout layout, vk::ArrayProxy<vk::DescriptorSet> desc_sets) {
