@@ -74,7 +74,7 @@ void Input::setCursor(bool enabled) {
 }
 
 void Input::handleMovementKeys(Renderer& ren) {
-	if (ImGui::GetIO().WantCaptureKeyboard)
+	if (ImGui::GetIO().WantCaptureKeyboard && ren.in_menu)
 		return;
 
 	glm::vec3 forward;
@@ -141,7 +141,7 @@ void Input::handleCursorMovement(Renderer& ren, double x, double y) {
 	int rel_mouse_y = static_cast<int>(y) - last_mouse.y;
 
 	auto& io = ImGui::GetIO();
-	if (io.WantCaptureMouse)
+	if (io.WantCaptureMouse && ren.in_menu)
 		return;
 
 	if (ren.in_menu) {
