@@ -127,7 +127,7 @@ UI::UI(Renderer* ren) : ren(ren), dev(ren->dev) {
 	console->System().RegisterVariable("visibility_testing", ren->visibility_testing, csys::Arg<bool>("value"));
 	console->System().RegisterVariable("flycam", ren->flycam, csys::Arg<bool>("value"));
 	console->System().RegisterVariable("speed", ren->speed, csys::Arg<float>("value"));
-	console->System().RegisterVariable("max_fps", ren->speed, csys::Arg<float>("value"));
+	console->System().RegisterVariable("max_fps", ren->max_fps, csys::Arg<float>("value"));
 
 	console->System().Log(csys::ItemType::eINFO) << "Welcome to Pleascach!" << csys::endl;
 }
@@ -143,6 +143,7 @@ void UI::newFrame() {
 	ImGui::Text("# of Indices: %zu", ren->n_indices);
 	ImGui::Text("FPS: %f", ren->fps);
 	ImGui::Text("Time: %f", ren->time);
+	ImGui::Text("Speed: %f", ren->speed * ren->frametime / 8.0);
 
 	if(ren->in_menu)
 		console->Draw();

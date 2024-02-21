@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
 			ren.frametime = frame_timer.read();
 			ren.fps = 1000.0f / ren.frametime;
 
-			while (frame_timer.read() < 1000 / ren.max_fps)
+			while (frame_timer.read() < 1000.0 / ren.max_fps)
 				;
 			
 			ren.frametime = frame_timer.read();

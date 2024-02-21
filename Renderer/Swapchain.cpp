@@ -60,7 +60,7 @@ void Swapchain::create(vk::SwapchainKHR old_swapchain) {
 		/* see if this allows see through windows on Wayland */
 		.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
 		/* waits for refresh (V-Sync), consider playing with relaxed fifo later on*/
-//		.presentMode = vk::PresentModeKHR::eFifo,
+//		.presentMode = vk::PresentModeKHR::eFifoRelaxed,
 		.presentMode = vk::PresentModeKHR::eMailbox,
 		.clipped = VK_TRUE,
 		.oldSwapchain = old_swapchain,

@@ -85,7 +85,7 @@ void Input::handleMovementKeys(Renderer& ren) {
 	}
 	const auto right = glm::normalize(glm::cross(forward, glm::vec3(0.0, 1.0, 0.0)));
 	auto speed = glfwGetKey(in, GLFW_KEY_LEFT_SHIFT)? 2.0f : 1.0f;
-	speed *= ren.speed;
+	speed *= ren.speed * ren.frametime / 8.0;
 
 	if(glfwGetKey(in, GLFW_KEY_UP)) {
 		ren.cam.theta -= 0.01;
