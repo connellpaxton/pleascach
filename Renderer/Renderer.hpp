@@ -80,6 +80,7 @@ struct Renderer {
 	bool show_bboxes = false;
 	bool should_close = false;
 	bool wireframe_mode = false;
+	bool backface_culling = true;
 
 	size_t n_indices;
 

@@ -24,11 +24,11 @@ static csys::ItemLog& operator<<(csys::ItemLog& log, ImVector<float>& vec) {
 	return log << vec[vec.size() - 1] << " }";
 }
 
-static void wireframe_setter(bool& v, bool in) {
+static void pipeline_setter(bool& v, bool in) {
 	if(v == in)
 		return;
 	v = in;
-	__ren->bsp->pipeline->rebuild(in);
+	__ren->bsp->pipeline->rebuild(__ren->wireframe_mode, __ren->backface_culling);
 }
 
 UI::UI(Renderer* ren) : ren(ren), dev(ren->dev) {
@@ -124,6 +124,7 @@ UI::UI(Renderer* ren) : ren(ren), dev(ren->dev) {
 			"speed",
 			"max_fps",
 			"wireframe",
+			"backface_culling",
 		};
 
 		for(const auto& name : names)
@@ -136,7 +137,8 @@ UI::UI(Renderer* ren) : ren(ren), dev(ren->dev) {
 	console->System().RegisterVariable("speed", ren->speed, csys::Arg<float>("value"));
 	console->System().RegisterVariable("max_fps", ren->max_fps, csys::Arg<float>("value"));
 
-	console->System().RegisterVariable("wireframe", ren->wireframe_mode, wireframe_setter);
+	console->System().RegisterVariable("wireframe", ren->wireframe_mode, pipeline_setter);
+	console->System().RegisterVariable("backface_culling", ren->backface_culling, pipeline_setter);
 
 	console->System().Log(csys::ItemType::eINFO) << "Welcome to Pleascach!" << csys::endl;
 }

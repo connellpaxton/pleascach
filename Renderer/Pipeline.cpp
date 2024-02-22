@@ -10,7 +10,7 @@
 #include <util/log.hpp>
 
 
-GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& shaders, const vk::Extent2D& extent, const RenderPass& render_pass, vk::ArrayProxy<vk::DescriptorSetLayoutBinding> bindings, const vk::VertexInputBindingDescription& vertex_binding, const std::vector<vk::VertexInputAttributeDescription>& vertex_attrs, enum Type type, bool wireframe)
+GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& shaders, const vk::Extent2D& extent, const RenderPass& render_pass, vk::ArrayProxy<vk::DescriptorSetLayoutBinding> bindings, const vk::VertexInputBindingDescription& vertex_binding, const std::vector<vk::VertexInputAttributeDescription>& vertex_attrs, enum Type type, bool wireframe, bool culling)
 	: dev(dev), shaders(shaders), extent(extent), render_pass(render_pass), bindings(bindings), vertex_binding(vertex_binding), vertex_attrs(vertex_attrs), type(type) {
 	/* create layout
 	 * Eventually add a graphicspipline constructor that allows specification of layouts etc
@@ -106,7 +106,7 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 	raster_info = vk::PipelineRasterizationStateCreateInfo {
 		.depthClampEnable = vk::False,
 		.polygonMode = (type == eBOX || wireframe) ? vk::PolygonMode::eLine : vk::PolygonMode::eFill,
-		.cullMode = type == eBOX ? vk::CullModeFlagBits::eNone : vk::CullModeFlagBits::eNone,
+		.cullMode = (type == eBOX || !culling) ? vk::CullModeFlagBits::eNone : vk::CullModeFlagBits::eBack,
 		.frontFace = vk::FrontFace::eCounterClockwise,
 		.depthBiasEnable = type == eBOX,
 		.depthBiasConstantFactor = 0.01,
@@ -235,7 +235,7 @@ void GraphicsPipeline::update(uint32_t binding, const Texture& tex) {
 	}, nullptr);
 }
 
-void GraphicsPipeline::rebuild(bool wireframe) {
+void GraphicsPipeline::rebuild(bool wireframe, bool culling) {
 	vertex_input_info = vk::PipelineVertexInputStateCreateInfo {
 		.vertexBindingDescriptionCount = static_cast<uint32_t>(vertex_bindings.size()),
 		.pVertexBindingDescriptions = vertex_bindings.data(),
@@ -243,6 +243,7 @@ void GraphicsPipeline::rebuild(bool wireframe) {
 		.pVertexAttributeDescriptions = vertex_attrs.data(),
 	};
 
+	raster_info.cullMode = culling ? vk::CullModeFlagBits::eBack : vk::CullModeFlagBits::eNone;
 	raster_info.polygonMode = wireframe ? vk::PolygonMode::eLine : vk::PolygonMode::eFill;
 	auto res = dev.createGraphicsPipeline(nullptr, pipeline_info);
 	if (res.result != vk::Result::eSuccess) {

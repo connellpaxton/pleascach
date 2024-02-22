@@ -26,7 +26,7 @@ struct GraphicsPipeline {
 				vk::ArrayProxy<vk::DescriptorSetLayoutBinding> bindings,
 				const vk::VertexInputBindingDescription& vertex_binding,
 				const std::vector<vk::VertexInputAttributeDescription>& vertex_attrs,
-				enum Type type = Type::eVERTEX, bool wireframe = false);
+				enum Type type = Type::eVERTEX, bool wireframe = false, bool culling = true);
 	
 	/* everything needed for recreation */
 	vk::Device dev;
@@ -76,7 +76,7 @@ struct GraphicsPipeline {
 	void update(uint32_t binding, const Texture& tex);
 
 
-	void rebuild(bool wireframe); 
+	void rebuild(bool wireframe, bool culling);
 
 	~GraphicsPipeline();
 };
