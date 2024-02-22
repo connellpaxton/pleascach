@@ -11,7 +11,7 @@
 #include <cstring>
 
 
-using namespace Q3BSP;
+using namespace HLBSP;
 
 static inline void copy_data(void* file_data, std::string& dst, Lump& lump) {
 	dst.resize(lump.len);
@@ -20,6 +20,7 @@ static inline void copy_data(void* file_data, std::string& dst, Lump& lump) {
 
 template<typename T>
 static inline void copy_data(void* file_data, std::vector<T>& dst, Lump& lump) {
+	Log::debug("%zu items\n", lump.len / sizeof(T));
 	dst.resize(lump.len / sizeof(T));
 	std::memcpy(dst.data(), ((u8*)file_data) + lump.offset, lump.len);
 }
@@ -27,7 +28,8 @@ static inline void copy_data(void* file_data, std::vector<T>& dst, Lump& lump) {
 void BSP::load_indices(const glm::vec3& cam_pos, bool visibility_test, const glm::mat4& view) {
 	std::set<int> present_faces;
 	std::vector<Face> visible_faces;
-	if (visibility_test) {
+	// if (visibility_test) {
+	if(false) {
 		auto leaf_idx = determine_leaf(cam_pos);
 
 		auto fr_planes = frustum(view);
@@ -36,11 +38,11 @@ void BSP::load_indices(const glm::vec3& cam_pos, bool visibility_test, const glm
 			index_buffer->upload(indices);
 
 		last_leaf = leaf_idx;
-		auto& cam_leaf = leafs[leaf_idx];
+		auto& cam_leaf = leaves[leaf_idx];
 
 
 		std::vector<Leaf> visible_leafs;
-		for (auto& leaf : leafs) {
+		for (auto& leaf : leaves) {
 
 			const auto min = leaf.bb_mins;
 			const auto max = leaf.bb_maxes;
@@ -61,8 +63,8 @@ void BSP::load_indices(const glm::vec3& cam_pos, bool visibility_test, const glm
 		}
 
 		for (const auto& leaf : visible_leafs) {
-			for (size_t i = 0; i < leaf.n_leaf_faces; i++) {
-				auto idx = leaf_faces[leaf.first_leaf_face_idx + i].face_idx;
+			for (size_t i = 0; i < leaf.n_mark_surfaces; i++) {
+				auto idx = mark_surfaces[leaf.first_mark_surface_idx + i];
 				if (present_faces.contains(idx))
 					continue;
 
@@ -77,20 +79,25 @@ void BSP::load_indices(const glm::vec3& cam_pos, bool visibility_test, const glm
 	indices.clear();
 
 	for (auto& face : visible_faces) {
-		switch (face.type) {
-			case Face::ePATCH:
-			break;
-			case Face::ePOLYGON:
-			case Face::eMESH:
-				for (size_t i = 0; i < face.n_mesh_vertices; i++)
-					indices.push_back(face.first_vertex_idx + mesh_vertices[face.first_mesh_vertex_idx+i].idx);
-			break;
+		for (i16 i = 1, j = 2; j < face.n_surf_edges; i++, j++) {
+			indices.push_back(face.first_surf_edge_idx);
+			indices.push_back(face.first_surf_edge_idx+i);
+			indices.push_back(face.first_surf_edge_idx+j);
 		}
+//		indices.push_back(get_index_from_surfedge(face.first_surf_edge_idx));
 	}
 
-	assert(indices.size() % 3 == 0);
-
 	index_buffer->upload(indices);
+}
+
+int BSP::get_index_from_surfedge(int surfedge) {
+	int surf = surfedges[surfedge];
+	if(surf >= 0) {
+		return edges[surf].vertex_indices[0];
+	}
+	else {
+		return edges[-surf].vertex_indices[1];
+	}
 }
 
 int BSP::determine_leaf(glm::vec3 cam_pos) {
@@ -112,16 +119,6 @@ int BSP::determine_leaf(glm::vec3 cam_pos) {
 
 
 bool BSP::determine_visibility(const Leaf& cam_leaf, const Leaf& leaf, const std::array<glm::vec4, 6>& frustum, const glm::vec3 box_verts[8]) {
-	int vis = cam_leaf.cluster_idx, cluster = leaf.cluster_idx;
-	if (vis_info.vectors.size() == 0 || vis < 0)
-		return true;
-
-	int i = (vis * vis_info.sz_vectors) + (cluster >> 3);
-	u8 set = vis_info.vectors[i];
-
-	if (!(set & (1 << (cluster & 0x7))))
-		return false;
-
 	/* perform fustrum culling */
 	return box_in_frustum(frustum, box_verts);
 }
@@ -134,64 +131,109 @@ static inline void change_swizzle(T& v) {
 	v.z = tmp;
 }
 
+static std::vector<std::map<std::string, std::string>> load_entities(const std::string& in) {
+	/* TODO */
+	return {
+		{{"test", "this"}},
+	};
+}
+
+static std::vector<MipTexture> load_mip_textures(const u8* data, u32 offset) {
+	const TextureLump* lump = reinterpret_cast<const TextureLump*>(data + offset);
+	std::vector<MipTexture> ret;
+	ret.resize(lump->n_mip_textures);
+
+	for(size_t i = 0; i < ret.size(); i++) {
+		ret[i] = *reinterpret_cast<const MipTexture*>(data + lump->offsets[i]);
+	}
+
+	return ret;
+}
+
 BSP::BSP(vk::PhysicalDevice phys_dev, vk::Device dev, const std::string& fname) : dev(dev), filename(fname) {
 	file_data = file::slurpb(fname);
-	Log::debug("File size: %zu\n", file_data.size());
+	Log::debug("BSP file size: %zu\n", file_data.size());
 	header = reinterpret_cast<Header*>(file_data.data());
 
 	Log::info("Loading BSP: %s\n", fname.c_str());
 
-	if(header->magic != BSP_MAGIC) {
-		Log::error("BSP file missing magic!\n");
+	if(header->version != 30) {
+		Log::error("BSP file not expected version (Half Life has version 30)!\n");
 	}
 
-	copy_data(file_data.data(), entities, header->entities);
-	copy_data(file_data.data(), textures, header->textures);
+	Log::debug("Loading entities\n");
+	std::string entities_buff;
+	copy_data(file_data.data(), entities_buff, header->entities);
+	entities = load_entities(entities_buff);
+
+	Log::debug("Loading planes\n");
 	copy_data(file_data.data(), planes, header->planes);
 	/* change swizzle */
 	for (auto& plane : planes) {
 		change_swizzle(plane.norm);
 	}
+
+	Log::debug("Loading textures\n");
+	textures = load_mip_textures(file_data.data(), header->textures.offset);
+
+	Log::debug("Loading vertices\n");
+	copy_data(file_data.data(), vertices, header->vertices);
+	for (auto& vertex : vertices) {
+		change_swizzle(vertex.pos);
+	}
+
+	Log::debug("Loading nodes\n");
 	copy_data(file_data.data(), nodes, header->nodes);
 	for (auto& node : nodes) {
 		change_swizzle(node.bb_mins);
 		change_swizzle(node.bb_maxes);
 	}
-	copy_data(file_data.data(), leafs, header->leafs);
-	for (auto& leaf : leafs) {
+
+	Log::debug("Loading texinfo\n");
+	copy_data(file_data.data(), tex_infos, header->texinfo);
+
+	Log::debug("Loading faces\n");
+	copy_data(file_data.data(), faces, header->faces);
+
+	Log::debug("Loading lightmap\n");
+	lightmap.lights = reinterpret_cast<rgb*>(file_data.data()+header->lighting.offset);
+
+	Log::debug("Loading clip nodes\n");
+	copy_data(file_data.data(), clip_nodes, header->clip_nodes);
+	
+	Log::debug("Loading leaves\n");
+	copy_data(file_data.data(), leaves, header->leaves);
+	for (auto& leaf : leaves) {
 		change_swizzle(leaf.bb_mins);
 		change_swizzle(leaf.bb_maxes);
 	}
-	copy_data(file_data.data(), leaf_faces, header->leaf_faces);
-	copy_data(file_data.data(), leaf_brushes, header->leaf_brushes);
+
+	Log::debug("Loading mark surfaces\n");
+	copy_data(file_data.data(), mark_surfaces, header->mark_surfaces);
+
+	Log::debug("Loading edges\n");
+	copy_data(file_data.data(), edges, header->edges);
+
+	Log::debug("Loading surfedges\n");
+	copy_data(file_data.data(), surfedges, header->surf_edges);
+	vertices_prime.reserve(surfedges.size());
+	/* use this to build our vertices_prime, idea thanks to gzalo's HalfMapper */
+	for(const auto& s : surfedges) {
+		vertices_prime.push_back(vertices[edges[s > 0? s : -s].vertex_indices[s<=0]]);
+	}
+
+	Log::debug("Loading models\n");
 	copy_data(file_data.data(), models, header->models);
 	for (auto& model : models) {
 		change_swizzle(model.bb_mins);
 		change_swizzle(model.bb_maxes);
 	}
-	copy_data(file_data.data(), brushes, header->brushes);
-	copy_data(file_data.data(), brush_sides, header->brush_sides);
-	copy_data(file_data.data(), vertices, header->vertices);
-	/* correct for handedness */
-	for (auto& vertex : vertices) {
-		change_swizzle(vertex.pos);
-		change_swizzle(vertex.norm);
-	}
+	
+	Log::debug("Creating vertex buffer of size %zu\n", vertices.size());
+	vertex_buffer = std::make_unique<GeneralVertexBuffer<Vertex>>(phys_dev, dev, vertices_prime.size());
+	vertex_buffer->upload(vertices_prime);
 
-	copy_data(file_data.data(), mesh_vertices, header->mesh_vertices);
-	copy_data(file_data.data(), effects, header->effects);
-	copy_data(file_data.data(), faces, header->faces);
-	copy_data(file_data.data(), lightmaps, header->lightmaps);
-	copy_data(file_data.data(), lightvols, header->lightvols);
-
-	vis_info.sz_vectors = reinterpret_cast<u32*>(file_data.data() + header->vis_info.offset)[1];
-	auto sz = header->vis_info.len;
-	vis_info.vectors.resize(sz);
-	std::memcpy(vis_info.vectors.data(), file_data.data() + header->vis_info.offset + 2*sizeof(u32), sz);
-
-	vertex_buffer = std::make_unique<GeneralVertexBuffer<Vertex>>(phys_dev, dev, vertices.size());
-	vertex_buffer->upload(vertices);
-
+	Log::debug("Creating index buffer\n");
 	/* set limit at 256Mi indices */
 	index_buffer = std::make_unique<Buffer>(phys_dev, dev, 100000 * sizeof(u32),
 		vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eHostCoherent | vk::MemoryPropertyFlagBits::eHostVisible

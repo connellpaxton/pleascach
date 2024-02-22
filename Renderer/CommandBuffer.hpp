@@ -43,7 +43,7 @@ struct CommandBuffer {
 
 	void bind(std::shared_ptr<Model> model);
 	void bind(Terrain* terrain);
-	void bind(Q3BSP::BSP* bsp);
+	void bind(HLBSP::BSP* bsp);
 
 	void draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex = 0, uint32_t first_instance = 0);
 

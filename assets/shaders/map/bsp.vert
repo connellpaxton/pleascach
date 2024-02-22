@@ -1,13 +1,7 @@
 #version 460 core
 layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec2 aTexCoord;
-layout (location = 2) in vec2 lightmapCoord;
-layout (location = 3) in vec3 aNorm;
-layout (location = 4) in uint aColor;
 
-layout (location = 0) out vec3 norm;
-layout (location = 1) out vec2 texCoord;
-layout (location = 2) out vec4 color;
+layout (location = 0) out vec4 color;
 
 layout (set = 0, binding = 0) uniform Matrices {
 	mat4 view;
@@ -34,7 +28,6 @@ vec4 unpackABGR(uint packedABGR) {
 void main() {
 
   gl_Position = proj * view * vec4(aPos, 1.0);
-  texCoord = aTexCoord;
-  norm = aNorm;
-  color = unpackABGR(aColor);
+
+  color = vec4(normalize(aPos), 1.0);
 }

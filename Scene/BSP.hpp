@@ -12,8 +12,14 @@
 #include <Renderer/VertexBuffer.hpp>
 #include <Renderer/Pipeline.hpp>
 
-/* contains loading functions for Quake III-style BSPs */
-namespace Q3BSP {
+
+#define MAX_TEXTURE_NAME 16
+#define MIP_LEVELS 4
+
+#define MAX_MAP_HULLS 4
+/* contains loading functions for Half Life BSPs */
+namespace HLBSP {
+
 	struct Lump {
 		u32 offset;
 		u32 len;
@@ -21,106 +27,63 @@ namespace Q3BSP {
 	using rgb = glm::u8vec3;
 	using rgba = glm::u8vec4;
 
-	/* "IBSP" */
-	const uint32_t BSP_MAGIC = 0x50534249U;
+	using vec3 = glm::vec3;
+	using ivec3 = glm::vec<3, i16>;
+
 	struct Header {
-		u32 magic;
 		u32 version;
 
 		union {
-			Lump lumps[17];
+			Lump lumps[15];
 			struct {
 				Lump	entities,
-						textures,
 						planes,
-						nodes,
-						leafs,
-						leaf_faces,
-						leaf_brushes,
-						models,
-						brushes,
-						brush_sides,
+						textures,
 						vertices,
-						mesh_vertices,
-						effects,
+						visibility,
+						nodes,
+						texinfo,
 						faces,
-						lightmaps,
-						lightvols,
-						vis_info;
+						lighting,
+						clip_nodes,
+						leaves,
+						mark_surfaces,
+						edges,
+						surf_edges,
+						models;
 			};
 		};
 	};
 
-	struct Texture {
-		char name[64];
-		/* values of unknown meaning - TODO: check darkplaces or some other 3rd party loader */
-		i32 flags;
-		i32 contents;
-	};
-
 	struct Plane {
-		glm::vec3 norm;
+		vec3 norm;
 		float dist;
+		/* exists for certain optimizations (swaped y and z) */
+		enum PlaneType {
+			eX,
+			eZ,
+			eY,
+			eAnyX,
+			eAnyZ,
+			eAnyY,
+		} type;
 	};
 
-	struct Node {
-		u32 plane;
-		/* negative numbers are leaf indices */
-		i32 children[2];
-
-		/* bounding box coords (integer) */
-		glm::ivec3 bb_mins;
-		glm::ivec3 bb_maxes;
+	struct TextureLump {
+		u32 n_mip_textures;
+		i32 offsets[];
 	};
 
-	struct Leaf {
-		i32 cluster_idx;
-		u32 area;
-		glm::ivec3 bb_mins;
-		glm::ivec3 bb_maxes;
-		i32 first_leaf_face_idx;
-		u32 n_leaf_faces;
-		i32 first_leaf_brush_idx;
-		u32 n_leaf_brushes;
-	};
-
-	struct LeafFaces {
-		/* list of face indices (one list per leaf) */
-		i32 face_idx;
-	};
-
-	struct LeafBrush {
-		/* list of brush indices (one list leaf) */
-		i32 brush_idx;
-	};
-
-	struct Model {
-		glm::vec3 bb_mins;
-		glm::vec3 bb_maxes;
-		i32 first_face_idx;
-		u32 n_faces;
-		i32 first_brush_idx;
-		u32 n_brushes;
-	};
-
-	struct Brush {
-		i32 first_brushside_idx;
-		u32 n_brushsides;
-		i32 texture_idx;
-	};
-
-	struct BrushSide {
-		i32 plane_idx;
-		i32 texture_idx;
+	struct MipTexture {
+		char name[MAX_TEXTURE_NAME];
+		u32 width, height;
+		/* is 0 if stored in WAD, otherwise, offset is from beginning of this struct */
+		u32 mip_offsets[MIP_LEVELS];
 	};
 
 	struct Vertex {
-		glm::vec3 pos;
-		glm::vec2 uv;
-		glm::vec2 lightmap_coords;
-		glm::vec3 norm;
-		glm::u8vec4 color;
-		
+		vec3 pos;
+
 		static inline std::vector<vk::VertexInputAttributeDescription> attrs(uint32_t binding) {
 			return std::vector<vk::VertexInputAttributeDescription> {
 				{
@@ -128,109 +91,132 @@ namespace Q3BSP {
 					.binding = binding,
 					.format = vk::Format::eR32G32B32Sfloat,
 					.offset = offsetof(Vertex, pos),
-				}, {
-					.location = 1,
-					.binding = binding,
-					.format = vk::Format::eR32G32Sfloat,
-					.offset = offsetof(Vertex, uv),
-				}, {
-					.location = 2,
-					.binding = binding,
-					.format = vk::Format::eR32G32Sfloat,
-					.offset = offsetof(Vertex, lightmap_coords),
-				}, {
-					.location = 3,
-					.binding = binding,
-					.format = vk::Format::eR32G32B32Sfloat,
-					.offset = offsetof(Vertex, norm),
-				}, {
-					.location = 4,
-					.binding = binding,
-					.format = vk::Format::eR32Uint,
-					.offset = offsetof(Vertex, color),
 				}
 			};
 		}
 	};
 
-	struct MeshVertex {
-		i32 idx;
+	struct Vis {};
+
+	struct Node {
+		i32 plane;
+		/* negative numbers are leaf indices */
+		i16 children[2];
+
+		/* bounding box coords (integer) */
+		ivec3 bb_mins;
+		ivec3 bb_maxes;
+
+		i16 first_face_idx;
+		i16 n_faces;
 	};
 
-	struct Effect {
-		char name[64];
-		i32 brush_idx;
-		/* almost always 5 for some reason */
-		i32 unknown;
+	struct TexInfo {
+		vec3 shift_s_dir;
+		float shift_s;
+		vec3 shift_t_dir;
+		float shift_t;
+		u32 mip_tex_idx;
+		/* seems to always be 0 */
+		u32 flags;
+		
 	};
 
 	struct Face {
-		i32 texture_idx;
-		/* -1 if no effect */
-		i32 effect_idx;
-		enum FaceType {
-			ePOLYGON = 1,
-			ePATCH = 2,
-			eMESH = 3,
-			eBILLBOARD = 4,
-		} type;
-		i32 first_vertex_idx;
-		u32 n_vertices;
-		i32 first_mesh_vertex_idx;
-		u32 n_mesh_vertices;
-		i32 lightmap_idx;
-		glm::vec2 lightmap_start;
-		glm::vec2 lightmap_end;
-
-		glm::vec3 lightmap_origin;
-		glm::vec3 lightmap_unit_vectors[2];
-		glm::vec3 norm;
-		glm::ivec2 patch_dimensions;
+		u16 plane_idx;
+		/* set if different normals orientation */
+		u16 plane_side;
+		u32 first_surf_edge_idx;
+		i16 n_surf_edges;
+		i16 tex_info_idx;
+		u8 lighting_styles[4];
+		u32 lightmap_offset;
 	};
 
 	struct Lightmap {
-		u8 map[128][128][3];
+		rgb* lights;
 	};
 
-	struct Lightvol {
-		rgb ambient;
-		rgb directional;
-		/* spherical coordinates */
-		glm::u8vec2 direction;
+	struct ClipNode {
+		i32 plane_idx;
+		/* negative numbers are contents */
+		i16 children[2];
 	};
 
-	struct VisibilityInfo {
-		u32 sz_vectors;
-		std::vector<u8> vectors;
+	struct Leaf {
+		enum {
+			eEmpty = -1,
+			eSolid = -2,
+			eWater = -3,
+			eSlime = -4,
+			eLava = -5,
+			eSky = -6,
+			eOrigin = -7,
+			eClip = -8,
+			eCurrent0 = -9,
+			eCurrent90 = -10,
+			eCurrent180 = -11,
+			eCurrent270 = -12,
+			eCurrentUp = -13,
+			eCurrentDown = -14,
+			eTranslucent = -15,
+		} contents;
+		/* if this is -1, no VIS data */
+		i32 vis_offset;
+		ivec3 bb_mins;
+		ivec3 bb_maxes;
+		u16 first_mark_surface_idx;
+		u16 n_mark_surfaces;
+		u8 ambient_sound_levels[4];
+	};
+
+	typedef u16 MarkSurface;
+
+	struct Edge {
+		u16 vertex_indices[2];
+	};
+
+	typedef i32 Surfedge;
+
+	struct Model {
+		vec3 bb_mins;
+		vec3 bb_maxes;
+		vec3 origin;
+		i32 head_node_indices[MAX_MAP_HULLS];
+		i32 vis_leafs;
+		i32 first_face_idx;
+		i32 n_faces;
 	};
 
 	struct BSP {
 		BSP(vk::PhysicalDevice phys_dev, vk::Device dev, const std::string& fname);
-		void load_indices(const glm::vec3& cam_pos, bool visibility_testing, const glm::mat4& view);
-		int determine_leaf(glm::vec3 cam_pos);
-		bool determine_visibility(const Leaf& cam_leaf, const Leaf& leaf, const std::array<glm::vec4, 6>& frustum, const glm::vec3 box_verts[8]);
+		void load_indices(const vec3& cam_pos, bool visibility_testing, const glm::mat4& view);
+		int determine_leaf(vec3 cam_pos);
+		bool determine_visibility(const Leaf& cam_leaf, const Leaf& leaf, const std::array<glm::vec4, 6>& frustum, const vec3 box_verts[8]);
+		int get_index_from_surfedge(int surfedge);
+
 
 		vk::Device dev;
 		Header* header;
 		std::string filename;
 		std::vector<u8> file_data;
-		std::string entities;
-		std::vector<Texture> textures;
+
+		std::vector<::std::map<::std::string, std::string>> entities;
 		std::vector<Plane> planes;
-		std::vector<Node> nodes;
-		std::vector<Leaf> leafs;
-		std::vector<LeafBrush> leaf_brushes;
-		std::vector<LeafFaces> leaf_faces;
-		std::vector<Model> models;
-		std::vector<Brush> brushes;
-		std::vector<BrushSide> brush_sides;
+		std::vector<MipTexture> textures;
 		std::vector<Vertex> vertices;
-		std::vector<MeshVertex> mesh_vertices;
-		std::vector<Effect> effects;
+		std::vector<Vertex> vertices_prime;
+		/* skipping vis for now */
+		std::vector<Node> nodes;
+		std::vector<TexInfo> tex_infos;
 		std::vector<Face> faces;
-		std::vector<Lightmap> lightmaps;
-		std::vector<Lightvol> lightvols;
-		VisibilityInfo vis_info;
+		Lightmap lightmap;
+		std::vector<ClipNode> clip_nodes;
+		std::vector<Leaf> leaves;
+		std::vector<MarkSurface> mark_surfaces;
+		std::vector<Edge> edges;
+		std::vector<Surfedge> surfedges;
+		std::vector<Model> models;
 
 		std::vector<u32> indices;
 		std::unique_ptr<Buffer> index_buffer;

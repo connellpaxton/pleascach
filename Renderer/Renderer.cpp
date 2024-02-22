@@ -199,24 +199,25 @@ Renderer::Renderer(Window& win) : win(win) {
 	};
 
 	/* BSP loader */
-	bsp = std::make_unique<Q3BSP::BSP>(phys_dev, dev, "assets/maps/git.bsp");
-	std::vector<Shader> bsp_shaders = {
+	bsp = std::make_unique<HLBSP::BSP>(phys_dev, dev, "assets/maps/hl1.bsp");
+	bsp_shaders = {
 		{ dev, "assets/shaders/bin/bsp.vert.spv", vk::ShaderStageFlagBits::eVertex },
 		{ dev, "assets/shaders/bin/bsp.frag.spv", vk::ShaderStageFlagBits::eFragment },
 	};
+
 	bsp->pipeline = std::make_unique<GraphicsPipeline>(dev, bsp_shaders, swapchain->extent, *render_pass, bindings, bsp->vertex_buffer->binding(0), bsp->vertex_buffer->attrs(0));
 	bsp->pipeline->update(0, *uniform_buffer);
 
 	/* bounding and hitboxs */
-	std::vector<Shader> box_shaders = {
+	box_shaders = {
 		{ dev, "assets/shaders/bin/box.vert.spv", vk::ShaderStageFlagBits::eVertex },
 		{ dev, "assets/shaders/bin/box.geom.spv", vk::ShaderStageFlagBits::eGeometry },
 		{ dev, "assets/shaders/bin/box.frag.spv", vk::ShaderStageFlagBits::eFragment },
 	};
 
 	std::vector<BoxVertex> boxes;
-	boxes.reserve(bsp->leafs.size());
-	for (auto& leaf : bsp->leafs) {
+	boxes.reserve(bsp->leaves.size());
+	for (auto& leaf : bsp->leaves) {
 		boxes.push_back(BoxVertex{
 			.mins = leaf.bb_mins,
 			.maxes = leaf.bb_maxes,
@@ -227,11 +228,6 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	box_pipeline = std::make_unique<GraphicsPipeline>(dev, box_shaders, swapchain->extent, *render_pass, bindings, box_buffer->binding(0), box_buffer->attrs(0), GraphicsPipeline::Type::eBOX);
 	box_pipeline->update(0, *uniform_buffer);
-
-	for (auto& shader : box_shaders)
-		shader.cleanup();
-	for (auto& shader : bsp_shaders)
-		shader.cleanup();
 
 	ui = std::make_unique<UI>(this);
 }
@@ -351,6 +347,7 @@ void Renderer::draw() {
 
 	bsp->load_indices(cam.pos, visibility_testing, p * uni.view);
 	command_buffer->bind(bsp.get());
+	/*command_buffer->draw(bsp->vertices.size(), 1);*/
 	command_buffer->command_buffer.drawIndexed(bsp->indices.size(), 1, 0, 0, 0);
 
 	n_indices = bsp->indices.size();
@@ -422,6 +419,10 @@ Renderer::~Renderer() {
 	box_pipeline.reset();
 	uniform_buffer.reset();
 
+	for (auto& shader : box_shaders)
+		shader.cleanup();
+	for (auto& shader : bsp_shaders)
+		shader.cleanup();
 
 	for (auto& tex : textures) {
 		tex.cleanup();

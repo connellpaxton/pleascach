@@ -10,7 +10,8 @@
 #include <util/log.hpp>
 
 
-GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& shaders, const vk::Extent2D& extent, const RenderPass& render_pass, vk::ArrayProxy<vk::DescriptorSetLayoutBinding> bindings, const vk::VertexInputBindingDescription& vertex_binding, const std::vector<vk::VertexInputAttributeDescription>& vertex_attrs, enum Type type) : dev(dev) {
+GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& shaders, const vk::Extent2D& extent, const RenderPass& render_pass, vk::ArrayProxy<vk::DescriptorSetLayoutBinding> bindings, const vk::VertexInputBindingDescription& vertex_binding, const std::vector<vk::VertexInputAttributeDescription>& vertex_attrs, enum Type type, bool wireframe)
+	: dev(dev), shaders(shaders), extent(extent), render_pass(render_pass), bindings(bindings), vertex_binding(vertex_binding), vertex_attrs(vertex_attrs), type(type) {
 	/* create layout
 	 * Eventually add a graphicspipline constructor that allows specification of layouts etc
 	 * kinda like how Image::Image has all those versions
@@ -56,24 +57,23 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 	})[0];
 
 	/* shader setup */
-	std::vector<vk::PipelineShaderStageCreateInfo> shader_info;
 	shader_info.reserve(shaders.size());
 	for (const auto& shader : shaders)
 		shader_info.push_back(shader.info());
 
 	/* vertex input setup */
-	const std::vector<vk::VertexInputBindingDescription> vertex_bindings = {
+	vertex_bindings = {
 		vertex_binding,
 	};
 
-	const auto vertex_input_info = vk::PipelineVertexInputStateCreateInfo{
+	vertex_input_info = vk::PipelineVertexInputStateCreateInfo {
 		.vertexBindingDescriptionCount = static_cast<uint32_t>(vertex_bindings.size()),
 		.pVertexBindingDescriptions = vertex_bindings.data(),
 		.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertex_attrs.size()),
 		.pVertexAttributeDescriptions = vertex_attrs.data(),
 	};
 
-	auto input_asm_info = vk::PipelineInputAssemblyStateCreateInfo {
+	input_asm_info = vk::PipelineInputAssemblyStateCreateInfo {
 		/* matters later if we use strip primitives */
 		.primitiveRestartEnable = vk::False,
 	};
@@ -94,7 +94,7 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 
 	const vk::PipelineTessellationStateCreateInfo* ptesselation_info = nullptr;
 
-	const auto tess_info = vk::PipelineTessellationStateCreateInfo {
+	tess_info = vk::PipelineTessellationStateCreateInfo {
 		/* quads*/
 		.patchControlPoints = 4,
 	};
@@ -103,22 +103,22 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 		ptesselation_info = &tess_info;
 	}
 
-	const auto raster_info = vk::PipelineRasterizationStateCreateInfo {
+	raster_info = vk::PipelineRasterizationStateCreateInfo {
 		.depthClampEnable = vk::False,
-		.polygonMode = type == eBOX ? vk::PolygonMode::eLine : vk::PolygonMode::eFill,
-		.cullMode = type == eBOX ? vk::CullModeFlagBits::eNone : vk::CullModeFlagBits::eBack,
+		.polygonMode = (type == eBOX || wireframe) ? vk::PolygonMode::eLine : vk::PolygonMode::eFill,
+		.cullMode = type == eBOX ? vk::CullModeFlagBits::eNone : vk::CullModeFlagBits::eNone,
 		.frontFace = vk::FrontFace::eCounterClockwise,
 		.depthBiasEnable = type == eBOX,
 		.depthBiasConstantFactor = 0.01,
 		.lineWidth = 1.0,
 	};
 
-	const auto multisample_info = vk::PipelineMultisampleStateCreateInfo {
+	multisample_info = vk::PipelineMultisampleStateCreateInfo {
 		.rasterizationSamples = vk::SampleCountFlagBits::e1,
 		.sampleShadingEnable = vk::False,
 	};
 
-	const auto depth_stencil_info = vk::PipelineDepthStencilStateCreateInfo{
+	depth_stencil_info = vk::PipelineDepthStencilStateCreateInfo{
 		.depthTestEnable = vk::True,
 		.depthWriteEnable = type != eBOX,
 		.depthCompareOp = vk::CompareOp::eLess,
@@ -128,7 +128,7 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 		.maxDepthBounds = 1.0,
 	};
 	
-	const auto color_blend_attachment = vk::PipelineColorBlendAttachmentState {
+	color_blend_attachment = vk::PipelineColorBlendAttachmentState {
 		/* only the box has blending */
 		.blendEnable = type == eBOX,
 		.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha,
@@ -142,8 +142,8 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 		
 	};
 
-	std::array<float, 4> blend_constants = {0.0f, 0.0f, 0.0f, 0.0f };
-	 auto color_blend_info = vk::PipelineColorBlendStateCreateInfo{
+	blend_constants = {0.0f, 0.0f, 0.0f, 0.0f };
+	color_blend_info = vk::PipelineColorBlendStateCreateInfo{
 		.logicOpEnable = vk::False,
 		.logicOp = vk::LogicOp::eCopy,
 		.attachmentCount = 1,
@@ -152,36 +152,34 @@ GraphicsPipeline::GraphicsPipeline(vk::Device dev, const std::vector<Shader>& sh
 	};
 
 	/* temporary viewport and scissor, since it is a dynamic state due to the existence of window resizing */
-	const auto viewport = vk::Viewport{
+	viewport = vk::Viewport{
 		.x = 0.0,
 		.y = static_cast<float>(extent.height),
 		.width = static_cast<float>(extent.width),
 		.height = -static_cast<float>(extent.height),
 	};
 
-	const auto scissor = vk::Rect2D {
+	scissor = vk::Rect2D {
 		.offset = 0,
 		.extent = extent,
 	};
 
-	const auto viewport_info = vk::PipelineViewportStateCreateInfo {
+	viewport_info = vk::PipelineViewportStateCreateInfo {
 		.viewportCount = 1,
 		.pViewports = &viewport,
 		.scissorCount = 1,
 		.pScissors = &scissor,
 	};
 
-	const vk::DynamicState dyn_states[] = {
-		vk::DynamicState::eScissor,
-		vk::DynamicState::eViewport,
-	};
+	dyn_states[0] = vk::DynamicState::eScissor;
+	dyn_states[1] = vk::DynamicState::eViewport;
 
-	const auto dyn_info = vk::PipelineDynamicStateCreateInfo{
-		.dynamicStateCount = std::size(dyn_states),
+	dyn_info = vk::PipelineDynamicStateCreateInfo {
+		.dynamicStateCount = (uint32_t)std::size(dyn_states),
 		.pDynamicStates = dyn_states,
 	};
 
-	const auto pipeline_info = vk::GraphicsPipelineCreateInfo {
+	pipeline_info = vk::GraphicsPipelineCreateInfo {
 		.stageCount = static_cast<uint32_t>(shaders.size()),
 		.pStages = shader_info.data(),
 		.pVertexInputState = &vertex_input_info,
@@ -237,7 +235,29 @@ void GraphicsPipeline::update(uint32_t binding, const Texture& tex) {
 	}, nullptr);
 }
 
+void GraphicsPipeline::rebuild(bool wireframe) {
+	vertex_input_info = vk::PipelineVertexInputStateCreateInfo {
+		.vertexBindingDescriptionCount = static_cast<uint32_t>(vertex_bindings.size()),
+		.pVertexBindingDescriptions = vertex_bindings.data(),
+		.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertex_attrs.size()),
+		.pVertexAttributeDescriptions = vertex_attrs.data(),
+	};
+
+	raster_info.polygonMode = wireframe ? vk::PolygonMode::eLine : vk::PolygonMode::eFill;
+	auto res = dev.createGraphicsPipeline(nullptr, pipeline_info);
+	if (res.result != vk::Result::eSuccess) {
+		Log::error("Failed to create pipeline: (Vulkan error code: %d)\n", res.result);
+	}
+
+	defunct_pipelines.push_back(pipeline);
+
+	pipeline = res.value;
+}
+
 GraphicsPipeline::~GraphicsPipeline() {
+	for(auto& p : defunct_pipelines) {
+		dev.destroyPipeline(p);
+	}
 	dev.destroyDescriptorSetLayout(desc_layout);
 	dev.destroyPipelineLayout(layout);
 	dev.destroyDescriptorPool(desc_pool);

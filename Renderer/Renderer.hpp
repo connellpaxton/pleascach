@@ -51,11 +51,13 @@ struct Renderer {
 	std::unique_ptr<CommandBuffer> command_buffer;
 	std::unique_ptr<RenderPass> render_pass;
 
+	std::vector<Shader> box_shaders;
 	std::unique_ptr<GraphicsPipeline> box_pipeline;
 	std::unique_ptr<GeneralVertexBuffer<BoxVertex>> box_buffer;
 	std::unique_ptr<UniformBuffer> uniform_buffer;
 
-	std::unique_ptr<Q3BSP::BSP> bsp;
+	std::vector<Shader> bsp_shaders;
+	std::unique_ptr<HLBSP::BSP> bsp;
 
 	std::vector<Texture> textures;
 
@@ -77,6 +79,7 @@ struct Renderer {
 	bool visibility_testing = false;
 	bool show_bboxes = false;
 	bool should_close = false;
+	bool wireframe_mode = false;
 
 	size_t n_indices;
 

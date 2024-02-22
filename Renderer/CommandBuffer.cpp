@@ -82,7 +82,7 @@ void CommandBuffer::bind(Terrain* terrain) {
 	command_buffer.bindIndexBuffer(*terrain->index_buffer, 0, vk::IndexType::eUint32);
 }
 
-void CommandBuffer::bind(Q3BSP::BSP* bsp) {
+void CommandBuffer::bind(HLBSP::BSP* bsp) {
 	bind(*bsp->pipeline);
 	bind(*bsp->vertex_buffer);
 	command_buffer.bindIndexBuffer(*bsp->index_buffer, 0, vk::IndexType::eUint32);

@@ -22,9 +22,8 @@ int main(int argc, char* argv[]) {
 		Renderer ren(win);
 		in->setCursor(false);
 
-		bool should_close = false;
 
-		while (!in->shouldClose() || ren.should_close) {
+		while (!in->shouldClose() && !ren.should_close) {
 			Timer frame_timer;
 			in->poll();
 			in->handleMovementKeys(ren);
@@ -88,5 +87,5 @@ int main(int argc, char* argv[]) {
 	}
 
 quit:
-	Log::info("Quitting");
+	Log::info("Quitting\n");
 }

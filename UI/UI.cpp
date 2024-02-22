@@ -12,6 +12,9 @@
 
 #include <Scene/Camera.hpp>
 
+/* this pains me to do, but its the only way :( */
+Renderer* __ren;
+
 static csys::ItemLog& operator<<(csys::ItemLog& log, ImVector<float>& vec) {
 	if (!vec.size())
 		return log << "vector<f32> {}";
@@ -21,12 +24,15 @@ static csys::ItemLog& operator<<(csys::ItemLog& log, ImVector<float>& vec) {
 	return log << vec[vec.size() - 1] << " }";
 }
 
-/*static void vec_setter(ImVector<float>& v, std::vector<float> in) {
-	v.reserve(in.size());
-	std::memcpy(v.Data, in.data(), sizeof(float) * in.size());
-}*/
+static void wireframe_setter(bool& v, bool in) {
+	if(v == in)
+		return;
+	v = in;
+	__ren->bsp->pipeline->rebuild(in);
+}
 
 UI::UI(Renderer* ren) : ren(ren), dev(ren->dev) {
+	__ren = ren;
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
@@ -117,6 +123,7 @@ UI::UI(Renderer* ren) : ren(ren), dev(ren->dev) {
 			"flycam",
 			"speed",
 			"max_fps",
+			"wireframe",
 		};
 
 		for(const auto& name : names)
@@ -128,6 +135,8 @@ UI::UI(Renderer* ren) : ren(ren), dev(ren->dev) {
 	console->System().RegisterVariable("flycam", ren->flycam, csys::Arg<bool>("value"));
 	console->System().RegisterVariable("speed", ren->speed, csys::Arg<float>("value"));
 	console->System().RegisterVariable("max_fps", ren->max_fps, csys::Arg<float>("value"));
+
+	console->System().RegisterVariable("wireframe", ren->wireframe_mode, wireframe_setter);
 
 	console->System().Log(csys::ItemType::eINFO) << "Welcome to Pleascach!" << csys::endl;
 }
@@ -157,9 +166,8 @@ void UI::render(vk::CommandBuffer cmd) {
 }
 
 UI::~UI() {
-	dev.destroyDescriptorPool(desc_pool);
-	
 	console.reset();
+	dev.destroyDescriptorPool(desc_pool);
 	ImGui_ImplVulkan_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
