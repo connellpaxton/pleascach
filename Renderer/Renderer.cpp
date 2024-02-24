@@ -199,7 +199,7 @@ Renderer::Renderer(Window& win) : win(win) {
 	};
 
 	/* BSP loader */
-	bsp = std::make_unique<HLBSP::BSP>(phys_dev, dev, "assets/maps/hl1.bsp");
+	bsp = std::make_unique<HLBSP::BSP>(phys_dev, dev, "assets/maps/dmc.bsp");
 	bsp_shaders = {
 		{ dev, "assets/shaders/bin/bsp.vert.spv", vk::ShaderStageFlagBits::eVertex },
 		{ dev, "assets/shaders/bin/bsp.frag.spv", vk::ShaderStageFlagBits::eFragment },

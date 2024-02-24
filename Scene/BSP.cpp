@@ -10,6 +10,13 @@
 
 #include <cstring>
 
+/* changes handedness by swapping z and y */
+template<typename T>
+static inline void change_swizzle(T& v) {
+	auto tmp = v.y;
+	v.y = v.z;
+	v.z = tmp;
+}
 
 using namespace HLBSP;
 
@@ -25,7 +32,8 @@ static inline void copy_data(void* file_data, std::vector<T>& dst, Lump& lump) {
 	std::memcpy(dst.data(), ((u8*)file_data) + lump.offset, lump.len);
 }
 
-glm::vec2 calc_tex_coords(const glm::vec3& v, const TexInfo& t) {
+static inline glm::vec2 calc_tex_coords(glm::vec3 v, const TexInfo& t) {
+	change_swizzle(v);
 	return glm::vec2(
 		t.shift_s + glm::dot(v, t.shift_s_dir),
 		t.shift_t + glm::dot(v, t.shift_t_dir)
@@ -138,14 +146,6 @@ int BSP::determine_leaf(glm::vec3 cam_pos) {
 bool BSP::determine_visibility(const Leaf& cam_leaf, const Leaf& leaf, const std::array<glm::vec4, 6>& frustum, const glm::vec3 box_verts[8]) {
 	/* perform fustrum culling */
 	return box_in_frustum(frustum, box_verts);
-}
-
-/* changes handedness by swapping z and y */
-template<typename T>
-static inline void change_swizzle(T& v) {
-	auto tmp = v.y;
-	v.y = v.z;
-	v.z = tmp;
 }
 
 static std::vector<std::map<std::string, std::string>> load_entities(const std::string& in) {

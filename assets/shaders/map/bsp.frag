@@ -19,6 +19,16 @@ layout (set = 0, binding = 0) uniform Matrices {
 
 layout (set = 0, binding = 1) uniform sampler2D tex;     
 
+vec3 tex_map(vec2 coords) {
+	return vec3(
+		1-abs(cos(normalize(texCoord.xxy)))
+//		0.0,
+//		sin(texCoord.y)
+//		sin(texCoord.x/texCoord.y)
+	);
+}
+
 void main() {
-	FragColor = (color + vec4(1.0)) / 2.0;
+	FragColor.xyz = tex_map(texCoord);
+	FragColor.w = 1.0;
 }	

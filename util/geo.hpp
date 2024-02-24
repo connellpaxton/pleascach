@@ -4,30 +4,12 @@
 #include <glm/gtc/matrix_access.hpp>
 #include <array>
 
-static glm::vec4 extract_plane(const glm::mat4& mat, int col) {
-	float sign;
-	if (col < 0) {
-		sign = -1.0;
-		col = -col - 1;
-	} else {
-		sign = 1.0;
-		col -= 1;
-	}
 
-	return glm::column(mat, 3) + sign * glm::column(mat, col);
-}
 
 /* extracts frustum from projection matrix */
 static std::array<glm::vec4, 6> frustum(const glm::mat4& mat) {
 	/* Left, Right, Top, Bottom, Back, Front */
-	std::array<glm::vec4, 6> ret; /* {
-		extract_plane(mat, 1),
-		extract_plane(mat, -1),
-		extract_plane(mat, 2),
-		extract_plane(mat, -2),
-		extract_plane(mat, 3),
-		extract_plane(mat, -3),
-	};*/
+	std::array<glm::vec4, 6> ret;
 
 	for (size_t i = 0; i < 3; i++)
 		for (size_t j = 0; j < 4; j++)

@@ -30,6 +30,6 @@ void main() {
 
   gl_Position = proj * view * vec4(aPos, 1.0);
 
-  color = vec4(aTexCoord, 0.0, 1.0);
+  color = vec4(0.0);
   texCoord = aTexCoord;
 }
