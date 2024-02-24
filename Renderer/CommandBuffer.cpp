@@ -85,7 +85,6 @@ void CommandBuffer::bind(Terrain* terrain) {
 void CommandBuffer::bind(HLBSP::BSP* bsp) {
 	bind(*bsp->pipeline);
 	bind(*bsp->vertex_buffer);
-	command_buffer.bindIndexBuffer(*bsp->index_buffer, 0, vk::IndexType::eUint32);
 	bind(bsp->pipeline->layout, bsp->pipeline->desc_set);
 }
 

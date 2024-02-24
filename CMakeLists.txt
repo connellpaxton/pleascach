@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(WIN32)
-set(CMAKE_CXX_FLAGS "/O2")
+set(CMAKE_CXX_FLAGS "")
 else()
 set(CMAKE_CXX_FLAGS "-D_DEBUG -Wall")
 endif()

@@ -345,12 +345,12 @@ void Renderer::draw() {
 	command_buffer->command_buffer.setViewport(0, viewport);
 	command_buffer->command_buffer.setScissor(0, scissor);
 
-	bsp->load_indices(cam.pos, visibility_testing, p * uni.view);
+	bsp->load_vertices(cam.pos, visibility_testing, p * uni.view);
 	command_buffer->bind(bsp.get());
 	/*command_buffer->draw(bsp->vertices.size(), 1);*/
-	command_buffer->command_buffer.drawIndexed(bsp->indices.size(), 1, 0, 0, 0);
+	command_buffer->draw(bsp->textured_vertices.size(), 1);
 
-	n_indices = bsp->indices.size();
+	n_indices = bsp->textured_vertices.size();
 
 	if (show_bboxes) {
 		command_buffer->bind(*box_pipeline);

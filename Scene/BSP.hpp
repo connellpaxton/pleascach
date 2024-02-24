@@ -28,6 +28,7 @@ namespace HLBSP {
 	using rgba = glm::u8vec4;
 
 	using vec3 = glm::vec3;
+	using vec2 = glm::vec2;
 	using ivec3 = glm::vec<3, i16>;
 
 	struct Header {
@@ -83,6 +84,7 @@ namespace HLBSP {
 
 	struct Vertex {
 		vec3 pos;
+		vec2 uv;
 
 		static inline std::vector<vk::VertexInputAttributeDescription> attrs(uint32_t binding) {
 			return std::vector<vk::VertexInputAttributeDescription> {
@@ -91,6 +93,11 @@ namespace HLBSP {
 					.binding = binding,
 					.format = vk::Format::eR32G32B32Sfloat,
 					.offset = offsetof(Vertex, pos),
+				}, {
+					.location = 1,
+					.binding = binding,
+					.format = vk::Format::eR32G32Sfloat,
+					.offset = offsetof(Vertex, uv),
 				}
 			};
 		}
@@ -190,7 +197,7 @@ namespace HLBSP {
 
 	struct BSP {
 		BSP(vk::PhysicalDevice phys_dev, vk::Device dev, const std::string& fname);
-		void load_indices(const vec3& cam_pos, bool visibility_testing, const glm::mat4& view);
+		void load_vertices(const vec3& cam_pos, bool visibility_testing, const glm::mat4& view);
 		int determine_leaf(vec3 cam_pos);
 		bool determine_visibility(const Leaf& cam_leaf, const Leaf& leaf, const std::array<glm::vec4, 6>& frustum, const vec3 box_verts[8]);
 		int get_index_from_surfedge(int surfedge);
@@ -204,8 +211,8 @@ namespace HLBSP {
 		std::vector<::std::map<::std::string, std::string>> entities;
 		std::vector<Plane> planes;
 		std::vector<MipTexture> textures;
-		std::vector<Vertex> vertices;
-		std::vector<Vertex> vertices_prime;
+		std::vector<glm::vec3> vertices;
+		std::vector<glm::vec3> processed_vertices;
 		/* skipping vis for now */
 		std::vector<Node> nodes;
 		std::vector<TexInfo> tex_infos;
@@ -218,8 +225,7 @@ namespace HLBSP {
 		std::vector<Surfedge> surfedges;
 		std::vector<Model> models;
 
-		std::vector<u32> indices;
-		std::unique_ptr<Buffer> index_buffer;
+		std::vector<Vertex> textured_vertices;
 		std::unique_ptr<GeneralVertexBuffer<Vertex>> vertex_buffer;
 		std::unique_ptr<GraphicsPipeline> pipeline;
 		/* to eliminate needless re-loading*/

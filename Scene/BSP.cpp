@@ -25,7 +25,14 @@ static inline void copy_data(void* file_data, std::vector<T>& dst, Lump& lump) {
 	std::memcpy(dst.data(), ((u8*)file_data) + lump.offset, lump.len);
 }
 
-void BSP::load_indices(const glm::vec3& cam_pos, bool visibility_test, const glm::mat4& view) {
+glm::vec2 calc_tex_coords(const glm::vec3& v, const TexInfo& t) {
+	return glm::vec2(
+		t.shift_s + glm::dot(v, t.shift_s_dir),
+		t.shift_t + glm::dot(v, t.shift_t_dir)
+	);
+}
+
+void BSP::load_vertices(const glm::vec3& cam_pos, bool visibility_test, const glm::mat4& view) {
 	std::set<int> present_faces;
 	std::vector<Face> visible_faces;
 	// if (visibility_test) {
@@ -35,7 +42,7 @@ void BSP::load_indices(const glm::vec3& cam_pos, bool visibility_test, const glm
 		auto fr_planes = frustum(view);
 
 		if (leaf_idx == last_leaf)
-			index_buffer->upload(indices);
+			return;
 
 		last_leaf = leaf_idx;
 		auto& cam_leaf = leaves[leaf_idx];
@@ -76,18 +83,28 @@ void BSP::load_indices(const glm::vec3& cam_pos, bool visibility_test, const glm
 		visible_faces = faces;
 	}
 
-	indices.clear();
+	textured_vertices.clear();
 
 	for (auto& face : visible_faces) {
+		auto& tex_info = tex_infos[face.tex_info_idx];
+
 		for (i16 i = 1, j = 2; j < face.n_surf_edges; i++, j++) {
-			indices.push_back(face.first_surf_edge_idx);
-			indices.push_back(face.first_surf_edge_idx+i);
-			indices.push_back(face.first_surf_edge_idx+j);
+			textured_vertices.push_back(Vertex{
+				.pos = processed_vertices[face.first_surf_edge_idx],
+				.uv = calc_tex_coords(processed_vertices[face.first_surf_edge_idx], tex_info),
+			});
+			textured_vertices.push_back(Vertex{
+				.pos = processed_vertices[face.first_surf_edge_idx+i],
+				.uv = calc_tex_coords(processed_vertices[face.first_surf_edge_idx+i], tex_info),
+			});
+			textured_vertices.push_back(Vertex{
+				.pos = processed_vertices[face.first_surf_edge_idx+j],
+				.uv = calc_tex_coords(processed_vertices[face.first_surf_edge_idx+j], tex_info),
+			});
 		}
-//		indices.push_back(get_index_from_surfedge(face.first_surf_edge_idx));
 	}
 
-	index_buffer->upload(indices);
+	vertex_buffer->upload(textured_vertices);
 }
 
 int BSP::get_index_from_surfedge(int surfedge) {
@@ -179,7 +196,7 @@ BSP::BSP(vk::PhysicalDevice phys_dev, vk::Device dev, const std::string& fname) 
 	Log::debug("Loading vertices\n");
 	copy_data(file_data.data(), vertices, header->vertices);
 	for (auto& vertex : vertices) {
-		change_swizzle(vertex.pos);
+		change_swizzle(vertex);
 	}
 
 	Log::debug("Loading nodes\n");
@@ -216,10 +233,10 @@ BSP::BSP(vk::PhysicalDevice phys_dev, vk::Device dev, const std::string& fname) 
 
 	Log::debug("Loading surfedges\n");
 	copy_data(file_data.data(), surfedges, header->surf_edges);
-	vertices_prime.reserve(surfedges.size());
-	/* use this to build our vertices_prime, idea thanks to gzalo's HalfMapper */
+	processed_vertices.reserve(surfedges.size());
+	/* use this to build our processed_vertices, idea thanks to gzalo's HalfMapper */
 	for(const auto& s : surfedges) {
-		vertices_prime.push_back(vertices[edges[s > 0? s : -s].vertex_indices[s<=0]]);
+		processed_vertices.push_back(vertices[edges[s > 0? s : -s].vertex_indices[s<=0]]);
 	}
 
 	Log::debug("Loading models\n");
@@ -228,14 +245,14 @@ BSP::BSP(vk::PhysicalDevice phys_dev, vk::Device dev, const std::string& fname) 
 		change_swizzle(model.bb_mins);
 		change_swizzle(model.bb_maxes);
 	}
-	
-	Log::debug("Creating vertex buffer of size %zu\n", vertices.size());
-	vertex_buffer = std::make_unique<GeneralVertexBuffer<Vertex>>(phys_dev, dev, vertices_prime.size());
-	vertex_buffer->upload(vertices_prime);
 
-	Log::debug("Creating index buffer\n");
-	/* set limit at 256Mi indices */
-	index_buffer = std::make_unique<Buffer>(phys_dev, dev, 100000 * sizeof(u32),
-		vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eHostCoherent | vk::MemoryPropertyFlagBits::eHostVisible
-	);
+	size_t max_vertex_count = 0;
+
+	for (const auto& face : faces) {
+		max_vertex_count += (face.n_surf_edges - 2) * 3;
+	}
+	
+	Log::debug("Creating vertex buffer of size %zu\n", max_vertex_count);
+	vertex_buffer = std::make_unique<GeneralVertexBuffer<Vertex>>(phys_dev, dev, max_vertex_count);
+	textured_vertices.reserve(max_vertex_count);
 }
