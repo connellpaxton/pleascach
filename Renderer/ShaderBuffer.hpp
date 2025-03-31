@@ -45,7 +45,7 @@ struct ShaderBuffer {
 	}
 
 	inline void upload(const std::vector<Object>& scene) {
-		buffer->upload(reinterpret_cast<const uint8_t*>(scene.data()));
+		buffer->upload(reinterpret_cast<const uint8_t*>(scene.data()), scene.size() * sizeof(Object));
 	}
 
 	~ShaderBuffer() {

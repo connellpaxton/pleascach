@@ -38,6 +38,7 @@ struct UniformBuffer {
 	UniformBuffer(vk::PhysicalDevice phys_dev, vk::Device dev);
 
 	std::unique_ptr<Buffer> buffer;
+	UniformData data_copy { 0.0 };
 
 	void upload(const UniformData& data);
 

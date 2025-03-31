@@ -21,7 +21,7 @@ struct UI {
 
 	UI(Renderer* ren);
 
-	std::unique_ptr<ImGuiConsole> console;
+	ImGuiConsole* console;
 
 	void newFrame();
 	void render(vk::CommandBuffer cmd);

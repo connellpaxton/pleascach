@@ -35,9 +35,6 @@ static void scene_write(csys::String fname) {
 	March::writeFile(fname.m_String, __ren->objects, __ren->scene_map);
 }
 
-static void add_sphere() {
-
-}
 
 UI::UI(Renderer* ren) : ren(ren) {
 	__ren = ren;
@@ -113,7 +110,7 @@ UI::UI(Renderer* ren) : ren(ren) {
 	auto& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-	console = std::make_unique<ImGuiConsole>("developer console");
+	console = new ImGuiConsole("developer console");
 	console->System().RegisterCommand("pause", "Pauses or unpauses the engine", [this]() {
 		this->ren->paused = !this->ren->paused;
 		console->System().Log(csys::ItemType::eINFO) << "Paused: " << (this->ren->paused ? "True" : "False") << csys::endl;
@@ -219,7 +216,6 @@ void UI::render(vk::CommandBuffer cmd) {
 }
 
 UI::~UI() {
-	console.reset();
 //	dev.destroyDescriptorPool(desc_pool);
 	
 	ImGui_ImplVulkan_Shutdown();

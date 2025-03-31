@@ -33,9 +33,8 @@ int main(int argc, char* argv[]) {
 				switch (event.tag) {
 					case InputEvent::Tag::eRESIZE:
 						Log::info("Event Processed: Resized to %dx%d\n", event.resize.width, event.resize.height);
-						/* no need to have a resize() function in the renderer, b/c swapchain images will be
-						 * automatically marked out-of-date, and recreation will be triggered in our code 
-						 */
+						
+						ren.swapchain->recreate();
 						/* but still block while waiting for window to be opened again */
 						if (event.resize.height == 0 || event.resize.width == 0) {
 							int h = event.resize.height;

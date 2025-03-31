@@ -33,8 +33,30 @@ namespace Log {
 				level_txt = "[DEBUG] ";
 			break;
 		}
-		std::fprintf(stderr, level_txt);
+		std::fputs(level_txt, stderr);
 		std::fprintf(stderr, fmt.c_str(), args...);
+	}
+
+	static void print(MessageLevelBit level, const std::string& str) {
+		if (!(log_mask & level))
+			return;
+
+		/* appearently C++ doesn't have designated array indices :( */
+		const char* level_txt = "[UNKNOWN] ";
+		switch (level) {
+			case eERROR:
+				level_txt = "[ERROR] ";
+			break;
+			case eINFO:
+				level_txt = "[INFO] ";
+			break;
+			case eDEBUG:
+				level_txt = "[DEBUG] ";
+			break;
+		}
+		
+		std::fputs(level_txt, stderr);
+		std::fprintf(stderr, "%s", str.c_str());
 	}
 
 	template<typename ...Args>

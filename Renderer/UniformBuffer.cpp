@@ -11,5 +11,6 @@ UniformBuffer::UniformBuffer(vk::PhysicalDevice phys_dev, vk::Device dev) {
 }
 
 void UniformBuffer::upload(const UniformData& data) {
+	data_copy = data;
 	buffer->upload(reinterpret_cast<const uint8_t*>(&data), sizeof(UniformData));
 }

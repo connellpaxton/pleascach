@@ -363,6 +363,10 @@ void Renderer::draw() {
 
 	auto sz = win.getDimensions();
 
+	/* re-upload objects if out-of-sync */
+	if(uniform_buffer->data_copy.n_objects != objects.size())	
+		shader_buffer->upload(objects);
+
 	uniform_buffer->upload(UniformData{
 		.cam_pos = cam.pos,
 		.time = time,
@@ -371,6 +375,8 @@ void Renderer::draw() {
 		.n_objects = static_cast<unsigned int>(objects.size()),
 		.rad = rad,
 	});
+
+
 
 	command_buffer->bind(*pipeline);
 	command_buffer->command_buffer.setViewport(0, viewport);
