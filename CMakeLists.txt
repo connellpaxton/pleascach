@@ -38,11 +38,12 @@ foreach(SHADER_SOURCE ${SHADER_SOURCE_FILES})
 	set(SPIRV "${CMAKE_SOURCE_DIR}/assets/shaders/${FILE_NAME}.spv")
 	add_custom_command(
 		OUTPUT ${SPIRV}
-		COMMAND ${Vulkan_GLSLC_EXECUTABLE} -o ${SPIRV} ${SHADER_SOURCE}
+		COMMAND glslc -o ${SPIRV} ${SHADER_SOURCE}
 		DEPENDS ${SHADER_SOURCE}
 	)
 	list(APPEND SPIRV_BIN_FILES ${SPIRV})
 endforeach(SHADER_SOURCE)
+
 
 add_custom_target (
 	shaders

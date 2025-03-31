@@ -15,6 +15,8 @@
 #include <Renderer/UniformBuffer.hpp>
 #include <Renderer/VertexBuffer.hpp>
 
+#include <Scene/March.hpp>
+
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <UI/UI.hpp>
@@ -192,10 +194,42 @@ Renderer::Renderer(Window& win) : win(win) {
 
 	uniform_buffer = std::make_unique<UniformBuffer>(phys_dev, dev);
 
-	/* load map */
-	bsp = std::make_unique<Q3BSP::BSP>("assets/maps/git.bsp");
+	objects.reserve(2);
+	uint id = 0;
 
-	shader_buffer = std::make_unique<ShaderBuffer>(phys_dev, dev, bsp->planes.size());
+	objects.push_back(Object{
+		.center = glm::vec4(0.0),
+		.dimensions = glm::vec4(1.0),
+		.id = id,
+		.shape = Shape::eSPHERE,
+	});
+
+	objects.push_back(Object{
+		.center = glm::vec4(1.0),
+		.dimensions = glm::vec4(0.5),
+		.id = id,
+		.shape = Shape::eBOX,
+	});
+
+
+
+#if 0
+	for (const auto& plane : bsp->planes) {
+		/* for planes, center.xyz holds normal, dimensions.x holds distance */
+		objects.push_back(Object{
+			.center = glm::vec4(plane.norm, 0.0),
+			.dimensions = glm::vec4(plane.dist, 0.0, 0.0, 0.0),
+			.id = id,
+			.shape = Shape::ePLANE,
+			});
+		id++;
+	}
+#endif
+
+	shader_buffer = std::make_unique<ShaderBuffer>(phys_dev, dev, MAX_OBJECTS);
+
+	shader_buffer->upload(objects);
+
 
 	textures = createResources({
 		"assets/textures/oil.jpg",
@@ -223,21 +257,6 @@ Renderer::Renderer(Window& win) : win(win) {
 		{ {  1.0,-1.0 } },
 		{ { -1.0,-1.0 } },
 	});
-
-	objects.reserve(bsp->planes.size());
-	uint id = 0;
-	for (const auto& plane : bsp->planes) {
-		/* for planes, center.xyz holds normal, dimensions.x holds distance */
-		objects.push_back(Object{
-			.center = glm::vec4(plane.norm, 0.0),
-			.dimensions = glm::vec4(plane.dist, 0.0, 0.0, 0.0),
-			.id = id,
-			.shape = Shape::ePLANE,
-		});
-		id++;
-	}
-
-	shader_buffer->upload(objects);
 
 	pipeline = std::make_unique<GraphicsPipeline>(dev, shaders, swapchain->extent, *render_pass, bindings, *vertex_buffer);
 
@@ -349,7 +368,7 @@ void Renderer::draw() {
 		.time = time,
 		.viewport = glm::vec4(viewport.width, viewport.y, 0.0, 0.0),
 		.cam_dir = cam.dir(),
-		.n_objects = 2,
+		.n_objects = static_cast<unsigned int>(objects.size()),
 		.rad = rad,
 	});
 
@@ -406,7 +425,9 @@ void Renderer::present() {
 		default:
 			Log::error("Failed to present surface.\n");
 		break;
+
 	}
+	time += frametime / 1000.0 * speed * static_cast<float>(!paused);
 
 	frame++;
 }

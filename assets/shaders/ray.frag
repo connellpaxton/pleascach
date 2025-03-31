@@ -93,7 +93,8 @@ float terrain(vec3 p) {
 vec2 sdf(vec3 pos) {
 	vec2 d = vec2(100000000.0, -1.0);
 	for(uint i = 0; i < n_objects; i++) {
-		d = op_union(d, obj_to_sdf(pos, i), objects[n_objects].id);
+		d = op_union(d, obj_to_sdf(pos, i), 1.0);
+//		d = op_union(d, sphere(pos, objects[i].center.xyz, objects[i].dimensions.x), 1.0);
 	}
 
 	
@@ -114,8 +115,8 @@ vec2 raycast(vec3 dir) {
 		if(dt.y == -1.0)
 			return dt;
 		if(dt.x < 0.0001*t)
-			return vec2(t, dt.y);
-//			return float(i)/MAX_STEPS;
+//			return vec2(t, dt.y);
+			return vec2(t, float(i)/MAX_STEPS);
 		else if(dt.x > 2000.0)
 			return vec2(dt.x, -1.0);
 		t += dt.x;
@@ -150,7 +151,7 @@ void main() {
 	vec3 p = d.x*dir + cam_pos;
 
 	if(d.y != -1.0)
-		fragColor = vec4(d.y/n_objects);
+		fragColor = vec4(d.y);
 	else
 		fragColor = vec4(0.0);
 }

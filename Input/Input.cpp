@@ -74,7 +74,7 @@ void Input::setCursor(bool enabled) {
 }
 
 void Input::handleMovementKeys(Renderer& ren) {
-	if (ImGui::GetIO().WantCaptureKeyboard)
+	if (ImGui::GetIO().WantCaptureKeyboard && ren.in_menu)
 		return;
 
 	auto dir = ren.cam.dir();
@@ -139,16 +139,17 @@ void Input::handleCursorMovement(Renderer& ren, double x, double y) {
 	int rel_mouse_y = static_cast<int>(y) - last_mouse.y;
 
 	auto& io = ImGui::GetIO();
-	if (io.WantCaptureMouse)
+	if (io.WantCaptureMouse && ren.in_menu)
 		return;
 
-	if (!ren.capture_mouse) {
+	if (ren.in_menu) {
 		io.AddMousePosEvent(x, y);
 		return;
 	}
 
-	ren.cam.phi += rel_mouse_x / 100.0;
-	ren.cam.theta += rel_mouse_y / 100.0;
+	// scaling factor
+	ren.cam.phi += rel_mouse_x / 200.0;
+	ren.cam.theta += rel_mouse_y / 200.0;
 
 	last_mouse = glm::vec2(x,y);
 

@@ -3,7 +3,10 @@
 #define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
 #include <vulkan/vulkan.hpp>
 
+
 #include <Renderer/CommandBuffer.hpp>
+
+#include <imgui/imgui_console.h>
 
 #include <vector>
 
@@ -12,21 +15,13 @@ struct Renderer;
 struct Camera;
 
 struct UI {
-	struct UI_Info {
-		float fps = 0.0;
-		bool& flycam;
-		float& time;
-		/* for cantor */
-		float& rad;
-		/* camera stuff */
-		Camera& cam;
-		const std::vector<Object>& objects;
-	} info;
-
+	Renderer* ren;
 	vk::Device dev;
 	vk::DescriptorPool desc_pool;
 
 	UI(Renderer* ren);
+
+	std::unique_ptr<ImGuiConsole> console;
 
 	void newFrame();
 	void render(vk::CommandBuffer cmd);

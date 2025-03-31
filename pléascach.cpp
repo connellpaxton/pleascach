@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
 		auto in = win.getInput();
 		Renderer ren(win);
 
-		while (!in->shouldClose()) {
+		while (!in->shouldClose() && !ren.should_close) {
 			Timer frame_timer;
 			in->poll();
 			in->handleMovementKeys(ren);
@@ -56,11 +56,14 @@ int main(int argc, char* argv[]) {
 					case InputEvent::Tag::eBUTTON:
 					break;
 					case InputEvent::Tag::eKEY:
-						if (event.key.key == GLFW_KEY_Q) {
-							return 0;
-						} else if (event.key.key == GLFW_KEY_ESCAPE && event.key.state == GLFW_PRESS) {
-							ren.capture_mouse = !ren.capture_mouse;
-							in->setCursor(!ren.capture_mouse);
+						if (event.key.key == GLFW_KEY_ESCAPE && event.key.state == GLFW_PRESS) {
+							ren.in_menu = !ren.in_menu;
+							in->setCursor(ren.in_menu);
+						} else if (event.key.key == GLFW_KEY_Q && event.key.state == GLFW_PRESS) {
+							if (!ren.in_menu) {
+								ren.should_close = true;
+								goto quit;
+							}
 						} else if (event.key.key == GLFW_KEY_R && event.key.state == GLFW_PRESS) {
 							ren.time = 0;
 						} else if (event.key.key == GLFW_KEY_C && event.key.state == GLFW_PRESS) {
@@ -78,15 +81,19 @@ int main(int argc, char* argv[]) {
 
 			ren.draw();
 			ren.present();
-			const auto t = frame_timer.read();
-			ren.ui->info.fps = 1000.0f / t;
-			ren.time += t / 1000.0 * ren.speed * static_cast<float>(ren.running);
+			ren.frametime = frame_timer.read();
+			ren.fps = 1000.0f / ren.frametime;
 
-			/*while (frame_timer.read() < 16.60)
-				;*/
+			while (frame_timer.read() < 1000.0 / ren.max_fps)
+				;
+
+			ren.frametime = frame_timer.read();
 		}
 
 	} catch (const std::string& e) {
 		std::cerr << "Exception: " << e << std::endl;
-	}  
+	} 
+
+quit:
+	Log::info("Quitting\n");
 }

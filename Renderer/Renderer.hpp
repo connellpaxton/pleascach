@@ -10,7 +10,7 @@
 #include <Renderer/ShaderBuffer.hpp>
 #include <Renderer/Swapchain.hpp>
 
-#include <Scene/BSP.hpp>
+#include <map>
 #include <Scene/Camera.hpp>
 
 #include <UI/UI.hpp>
@@ -19,6 +19,8 @@ struct Window;
 struct UniformBuffer;
 struct VertexBuffer;
 struct Texture;
+
+#define MAX_OBJECTS 256
 
 /* Contains all of the Vulkan objects involved in rendering the scene */
 struct Renderer {
@@ -55,8 +57,6 @@ struct Renderer {
 
 	std::vector<Texture> textures;
 
-	std::unique_ptr<Q3BSP::BSP> bsp;
-
 	uint32_t current_image_idx;
 	uint64_t frame = 0;
 
@@ -70,7 +70,18 @@ struct Renderer {
 	bool flycam = false;
 	/* time speed */
 	float time = 0.0;
+	float frametime = 0.0;
+	float fps = 0.0;
+	float max_fps = 60.0;
 	float speed = 1.0;
 	float rad = 1.0;
+
+	bool in_menu = false;
+	bool should_close = false;
+	bool paused = false;
 	bool running = true;
+
+	std::map<std::string, int> scene_map;
+
+	std::string scene_file = "scene.txt";
 };
