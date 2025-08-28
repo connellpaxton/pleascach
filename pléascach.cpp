@@ -14,10 +14,11 @@ int main(int argc, char* argv[]) {
 	try {
 		Window win(argv[0], 256, 512);
 
+		// for fullscreen
 		auto mon = glfwGetPrimaryMonitor();
 		auto v = glfwGetVideoMode(mon);
 		glfwSetWindowMonitor(win.win, mon, 0, 0, v->width, v->height, v->refreshRate);
-
+		
 		auto in = win.getInput();
 		Renderer ren(win);
 		in->setCursor(false);
@@ -64,7 +65,6 @@ int main(int argc, char* argv[]) {
 						} else if (event.key.key == GLFW_KEY_Q && event.key.state == GLFW_PRESS) {
 							if (!ren.in_menu) {
 								ren.should_close = true;
-								goto quit;
 							}
 						}
 					break;
@@ -86,6 +86,5 @@ int main(int argc, char* argv[]) {
 		std::cerr << "Exception: " << e << std::endl;
 	}
 
-quit:
 	Log::info("Quitting\n");
 }

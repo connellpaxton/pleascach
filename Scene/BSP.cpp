@@ -43,8 +43,7 @@ static inline glm::vec2 calc_tex_coords(glm::vec3 v, const TexInfo& t) {
 void BSP::load_vertices(const glm::vec3& cam_pos, bool visibility_test, const glm::mat4& view) {
 	std::set<int> present_faces;
 	std::vector<Face> visible_faces;
-	// if (visibility_test) {
-	if(false) {
+	if (visibility_test) {
 		auto leaf_idx = determine_leaf(cam_pos);
 
 		auto fr_planes = frustum(view);

@@ -172,5 +172,8 @@ UI::~UI() {
 	dev.destroyDescriptorPool(desc_pool);
 	ImGui_ImplVulkan_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
+
+	// for whatever reason, this segfaults with a read to -1 when it tries saving characteristics.
+	// TOOD: Debug
+//	ImGui::DestroyContext();
 }
